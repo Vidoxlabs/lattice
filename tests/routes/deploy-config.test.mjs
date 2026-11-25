@@ -1,17 +1,43 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
+import { pathToFileURL } from 'node:url';
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
 
+const projectRoot = process.cwd().replace(/[\\/]+$/, '');
+const projectUrl = pathToFileURL(projectRoot).href;
+
+/**
+ * Every generated Worker module, including the framework's chunk directory.
+ * @param {string} directory
+ * @returns {string[]}
+ */
+function bundleModules(directory) {
+  const modules = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = `${directory}/${entry.name}`;
+    if (entry.isDirectory()) modules.push(...bundleModules(path));
+    else if (entry.name.endsWith('.mjs')) modules.push(path);
+  }
+  return modules;
+}
+
 test('the generated Worker bundle carries no build-machine paths', () => {
   if (!existsSync('dist/server/wrangler.json')) return;
-  for (const entry of readdirSync('dist/server', { withFileTypes: true })) {
-    if (!entry.isFile() || !entry.name.endsWith('.mjs')) continue;
-    const source = readFileSync(`dist/server/${entry.name}`, 'utf8');
-    assert.doesNotMatch(source, /\/(?:Users|home)\/[A-Za-z0-9._-]+\//, `dist/server/${entry.name} still embeds an absolute build path`);
+  const modules = bundleModules('dist/server');
+  assert.ok(modules.length > 0, 'the Worker deploy must ship at least one module');
+  for (const path of modules) {
+    const source = readFileSync(path, 'utf8');
+    // The checkout can live anywhere with any folder name, so the assertion is
+    // against this build's actual root rather than a home-directory pattern.
+    assert.equal(source.includes(projectRoot), false, `${path} still embeds this checkout's absolute path`);
+    assert.equal(source.includes(projectUrl), false, `${path} still embeds this checkout's file URL`);
+    assert.doesNotMatch(source, /\/(?:Users|home)\/[A-Za-z0-9._-]+\//, `${path} still embeds another machine's home path`);
+    assert.doesNotMatch(source, /\bworkers\.dev\b/i, `${path} still embeds a preview host`);
+    assert.doesNotMatch(source, /\bdash\.cloudflare\.com\b/i, `${path} still embeds a hosting dashboard`);
   }
 });
 
