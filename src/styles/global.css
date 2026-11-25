@@ -33,7 +33,7 @@ a {
 
 a:focus-visible,
 button:focus-visible {
-  outline: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-surface-accent-violet-base);
+  outline: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-surface-accent-brand-base);
   outline-offset: var(--vi-space-rhythm-1-base);
 }
 
