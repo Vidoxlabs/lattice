@@ -1,15 +1,15 @@
 {
-  "description": "Per-page budgets for the browser stage. 'bytes' is the decoded payload of every response a page load causes, 'requests' counts those responses, and 'longestTaskMs' is the longest main-thread block, taken as the larger of the PerformanceObserver long-task entries the engine reports and the longest gap between animation frames. Budgets are today's measurements plus a small margin; raise one only with a recorded reason.",
-  "defaults": { "bytes": 200000, "requests": 14, "longestTaskMs": 120 },
+  "description": "Budgets for the browser stage, one file, enforced in CI. 'bytes' is the decoded payload of every response a page load causes and 'requests' counts those responses; both are deterministic. 'longTasks' counts main-thread tasks over 50 ms during the load and a short settle window, and 'longestTaskMs' is the longest single block, kept as a loose runaway guard: a two-core CI runner can block for over a second on its own startup, so the count is the signal and the ceiling only catches a script that never yields. Budgets are today's measurements plus a small margin; raise one only with a recorded reason.",
+  "defaults": { "bytes": 200000, "requests": 14, "longTasks": 10, "longestTaskMs": 2500 },
   "pages": {
-    "/": { "bytes": 170000, "requests": 13, "longestTaskMs": 100 },
-    "/vivarium": { "bytes": 150000, "requests": 12, "longestTaskMs": 100 },
-    "/repositories": { "bytes": 150000, "requests": 12, "longestTaskMs": 100 },
-    "/repositories/seed": { "bytes": 150000, "requests": 12, "longestTaskMs": 100 },
-    "/docs": { "bytes": 150000, "requests": 12, "longestTaskMs": 100 },
-    "/docs/seed/architecture": { "bytes": 160000, "requests": 12, "longestTaskMs": 100 },
-    "/about": { "bytes": 140000, "requests": 12, "longestTaskMs": 100 },
-    "/security": { "bytes": 140000, "requests": 12, "longestTaskMs": 100 },
-    "/chat": { "bytes": 140000, "requests": 12, "longestTaskMs": 100 }
+    "/": { "bytes": 170000, "requests": 13, "longTasks": 10, "longestTaskMs": 2500 },
+    "/vivarium": { "bytes": 150000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 },
+    "/repositories": { "bytes": 150000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 },
+    "/repositories/seed": { "bytes": 150000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 },
+    "/docs": { "bytes": 150000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 },
+    "/docs/seed/architecture": { "bytes": 160000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 },
+    "/about": { "bytes": 140000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 },
+    "/security": { "bytes": 140000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 },
+    "/chat": { "bytes": 140000, "requests": 12, "longTasks": 8, "longestTaskMs": 2000 }
   }
 }
