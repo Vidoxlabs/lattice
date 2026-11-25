@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lattice",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-11-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": true,
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist/client"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "SITE_ORIGIN": "https://vidoxlabs.com",
+    "CHAT_PROVIDER": "mock",
+    "CHAT_ASSISTANT_NAME": "Vidoxlabs assistant",
+    "CHAT_ALLOW_CLOUD": "0",
+    "ENRICH_ENABLED": "0",
+    "ENRICH_MAX_USD": "0"
+  }
+}
