@@ -116,13 +116,13 @@ The one exception: the internal marker in the chat route read `TODO(family)`. It
 `TODO(upstream)` and lives beside the rate limiter it describes, in
 `src/lib/agent/rate-limit.mjs`. Nothing else changed.
 
-**Update, 2026-11-25, second run.** The owner chose option (a) for the three visible strings
-this repository owns, with these words: the home diagram title is "The Vidoxlabs stack", its
-group heading is "Around the stack", and the about list line is "Multi-point testing". The
-component name, the element id, the data attributes, the design-system files and the corpus
-prose keep the current vocabulary until their owners move, so the counts above predate this
-change. The docs prose now goes through the mapping below, which is where the corpus side of
-this inventory is handled in the meantime.
+**Update, 2026-11-25, second run.** Default taken: option (a) for the three visible strings
+this repository owns — owner decision pending. The home diagram title is "The Vidoxlabs
+stack", its group heading is "Around the stack", and the about list line is "Multi-point
+testing". The component name, the element id, the data attributes, the design-system files
+and the corpus prose keep the current vocabulary until their owners move, so the counts
+above predate this change. The docs prose now goes through the mapping below, which is
+where the corpus side of this inventory is handled in the meantime.
 
 ## Lattice-side vocabulary mapping
 
@@ -138,12 +138,14 @@ published output carries the mapped wording:
 | "siblings" | "peers" |
 | "…, mirroring five flower-named personas." | the clause is dropped from the sentence |
 
-The word maps whole only: an identifier inside a code sample that contains it keeps its
-letters. The mapping is lattice-side until the owning repositories change their own text;
-when they do, the map, its tests and this row are retired with it. The committed offline
-snapshot stores the mapped text, and its manifest records the digest of each stored text
-(`scripts/snapshot-digests.mjs`) so the no-network fallback still verifies; the upstream
-digests stay in the manifest a connected build fetches.
+The word maps whole only, and only in prose: fenced code blocks and inline code are carried
+through untouched, so a capability name or a sample command in the corpus keeps the letters
+its repository publishes. The mapping is lattice-side until the owning repositories change
+their own text; when they do, the map, its tests and this row are retired with it. The
+committed offline snapshot stores the mapped text; each manifest record in it keeps the
+upstream digest and gains `storedSha256`, the digest of the stored text
+(`scripts/snapshot-digests.mjs`), so the no-network fallback still verifies and a live
+manifest can tell a fresh snapshot from a stale one.
 
 ## Related
 
