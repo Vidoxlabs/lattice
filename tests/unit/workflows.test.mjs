@@ -91,6 +91,7 @@ test('check runs on every push, pull request, the daily schedule and a docs disp
   assert.ok(artifact, 'the verified output is uploaded for the deploy job');
   assert.equal(artifact.if, "github.ref == 'refs/heads/main'", 'only a default-branch run offers its output');
   assert.equal(artifact.with.name, 'lattice-dist');
+  assert.equal(artifact.with.path, 'dist');
 });
 
 test('deploy follows a successful default-branch check from any trigger, in the production environment', () => {
@@ -111,6 +112,16 @@ test('deploy follows a successful default-branch check from any trigger, in the 
   assert.match(source, /secrets\.CLOUDFLARE_ACCOUNT_ID/);
   assert.doesNotMatch(source, /vars\.CLOUDFLARE_ACCOUNT_ID/, 'the account identifier is a secret, never a variable');
   assert.match(source, /npx wrangler deploy --config dist\/server\/wrangler\.json/, 'the host-entry configuration is deployed');
+  const download = deploy.steps.find((step) => String(step.uses ?? '').startsWith('actions/download-artifact'));
+  assert.ok(download, 'the deploy job downloads the verified artifact');
+  assert.equal(download.with.name, 'lattice-dist', 'the artifact is the one the check run uploaded');
+  // upload-artifact stores the contents of a single directory at the artifact
+  // root, so the download path is what decides whether dist/server exists.
+  assert.equal(download.with.path, artifact.with.path, 'the artifact lands where the upload directory put it');
+  const guard = deploy.steps.map((step) => String(step.run ?? '')).join('\n');
+  assert.match(guard, /test -f dist\/server\/wrangler\.json/, 'the deploy configuration is checked for before deploying');
+  assert.match(guard, /test -d dist\/client/, 'the static assets are checked for before deploying');
+  assert.match(guard, /::error::/, 'a missing piece fails with a readable message');
 });
 
 test('the documentation repository notifies the site with a dispatch, and no deploy hook exists', () => {
