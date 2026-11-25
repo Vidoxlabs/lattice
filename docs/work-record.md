@@ -5,17 +5,18 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 1 of 10 (cleanup) done; starting step 2 (transport security). Branch `slice-10-finish`,
-pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
+Step 2 of 10 (transport security) done; starting step 3 (preview URLs). Branch
+`slice-10-finish`, pull request #10, currently a draft. Nothing is merged: `main` still holds
+the initial commit.
 
-Last pushed commit: `4dd0456` — docs: record the finished backlog in the handoff. The commit
-that carries this file is the next one on the branch, so a step's checklist entry names the
-commit its work landed in rather than the commit that records it.
+Last pushed commit: `500d2f5` — chore: drop the handoff file and fail on conflict markers.
+The commit that carries this file is the next one on the branch, so a step's checklist entry
+names the commit its work landed in rather than the commit that records it.
 
 ## Checklist
 
-- [ ] 1. Cleanup: delete the handoff file, rewrite this record, fail `npm run check` on merge-conflict markers in tracked text files
-- [ ] 2. Transport security: drop `includeSubDomains` from the header and from its unit test
+- [x] 1. Cleanup: delete the handoff file, rewrite this record, fail `npm run check` on merge-conflict markers in tracked text files — `500d2f5`
+- [x] 2. Transport security: drop `includeSubDomains` from the header and from its unit test — this commit
 - [ ] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps
 - [ ] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2
 - [ ] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8
@@ -27,9 +28,9 @@ commit its work landed in rather than the commit that records it.
 
 ## Next step
 
-Work step 2: set `HSTS_HEADER` in `src/lib/security-headers.mjs` to `max-age=31536000`, keep
-`preload` out, update `tests/routes/security-headers.test.mjs`, then run `CI=1 npm run check`,
-commit, push and move to step 3.
+Work step 3: set `preview_urls` to `false` in `wrangler.jsonc`, point the route test at the
+committed value, and write the owner's Access steps into SETUP.md. Run `CI=1 npm run check`,
+commit, push, then read the Cloudflare Workers Builds documentation for step 4.
 
 ## Owner steps ready
 
@@ -45,7 +46,11 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 
 ## Defaults taken in this run
 
-Initially empty; each entry names the question, the options, the default taken and why.
+- Transport security (step 2, posted in chat): the header is `max-age=31536000` with
+  `includeSubDomains` dropped and `preload` left out. The alternative is to keep
+  `includeSubDomains` once every subdomain of the canonical domain is HTTPS by policy, which is
+  not true today: the four hostnames are the only ones this site serves, and a subdomain added
+  later for something else would inherit the pin without anyone deciding it.
 
 ## Open owner questions
 

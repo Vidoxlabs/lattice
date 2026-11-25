@@ -45,6 +45,12 @@ test('no built page carries an inline style attribute or style element', () => {
   }
 });
 
+test('transport security covers the canonical host and nothing under it', () => {
+  assert.deepEqual(HSTS_HEADER, ['Strict-Transport-Security', 'max-age=31536000']);
+  assert.doesNotMatch(HSTS_HEADER[1], /includeSubDomains/i, 'a subdomain this site does not serve must not be pinned');
+  assert.doesNotMatch(HSTS_HEADER[1], /preload/i, 'preload makes the policy permanent, which is a separate decision');
+});
+
 test('the generated asset header file carries the shared policy and no host-only header', () => {
   const headers = readFileSync('dist/client/_headers', 'utf8');
   assert.equal(headers.split('\n').filter((line) => line.startsWith('/*')).length, 1, 'one catch-all rule');

@@ -52,9 +52,14 @@ export function securityHeaders(styleHashes = []) {
 /**
  * Transport security is pinned only where the site is canonical and served over
  * the production domain. A preview host or a local run must not pin a scheme.
+ *
+ * The policy covers this host alone: `includeSubDomains` would also pin every
+ * subdomain of the canonical domain, including ones this site does not serve,
+ * and `preload` would make that permanent in browsers. Both stay out until
+ * every subdomain is HTTPS by decision rather than by hope.
  * @type {[string, string]}
  */
-export const HSTS_HEADER = ['Strict-Transport-Security', 'max-age=31536000; includeSubDomains'];
+export const HSTS_HEADER = ['Strict-Transport-Security', 'max-age=31536000'];
 
 /**
  * Every header for a response on the given host.

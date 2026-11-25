@@ -80,7 +80,7 @@ test('the policy headers reach static pages, the status API, the chat API and th
 
 test('transport security is pinned on the canonical host only', async ({ request }) => {
   const canonical = await request.get('/', { headers: { Host: 'vidoxlabs.com' } });
-  expect(canonical.headers()['strict-transport-security']).toContain('max-age=31536000');
+  expect(canonical.headers()['strict-transport-security']).toBe('max-age=31536000');
 
   const preview = await request.get('/');
   expect(preview.status()).toBe(200);
