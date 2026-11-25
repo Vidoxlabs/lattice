@@ -23,18 +23,16 @@ review; slice 10 is a draft against it.
 - [x] Step 5: production-only custom-domain routes — `fe30ad4`
 - [x] Step 6: Open Graph images and tags — `48908ca`
 - [x] Step 7: budget checks, then the slice 9 pull request goes ready for review — `99fb64b`
-- [ ] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items (in progress)
+- [x] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items — this commit
 - [ ] Step 9: docs#6 (blocked: the owner has not answered its three questions)
 - [ ] Step 10: optional extras — snapshot refresh, CSP-safe highlighting, unported components
 
 ## Next step
 
-Step 8 on this branch: complete the SETUP.md checklist in order (merge plan, Workers Builds
-connection and triggers, the deploy hook in the docs repository, the optional read token,
-chat variables and the secret by name, the rate-limit binding, `SITE_ORIGIN`, domains and
-sitemap submission, enrichment off), then the upstream items section, ADR-0001 to accepted,
-ADR-0002 to ADR-0004 reconciled, the README deployment and capability text, and dated ET
-timeline entries for slices 9 and 10.
+Step 9 (docs#6) is skipped: the owner has not answered its three questions, so nothing in the
+docs repository changes. Step 10 is optional and only if budget remains: refresh the status
+snapshot with `npm run snapshot:refresh` and record the capture time, then syntax
+highlighting that emits classes rather than inline styles.
 
 ## Open pull requests
 

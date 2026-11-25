@@ -18,11 +18,17 @@ One generated build bundle feeds static pages and `/api/status`. The API refresh
 
 A committed, dated snapshot contains the last successfully refreshed manifest, pins, status and verified README documents. Offline builds use it and display its capture date. `npm run snapshot:refresh` is the only command that updates this snapshot.
 
-After the docs proposal is ratified and implemented, a docs sync that changes the manifest or status will make one optional deploy-hook request. No system repository will trigger or push content to lattice.
+After the docs proposal is ratified and implemented, a docs sync that changes the manifest or status will make one optional deploy-hook request through `LATTICE_DEPLOY_HOOK_URL`, which is held in the docs repository and never here. No system repository will trigger or push content to lattice.
+
+The same bundle also feeds what the site publishes about itself: the sitemap is derived from the routes the build emitted, `llms.txt` and `llms-full.txt` are generated from the verified corpus and the repository catalog, and the social cards are rendered from the committed brand SVGs. None of them is hand-maintained, so a sync that adds a page adds it everywhere at once.
+
+Status labels are rendered where the data is shown: the API and the islands say which source answered, and a snapshot build states its capture time. The page family labels — implemented, specified, planned, observed — come from the corpus text and are never inferred here.
 
 ## Consequences
 
 The build is deterministic for a fixed set of upstream responses and has an explicit offline mode. Generated data is not hand-maintained. Ajv adds one runtime build dependency; it is not used by browser code. Until the docs proposal lands, status collection consumes more public API requests and the local fallback contract may need a migration to the ratified schema.
+
+Third-party images in a fetched page are not rendered: the policy serves images from this origin, so a badge becomes a link that keeps its text and an image path relative to the source repository is dropped rather than published broken. A page that fails verification renders a placeholder with its source link and contributes no text to either language-model file.
 
 ## Alternatives
 
