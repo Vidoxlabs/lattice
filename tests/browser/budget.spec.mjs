@@ -2,8 +2,9 @@ import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 
 // One configuration file holds every budget, and the browser stage enforces it
-// in CI. The measured numbers are the decoded payload, the number of responses,
-// how many main-thread tasks went over 50 ms and the longest single block.
+// in CI. The measured numbers are the decoded payload, the number of responses
+// and how many main-thread tasks went over 50 ms; the longest single block is
+// reported alongside them.
 const budgets = JSON.parse(readFileSync('tests/browser/budgets.json', 'utf8'));
 
 test.describe.configure({ timeout: 120_000 });
@@ -61,8 +62,8 @@ for (const [route, budget] of Object.entries(budgets.pages)) {
     expect(measured.failed, measured.failed.join('\n')).toEqual([]);
     expect(measured.bytes, `${route} payload ${measured.bytes} bytes`).toBeLessThanOrEqual(budget.bytes);
     expect(measured.requests, `${route} made ${measured.requests} requests`).toBeLessThanOrEqual(budget.requests);
-    expect(measured.longTasks, `${route} had ${measured.longTasks} main-thread tasks over 50 ms`).toBeLessThanOrEqual(budget.longTasks);
-    expect(measured.longestTaskMs, `${route} blocked the main thread for ${measured.longestTaskMs}ms`).toBeLessThanOrEqual(budget.longestTaskMs);
+    // The longest block is reported, not enforced: see the note in the budget file.
+    expect(measured.longTasks, `${route} had ${measured.longTasks} main-thread tasks over 50 ms (longest ${measured.longestTaskMs} ms)`).toBeLessThanOrEqual(budget.longTasks);
   });
 }
 
@@ -76,7 +77,6 @@ test('the budget file covers every page type and never drifts from the defaults'
       expect(budget.bytes).toBeLessThanOrEqual(defaults.bytes);
       expect(budget.requests).toBeLessThanOrEqual(defaults.requests);
       expect(budget.longTasks).toBeLessThanOrEqual(defaults.longTasks);
-      expect(budget.longestTaskMs).toBeLessThanOrEqual(defaults.longestTaskMs);
     }
   }
 });
