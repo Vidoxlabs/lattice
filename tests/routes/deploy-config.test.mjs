@@ -41,6 +41,25 @@ test('the generated Worker bundle carries no build-machine paths', () => {
   }
 });
 
+test('the deploy configuration carries the production custom domains only', () => {
+  const source = readFileSync('wrangler.jsonc', 'utf8');
+  assert.equal(JSON.parse(source.replace(/^\s*\/\/.*$/gm, '')).workers_dev, false, 'the developer subdomain stays off');
+  const config = readJson('dist/server/wrangler.json');
+  assert.equal(config.workers_dev, false);
+  assert.equal(config.preview_urls, true, 'a preview version needs a URL of its own');
+  const patterns = (config.routes ?? []).map((route) => route.pattern).sort();
+  assert.deepEqual(patterns, ['vidoxlabs.com', 'vidoxlabs.dev', 'www.vidoxlabs.com', 'www.vidoxlabs.dev']);
+  assert.ok((config.routes ?? []).every((route) => route.custom_domain === true), 'each host is a custom domain');
+  // The local runtime serves a configured custom domain itself and rewrites the
+  // request host, which would hide the canonical-host redirect from the browser
+  // stage, so the browser stage runs a copy without routes.
+  const dev = readJson('dist/server/wrangler.dev.json');
+  assert.ok(!('routes' in dev) && !('route' in dev), 'the local runtime copy carries no custom-domain routes');
+  assert.equal(dev.main, 'host-entry.mjs');
+  assert.equal(dev.assets.run_worker_first, true);
+  assert.deepEqual(dev.vars, config.vars, 'the local copy keeps the same variables');
+});
+
 test('the generated deploy configuration is sanitized and host-checked', () => {
   if (existsSync('dist/server/wrangler.json')) {
     const config = readJson('dist/server/wrangler.json');

@@ -71,6 +71,16 @@ if (existsSync(serverConfigPath)) {
   config.assets.run_worker_first = true;
   writeFileSync(serverConfigPath, `${JSON.stringify(config)}\n`);
 
+  // A custom-domain route makes the local runtime serve the configured host
+  // itself and rewrite the request host, which would hide the canonical-host
+  // redirect from the browser stage. The deploy configuration keeps the routes;
+  // the copy the browser stage runs drops them, so the host rule is exercised
+  // exactly as it runs in production.
+  const devConfig = { ...config };
+  delete devConfig.routes;
+  delete devConfig.route;
+  writeFileSync('dist/server/wrangler.dev.json', `${JSON.stringify(devConfig)}\n`);
+
   // The framework bundle embeds the absolute project path. It is inert at
   // runtime but must not leave the build machine, and a checkout can live under
   // any root in a folder with any name, so the path comes from the working

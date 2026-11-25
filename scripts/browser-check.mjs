@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { createServer } from 'node:net';
 
 const reservation = createServer();
@@ -8,7 +9,11 @@ if (!address || typeof address === 'string') throw new Error('Could not reserve 
 const { port } = address;
 await new Promise((resolve) => { reservation.close(() => resolve(undefined)); });
 
-const server = spawn('node_modules/.bin/wrangler', ['dev', '--port', String(port)], {
+// The browser stage runs the deploy configuration without its custom-domain
+// routes: with routes present the local runtime answers every host itself and
+// the canonical-host redirect never runs.
+const configPath = existsSync('dist/server/wrangler.dev.json') ? 'dist/server/wrangler.dev.json' : 'dist/server/wrangler.json';
+const server = spawn('node_modules/.bin/wrangler', ['dev', '--config', configPath, '--port', String(port)], {
   stdio: ['ignore', 'pipe', 'pipe'],
   env: { ...process.env, WRANGLER_SEND_METRICS: 'false' },
   detached: true

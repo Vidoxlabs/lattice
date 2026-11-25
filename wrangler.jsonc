@@ -6,6 +6,14 @@
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
   "preview_urls": true,
+  // Production only. `wrangler versions upload` publishes a preview version and
+  // does not attach routes, so a preview build never claims these hostnames.
+  "routes": [
+    { "pattern": "vidoxlabs.com", "custom_domain": true },
+    { "pattern": "www.vidoxlabs.com", "custom_domain": true },
+    { "pattern": "vidoxlabs.dev", "custom_domain": true },
+    { "pattern": "www.vidoxlabs.dev", "custom_domain": true }
+  ],
   "assets": {
     "binding": "ASSETS",
     "directory": "./dist/client"
