@@ -11,7 +11,7 @@ the other audited the account read-only and wrote the findings into SETUP.md. Br
 `slice-10-finish`, pull request #10, ready for review. Nothing is merged: `main` still holds the
 initial commit.
 
-Last pushed commit: `cf6e5c5` — ci: rebuild from a schedule and a docs dispatch, not a deploy hook.
+Last pushed commit: `7787ae6` — docs: record the launch audit and the owner's unrun commands.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
