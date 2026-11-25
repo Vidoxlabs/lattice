@@ -1,0 +1,6 @@
+---
+const { items = [] } = Astro.props;
+---
+<dl data-videsign="kpi-metric-strip" class="lattice-proof-row">
+  {items.map((item) => <div><dt>{item.label}</dt><dd>{item.value}</dd></div>)}
+</dl>

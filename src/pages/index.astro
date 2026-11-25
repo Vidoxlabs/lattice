@@ -1,10 +1,38 @@
 ---
 // Archetype: public-site-landing.
 import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroBillboard from '../components/videsign/hero-billboard.astro';
+import BentoFeatureGrid from '../components/videsign/bento-feature-grid.astro';
+import StatementProofRow from '../components/videsign/statement-proof-row.astro';
+import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
+import { getCatalog, sourceUrl } from '../lib/repository-data.mjs';
+const { repositories, manifest, vivarium, pinsPending } = await getCatalog();
+const product = repositories.find((repository) => repository.name === 'vivarium');
+const systems = repositories.filter((repository) => repository.kind === 'system');
 const title = 'Vidoxlabs builds Vivarium';
+const evidence = [
+  { label: 'Documentation sync', value: manifest.generatedAt ?? 'Not published', href: 'https://github.com/Vidoxlabs/docs/blob/main/manifest.json' },
+  { label: 'System pins', value: pinsPending ? 'pins pending' : `${vivarium.systems.length} pinned systems`, href: 'https://github.com/Vidoxlabs/vivarium/blob/main/vivarium.json' },
+  { label: 'CI evidence', value: 'Repository checks', href: 'https://github.com/Vidoxlabs/vivarium/actions' }
+];
 ---
 <BaseLayout title={title}>
-  <h1>{title}</h1>
-  <p class="lattice-prose">Vivarium is an open, local-first personal agent platform: agents that work with you and for you.</p>
-  <p><a href="https://github.com/Vidoxlabs/vivarium">Read the Vivarium source and product brief</a></p>
+  <HeroBillboard title={title} lede={product?.summary || 'Vivarium documentation has not synced yet.'}>
+    <p><a href="/vivarium">Understand Vivarium</a> · <a href="/repositories">Inspect the evidence</a></p>
+  </HeroBillboard>
+  <StatementProofRow items={evidence} />
+  <section aria-labelledby="systems-title">
+    <div class="lattice-card__meta"><h2 id="systems-title">Seven systems, one product</h2><ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} /></div>
+    <p class="lattice-prose">bloom is the interface layer. The manifest supplies every role, version and pin below.</p>
+    <BentoFeatureGrid items={systems} />
+  </section>
+  <section aria-labelledby="pipeline-title">
+    <h2 id="pipeline-title">The site updates from its sources</h2>
+    <ol>
+      <li><a href="https://github.com/Vidoxlabs/docs/blob/main/sources.json">A system changes its own documentation.</a></li>
+      <li><a href="https://github.com/Vidoxlabs/docs/actions/workflows/sync-sources.yml">The documentation hub syncs and records digests.</a></li>
+      <li><a href="https://github.com/Vidoxlabs/docs/blob/main/docs/site-integration.md">lattice verifies the source and renders it. Missing evidence stays blank.</a></li>
+    </ol>
+    <p><a href={sourceUrl('vivarium', vivarium.systems?.[0]?.commit)}>Read the pinned product source</a></p>
+  </section>
 </BaseLayout>

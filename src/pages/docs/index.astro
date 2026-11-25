@@ -1,0 +1,13 @@
+---
+// Archetype: docs-portal.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HeroBillboard from '../../components/videsign/hero-billboard.astro';
+import ClaimMaturityBadge from '../../components/videsign/claim-maturity-badge.astro';
+import { getCatalog } from '../../lib/repository-data.mjs';
+const { repositories } = await getCatalog();
+---
+<BaseLayout title="Documentation | Vidoxlabs" description="Documentation synced from the Vidoxlabs hub.">
+  <HeroBillboard title="Documentation" lede="The documentation hub is the only prose source. Every page will link its source repository and exact head; missing digests render no stale text." />
+  <ClaimMaturityBadge label="planned" />
+  <ul>{repositories.filter((repository) => repository.docsFiles.length).map((repository) => <li><a href={`/repositories/${repository.name}`}>{repository.name}: {repository.docsFiles.length} synced Markdown pages</a></li>)}</ul>
+</BaseLayout>

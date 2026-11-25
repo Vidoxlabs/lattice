@@ -1,0 +1,10 @@
+---
+const { items = [] } = Astro.props;
+---
+<section data-videsign="bento-feature-grid" class="lattice-grid" aria-label="Vivarium systems">
+  {items.map((item) => <article class="lattice-card">
+    <p class="lattice-eyebrow">{item.layer ?? item.kind}</p>
+    <h3><a href={`/repositories/${item.name}`}>{item.name}</a></h3>
+    <p>{item.role ?? item.summary ?? 'Documentation has not synced yet.'}</p>
+  </article>)}
+</section>

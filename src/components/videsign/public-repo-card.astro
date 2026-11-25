@@ -1,0 +1,15 @@
+---
+import ClaimMaturityBadge from './claim-maturity-badge.astro';
+const { repository } = Astro.props;
+---
+<article data-videsign="public-repo-card" class="lattice-card" data-repository-kind={repository.kind}>
+  <div class="lattice-card__meta"><span>{repository.kind}</span><ClaimMaturityBadge label={repository.synced ? 'observed' : 'planned'} /></div>
+  <h3><a href={`/repositories/${repository.name}`}>{repository.name}</a></h3>
+  <p>{repository.summary || 'Documentation has not synced yet.'}</p>
+  <dl class="lattice-status" data-status-repository={repository.name}>
+    <div><dt>CI</dt><dd data-status-field="ci">Not published in this build</dd></div>
+    <div><dt>Docs</dt><dd>{repository.head ? repository.head.slice(0, 7) : 'Not synced yet'}</dd></div>
+    <div><dt>Test totals</dt><dd>not published</dd></div>
+  </dl>
+  <a href={`https://github.com/Vidoxlabs/${repository.name}`}>Repository and evidence</a>
+</article>

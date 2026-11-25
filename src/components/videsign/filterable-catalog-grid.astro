@@ -1,0 +1,14 @@
+---
+import PublicRepoCard from './public-repo-card.astro';
+const { repositories = [] } = Astro.props;
+const kinds = ['all', 'system', 'umbrella', 'docs', 'design', 'site'];
+---
+<section data-videsign="filterable-catalog-grid">
+  <div class="lattice-filters" aria-label="Filter repositories">
+    {kinds.map((kind) => <button type="button" class="vi-theme-toggle" data-repository-filter={kind} aria-pressed={kind === 'all' ? 'true' : 'false'}>{kind}</button>)}
+  </div>
+  <div class="lattice-grid">
+    {repositories.map((repository) => <PublicRepoCard repository={repository} />)}
+  </div>
+  <script src="../../scripts/repository-filters.mjs"></script>
+</section>

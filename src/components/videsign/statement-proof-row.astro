@@ -1,0 +1,6 @@
+---
+const { items = [] } = Astro.props;
+---
+<dl data-videsign="statement-proof-row" class="lattice-proof-row">
+  {items.map((item) => <div><dt>{item.label}</dt><dd><a href={item.href}>{item.value}</a></dd></div>)}
+</dl>

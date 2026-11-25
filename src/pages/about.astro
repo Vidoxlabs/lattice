@@ -1,0 +1,22 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroBillboard from '../components/videsign/hero-billboard.astro';
+---
+<BaseLayout title="About Vidoxlabs" description="Vidoxlabs LLC, its public product and engineering method.">
+  <HeroBillboard title="About Vidoxlabs" lede="Vidoxlabs LLC is a Florida limited liability company building Vivarium, an open, local-first personal agent platform." />
+  <section>
+    <h2>Open evidence</h2>
+    <p class="lattice-prose">The product umbrella, seven systems, documentation hub and design system are public. Tests, source commits, specifications and documentation provide the evidence behind the site.</p>
+    <ul>
+      <li><a href="https://github.com/Vidoxlabs/vivarium">Vivarium product umbrella</a></li>
+      <li><a href="https://github.com/Vidoxlabs/docs">Self-updating documentation hub</a></li>
+      <li><a href="https://github.com/Vidoxlabs/trellis">Multi-point family testing</a></li>
+      <li><a href="https://github.com/Vidoxlabs">All public Vidoxlabs repositories</a></li>
+    </ul>
+  </section>
+  <section>
+    <h2>Contribute</h2>
+    <p>Start with the repository that owns the change. Each public repository carries its own agent guidance, contribution rules, tests and security policy.</p>
+    <p><a href="/repositories">Choose a repository</a> or <a href="https://github.com/Vidoxlabs/lattice/blob/main/CONTRIBUTING.md">contribute to lattice</a>.</p>
+  </section>
+</BaseLayout>

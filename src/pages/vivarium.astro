@@ -1,0 +1,31 @@
+---
+// Archetype: public-site-landing.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroBillboard from '../components/videsign/hero-billboard.astro';
+import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
+import { getCatalog } from '../lib/repository-data.mjs';
+const { repositories, vivarium, pinsPending } = await getCatalog();
+const product = repositories.find((repository) => repository.name === 'vivarium');
+---
+<BaseLayout title="Vivarium | Vidoxlabs" description="Vivarium's product definition, system map and direction.">
+  <HeroBillboard title="Vivarium" lede={product?.summary || 'Vivarium documentation has not synced yet.'}>
+    <p><a href="https://github.com/Vidoxlabs/vivarium">Product umbrella and specifications</a></p>
+  </HeroBillboard>
+  <section aria-labelledby="map-title">
+    <div class="lattice-card__meta"><h2 id="map-title">System map</h2><ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} /></div>
+    {pinsPending && <p>Pins pending: the public manifest could not be read in this build.</p>}
+    <table class="lattice-table">
+      <thead><tr><th>System</th><th>Layer</th><th>Version</th><th>Pinned commit</th><th>Role</th></tr></thead>
+      <tbody>{vivarium.systems?.map((system) => <tr><td><a href={`/repositories/${system.name}`}>{system.name}</a></td><td>{system.layer}</td><td>{system.version}</td><td><a href={`https://github.com/Vidoxlabs/${system.name}/commit/${system.commit}`}>{system.commit.slice(0, 7)}</a></td><td>{system.role}</td></tr>)}</tbody>
+    </table>
+  </section>
+  <section aria-labelledby="direction-title">
+    <div class="lattice-card__meta"><h2 id="direction-title">Product direction</h2><ClaimMaturityBadge label="specified" /></div>
+    <p class="lattice-prose">These are direction and specification documents, not claims of shipped behavior.</p>
+    <ul>
+      <li><a href="https://github.com/Vidoxlabs/vivarium/blob/main/docs/vision/design-brief.md">Vision brief: direction</a></li>
+      <li><a href="https://github.com/Vidoxlabs/vivarium/tree/main/docs/product">Product specifications: specified</a></li>
+      <li><a href="https://github.com/Vidoxlabs/vivarium/tree/main/docs/adr">Product architecture decisions</a></li>
+    </ul>
+  </section>
+</BaseLayout>

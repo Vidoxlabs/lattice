@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroBillboard from '../components/videsign/hero-billboard.astro';
+import { getCatalog } from '../lib/repository-data.mjs';
+const { repositories } = await getCatalog();
+---
+<BaseLayout title="Security | Vidoxlabs" description="How to report a Vidoxlabs vulnerability.">
+  <HeroBillboard title="Security" lede="Report a suspected vulnerability by email to admin@vidoxlabs.dev. Do not include secrets or personal data, and do not disclose it publicly before assessment." />
+  <p><a href="mailto:admin@vidoxlabs.dev">Email admin@vidoxlabs.dev</a> · <a href="/.well-known/security.txt">security.txt</a></p>
+  <section>
+    <h2>Scope and policies</h2>
+    <p>The scope is the public Vidoxlabs repositories.</p>
+    <ul>{repositories.map((repository) => <li><a href={`https://github.com/Vidoxlabs/${repository.name}/blob/main/SECURITY.md`}>{repository.name} SECURITY policy</a></li>)}</ul>
+  </section>
+</BaseLayout>

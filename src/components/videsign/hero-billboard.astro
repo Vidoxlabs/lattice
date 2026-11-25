@@ -1,0 +1,9 @@
+---
+const { title, lede } = Astro.props;
+---
+<section data-videsign="hero-billboard" class="lattice-hero">
+  <p class="lattice-eyebrow">Vidoxlabs</p>
+  <h1>{title}</h1>
+  <p class="lattice-prose">{lede}</p>
+  <slot />
+</section>

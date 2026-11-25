@@ -32,7 +32,7 @@ test('components do not use arbitrary pixel utilities', () => {
 
 test('local styles reference tokens emitted by the pinned design package', () => {
   const synced = filesUnder('src/styles/videsign').filter((file) => file.endsWith('.css')).map((file) => readFileSync(file, 'utf8')).join('\n');
-  const local = readFileSync('src/styles/global.css', 'utf8');
+  const local = filesUnder('src/styles').filter((file) => file.endsWith('.css') && !file.startsWith('src/styles/videsign/')).map((file) => readFileSync(file, 'utf8')).join('\n');
   const references = [...local.matchAll(/var\((--vi-[a-z0-9-]+)\)/g)].map((match) => match[1]);
   for (const reference of references) assert.ok(synced.includes(`${reference}:`), `Missing token ${reference}`);
 });

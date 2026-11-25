@@ -1,0 +1,12 @@
+---
+// Archetype: repository-showcase.
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import HeroBillboard from '../../components/videsign/hero-billboard.astro';
+import FilterableCatalogGrid from '../../components/videsign/filterable-catalog-grid.astro';
+import { getCatalog } from '../../lib/repository-data.mjs';
+const { repositories } = await getCatalog();
+---
+<BaseLayout title="Repositories | Vidoxlabs" description="Public Vidoxlabs repositories and their sourced status.">
+  <HeroBillboard title="Repositories" lede="Every repository in the public catalog, with documentation provenance and a stable shape for live CI, activity and freshness data." />
+  <FilterableCatalogGrid repositories={repositories} />
+</BaseLayout>

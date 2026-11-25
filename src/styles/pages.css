@@ -1,0 +1,131 @@
+h1,
+h2,
+h3 {
+  color: var(--vi-colors-text-content-primary-base);
+  line-height: var(--vi-typography-typography-leading-tight-base);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--vi-typography-typography-fluid-h1-base);
+}
+
+.lattice-hero {
+  display: grid;
+  gap: var(--vi-space-gap-comfortable-default);
+  margin-block-end: var(--vi-space-rhythm-12-base);
+}
+
+.lattice-eyebrow {
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  letter-spacing: var(--vi-typography-typography-tracking-wide-base);
+  text-transform: uppercase;
+}
+
+.lattice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--vi-size-layout-width-inspector-base)), 1fr));
+  gap: var(--vi-space-rhythm-4-base);
+  margin-block: var(--vi-space-rhythm-5-base);
+}
+
+.lattice-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vi-space-gap-comfortable-default);
+  padding: var(--vi-spacing-layout-padding-large-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  border-radius: var(--vi-spacing-layout-radius-standard-base);
+}
+
+.lattice-card__meta,
+.lattice-proof-row,
+.lattice-proof-row > div,
+.lattice-status > div,
+.lattice-filters {
+  display: flex;
+  gap: var(--vi-space-gap-compact-default);
+  align-items: center;
+}
+
+.lattice-card__meta,
+.lattice-proof-row {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.lattice-badge {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--vi-size-action-min-default);
+  padding-inline: var(--vi-space-inset-compact-default);
+  border-radius: var(--vi-spacing-layout-radius-full-base);
+  background: var(--vi-colors-surface-background-tertiary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-proof-row {
+  padding: 0;
+  margin-block: var(--vi-space-rhythm-6-base);
+}
+
+.lattice-proof-row > div {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.lattice-proof-row dt,
+.lattice-status dt {
+  color: var(--vi-colors-text-content-secondary-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-proof-row dd,
+.lattice-status dd {
+  margin: 0;
+}
+
+.lattice-status {
+  display: grid;
+  gap: var(--vi-space-gap-dense-default);
+  margin-block: auto;
+}
+
+.lattice-status > div {
+  justify-content: space-between;
+}
+
+.lattice-filters {
+  flex-wrap: wrap;
+}
+
+.lattice-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.lattice-table th,
+.lattice-table td {
+  padding: var(--vi-space-rhythm-3-base);
+  border-block-end: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-border-separator-primary-base);
+  text-align: start;
+}
+
+.lattice-command {
+  overflow-x: auto;
+  padding: var(--vi-spacing-layout-padding-medium-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+}
+
+.lattice-chat-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vi-space-gap-compact-default);
+}

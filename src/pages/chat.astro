@@ -1,0 +1,17 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroBillboard from '../components/videsign/hero-billboard.astro';
+import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
+const starters = ['What is Vivarium?', 'How do bloom and seed fit together?', 'What is the current CI state of the systems?'];
+---
+<BaseLayout title="Chat | Vidoxlabs" description="Ask grounded questions about Vivarium and its public documentation.">
+  <HeroBillboard title="Ask about Vivarium" lede="The chat uses the documentation index and public repository status. It says when retrieval finds nothing and cites the sources it uses." />
+  <ClaimMaturityBadge label="planned" />
+  <div class="lattice-chat-starters">{starters.map((starter) => <button class="vi-theme-toggle" type="button" disabled>{starter}</button>)}</div>
+  <form aria-label="Documentation chat">
+    <label for="chat-question">Question</label>
+    <textarea id="chat-question" name="message" rows="4" maxlength="4000" disabled></textarea>
+    <button class="vi-theme-toggle" type="submit" disabled>Send</button>
+  </form>
+  <p>The streaming endpoint and dock arrive in the chat slice. No message is sent from this shell.</p>
+</BaseLayout>
