@@ -1,0 +1,166 @@
+/* Documentation portal: a navigation rail beside a reading column, on tokens. */
+
+.lattice-docs-shell {
+  display: grid;
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  gap: var(--vi-space-rhythm-6-base);
+  align-items: start;
+}
+
+@media (max-width: 60rem) {
+  .lattice-docs-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.lattice-docs-nav {
+  position: sticky;
+  top: var(--vi-space-rhythm-4-base);
+  max-block-size: 80dvh;
+  overflow-y: auto;
+}
+
+.lattice-docs-nav-group {
+  margin-block-end: var(--vi-space-rhythm-2-base);
+}
+
+.lattice-docs-nav-group summary {
+  cursor: pointer;
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  letter-spacing: var(--vi-typography-typography-tracking-wide-base);
+  text-transform: uppercase;
+}
+
+.lattice-docs-count {
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-docs-nav ul {
+  list-style: none;
+  margin: var(--vi-space-rhythm-1-base) 0 0;
+  padding: 0;
+  display: grid;
+  gap: var(--vi-space-rhythm-1-base);
+}
+
+.lattice-docs-nav a {
+  display: block;
+  color: var(--vi-colors-text-content-secondary-base);
+  text-decoration: none;
+  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+}
+
+.lattice-docs-nav a:hover,
+.lattice-docs-nav a:focus-visible {
+  color: var(--vi-colors-text-content-primary-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+}
+
+.lattice-docs-nav a[aria-current='page'] {
+  color: var(--vi-colors-text-content-primary-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  box-shadow: inset 2px 0 0 var(--vi-colors-surface-accent-brand-base);
+}
+
+.lattice-docs-main {
+  min-inline-size: 0;
+}
+
+.lattice-docs-article h1 {
+  margin-block-end: var(--vi-space-rhythm-2-base);
+}
+
+.lattice-docs-meta {
+  border-block-start: 1px solid var(--vi-colors-text-content-secondary-base);
+  border-block-end: 1px solid var(--vi-colors-text-content-secondary-base);
+  padding-block: var(--vi-space-rhythm-2-base);
+  margin-block-end: var(--vi-space-rhythm-4-base);
+  display: grid;
+  gap: var(--vi-space-rhythm-2-base);
+}
+
+.lattice-docs-meta p {
+  margin: 0;
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-docs-meta ol {
+  margin: 0;
+  padding-inline-start: var(--vi-space-rhythm-4-base);
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-docs-placeholder {
+  border: 1px solid var(--vi-colors-status-indicator-warning-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+  padding: var(--vi-space-rhythm-2-base);
+}
+
+.lattice-docs-prose {
+  max-inline-size: 72ch;
+}
+
+.lattice-docs-prose pre,
+.lattice-diagram-source {
+  overflow-x: auto;
+  padding: var(--vi-space-rhythm-3-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+}
+
+.lattice-docs-prose code,
+.lattice-diagram-source code {
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-docs-prose blockquote {
+  border-inline-start: 2px solid var(--vi-colors-surface-accent-brand-base);
+  margin-block: var(--vi-space-rhythm-3-base);
+  padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-4-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+}
+
+.lattice-docs-prose table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  margin-block: var(--vi-space-rhythm-3-base);
+}
+
+.lattice-docs-prose th,
+.lattice-docs-prose td {
+  border: 1px solid var(--vi-colors-text-content-secondary-base);
+  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
+  text-align: start;
+}
+
+/* Claim-status badges from the family's vocabulary. */
+.lattice-claim-badge {
+  display: inline-block;
+  padding: 0 var(--vi-space-rhythm-2-base);
+  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  border: 1px solid currentColor;
+}
+
+.lattice-claim-badge[data-claim='implemented'] {
+  color: var(--vi-colors-status-indicator-success-base);
+}
+
+.lattice-claim-badge[data-claim='specified'] {
+  color: var(--vi-colors-status-indicator-info-base);
+}
+
+.lattice-claim-badge[data-claim='planned'] {
+  color: var(--vi-colors-status-indicator-warning-base);
+}
+
+.lattice-claim-badge[data-claim='observed'] {
+  color: var(--vi-colors-text-content-secondary-base);
+}

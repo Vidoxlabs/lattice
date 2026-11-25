@@ -1,0 +1,50 @@
+---
+import BaseLayout from './BaseLayout.astro';
+const { title, description, entries = [], currentSlug = '' } = Astro.props;
+
+const sections = [
+  {
+    name: 'Overview',
+    pages: entries.filter((entry) => entry.data.kind === 'hub' && !entry.data.slug.includes('/'))
+  },
+  {
+    name: 'Vivarium',
+    pages: entries.filter((entry) => entry.data.repo === 'vivarium')
+  },
+  ...[...new Set(entries.filter((entry) => entry.data.kind === 'source' && entry.data.repo !== 'vivarium').map((entry) => entry.data.repo))]
+    .sort()
+    .map((repo) => ({
+      name: repo,
+      pages: entries.filter((entry) => entry.data.repo === repo)
+    })),
+  {
+    name: 'The hub',
+    pages: entries.filter((entry) => entry.data.kind === 'hub' && entry.data.slug.includes('/') && !entry.data.slug.startsWith('adr/') && !entry.data.slug.startsWith('timeline/'))
+  },
+  {
+    name: 'Hub records',
+    pages: entries.filter((entry) => entry.data.kind === 'hub' && (entry.data.slug.startsWith('adr/') || entry.data.slug.startsWith('timeline/')))
+  }
+].filter((section) => section.pages.length > 0);
+---
+<BaseLayout title={title} description={description}>
+  <div class="lattice-docs-shell" data-videsign="layout-docs-portal">
+    <aside class="lattice-docs-nav" aria-label="Documentation sections">
+      <nav data-videsign="docs-sidebar-nav">
+        {sections.map((section) => (
+          <details class="lattice-docs-nav-group" open={section.pages.some((page) => page.data.slug === currentSlug)}>
+            <summary>{section.name} <span class="lattice-docs-count">{section.pages.length}</span></summary>
+            <ul>
+              {section.pages.map((page) => (
+                <li><a href={page.data.slug ? `/docs/${page.data.slug}` : '/docs'} aria-current={page.data.slug === currentSlug ? 'page' : undefined}>{page.data.title}</a></li>
+              ))}
+            </ul>
+          </details>
+        ))}
+      </nav>
+    </aside>
+    <div class="lattice-docs-main">
+      <slot />
+    </div>
+  </div>
+</BaseLayout>

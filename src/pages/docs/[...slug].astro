@@ -1,0 +1,40 @@
+---
+import { getCollection, render } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('docs');
+  return entries.map((entry) => ({
+    params: { slug: entry.id === 'index' ? undefined : entry.id },
+    props: { entry, entries }
+  }));
+}
+
+const { entry, entries } = Astro.props;
+const { repo, head, sourcePath, kind, title, headings } = entry.data;
+const sourceRepo = kind === 'hub' ? 'docs' : repo;
+const sourceLink = `https://github.com/Vidoxlabs/${sourceRepo}/blob/${head ?? 'main'}/${sourcePath}`;
+const editLink = `https://github.com/Vidoxlabs/${sourceRepo}/blob/main/${sourcePath}`;
+const { Content } = await render(entry);
+const bodyOpensWithHeading = kind !== 'placeholder' && /^#\s+/m.test(entry.body ?? '');
+---
+<DocsLayout title={`${title} | Vidoxlabs docs`} description={`${sourceRepo} documentation, rendered from the verified sync.`} entries={entries} currentSlug={entry.data.slug}>
+  <article class="lattice-docs-article" data-videsign="markdown-prose-renderer">
+    {!bodyOpensWithHeading && <h1>{title}</h1>}
+    {kind === 'placeholder' && <p class="lattice-docs-placeholder" role="note">Not rendered from memory: this page failed verification at build time. Follow the source link to read the upstream file.</p>}
+    <aside class="lattice-docs-meta" aria-label="Source and edit links" data-videsign="article-toc-and-meta">
+      <p>Source: <a href={sourceLink} data-docs-source-link>{sourceRepo} at {head?.slice(0, 7) ?? 'main'}</a> · <a href={editLink} data-docs-edit-link>Edit upstream</a></p>
+      {headings.length > 0 && (
+        <nav aria-label="Table of contents">
+          <p>On this page</p>
+          <ol>
+            {headings.slice(0, 12).map((heading) => <li>{heading}</li>)}
+          </ol>
+        </nav>
+      )}
+    </aside>
+    <div class="lattice-docs-prose">
+      <Content />
+    </div>
+  </article>
+</DocsLayout>

@@ -3,6 +3,7 @@ dist/
 .output/
 .astro/
 src/data/generated/
+src/data/docs-index.json
 .wrangler/
 coverage/
 playwright-report/

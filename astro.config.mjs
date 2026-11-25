@@ -5,6 +5,11 @@ export default defineConfig({
   adapter: cloudflare({ imageService: 'passthrough' }),
   output: 'static',
   session: false,
+  markdown: {
+    // Plain code blocks: the strict content security policy allows no inline
+    // styles, which the default syntax highlighter would emit.
+    syntaxHighlight: false
+  },
   build: {
     inlineStylesheets: 'never'
   },

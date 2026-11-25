@@ -16,4 +16,5 @@ const pipeline = await collectPipeline({
 const generated = new URL('../src/data/generated/', import.meta.url);
 await mkdir(generated, { recursive: true });
 await writeFile(new URL('build-pipeline.json', generated), `${JSON.stringify(pipeline, null, 2)}\n`);
-console.log(`Content bundle: manifest=${pipeline.sources.manifest}, status=${pipeline.sources.status}, snapshot=${pipeline.snapshot.used ? 'used' : 'not used'}.`);
+await writeFile(new URL('../src/data/docs-index.json', import.meta.url), `${JSON.stringify(pipeline.docsIndex, null, 2)}\n`);
+console.log(`Content bundle: manifest=${pipeline.sources.manifest}, status=${pipeline.sources.status}, docs=${pipeline.docsPages.length} pages, snapshot=${pipeline.snapshot.used ? 'used' : 'not used'}.`);

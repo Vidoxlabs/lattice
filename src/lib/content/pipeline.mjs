@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { isPublicContentSafe } from '../content-safety.mjs';
 import { ciSummary } from '../live-status.mjs';
+import { collectDocsCorpus } from './docs-corpus.mjs';
 import { stable, validateManifest, validateStatus } from './schema.mjs';
 
 const API = 'https://api.github.com/repos/Vidoxlabs';
@@ -175,6 +176,13 @@ export async function collectPipeline({ fetchImpl = fetch, token = '', snapshot 
     }
   }
 
+  // The documentation corpus is gathered before the live status: the corpus
+  // needs one API call (the hub tree) while the status gather consumes most of
+  // an unauthenticated rate window, so this order keeps the corpus complete
+  // even when the status degrades to the snapshot.
+  const documents = await collectDocuments(fetchImpl, manifest, fallback?.documents);
+  const docsPages = await collectDocsCorpus(fetchImpl, manifest, token, fallback?.docsPages ?? []);
+
   let status;
   let statusError = null;
   try {
@@ -193,16 +201,39 @@ export async function collectPipeline({ fetchImpl = fetch, token = '', snapshot 
     }
   }
 
-  const documents = await collectDocuments(fetchImpl, manifest, fallback?.documents);
+  const docsIndex = {
+    generatedAt: manifest.generatedAt ?? null,
+    pages: docsPages
+      .filter((page) => page.kind !== 'placeholder')
+      .map((page) => ({ slug: page.slug, title: page.title, repo: page.repo, head: page.head, sourcePath: page.sourcePath, headings: page.headings, chunks: chunkText(page.body) }))
+  };
   const snapshotUsed = manifestSource === 'snapshot' || status.gatheredBy === 'snapshot';
   return stable({
     manifest,
     status,
     vivarium,
     documents,
+    docsPages,
+    docsIndex,
     pinsPending: !vivarium.systems?.length,
     sources: { manifest: manifestSource, status: status.gatheredBy, vivarium: vivariumSource },
     snapshot: { used: snapshotUsed, capturedAt: snapshotUsed ? fallback?.capturedAt ?? null : null },
     warnings: statusError ? ['Documentation status is unavailable; the labelled fallback was used.'] : []
   });
+}
+
+/**
+ * Split a document body into deterministic chunks for the search index.
+ * @param {string} body
+ * @returns {{ id: number, text: string }[]}
+ */
+function chunkText(body) {
+  const sections = body.split(/^##\s+/m).filter((section) => section.trim());
+  const chunks = [];
+  for (const section of sections) {
+    const [heading, ...rest] = section.split('\n');
+    const text = `${heading.trim()}\n${rest.join('\n').trim()}`.slice(0, 1500);
+    if (text.trim()) chunks.push({ id: chunks.length, text });
+  }
+  return chunks.length ? chunks : [{ id: 0, text: body.slice(0, 1500) }];
 }
