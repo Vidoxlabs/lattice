@@ -43,10 +43,16 @@ test('the generated Worker bundle carries no build-machine paths', () => {
 
 test('the deploy configuration carries the production custom domains only', () => {
   const source = readFileSync('wrangler.jsonc', 'utf8');
-  assert.equal(JSON.parse(source.replace(/^\s*\/\/.*$/gm, '')).workers_dev, false, 'the developer subdomain stays off');
+  const committed = JSON.parse(source.replace(/^\s*\/\/.*$/gm, ''));
+  assert.equal(committed.workers_dev, false, 'the developer subdomain stays off');
   const config = readJson('dist/server/wrangler.json');
   assert.equal(config.workers_dev, false);
-  assert.equal(config.preview_urls, true, 'a preview version needs a URL of its own');
+  // The committed value is the only place the preview switch is decided, so the
+  // test follows it: a preview address is public on the account's shared Workers
+  // subdomain unless Cloudflare Access protects it, and SETUP.md carries the
+  // owner step. Turning it back on is a one-line change that this test reads.
+  assert.equal(typeof committed.preview_urls, 'boolean', 'the preview setting is stated rather than inherited from a default');
+  assert.equal(config.preview_urls, committed.preview_urls, 'the built configuration follows the committed preview setting');
   const patterns = (config.routes ?? []).map((route) => route.pattern).sort();
   assert.deepEqual(patterns, ['vidoxlabs.com', 'vidoxlabs.dev', 'www.vidoxlabs.com', 'www.vidoxlabs.dev']);
   assert.ok((config.routes ?? []).every((route) => route.custom_domain === true), 'each host is a custom domain');

@@ -5,19 +5,19 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 2 of 10 (transport security) done; starting step 3 (preview URLs). Branch
+Step 3 of 10 (preview URLs) done; starting step 4 (Workers Builds readiness). Branch
 `slice-10-finish`, pull request #10, currently a draft. Nothing is merged: `main` still holds
 the initial commit.
 
-Last pushed commit: `500d2f5` — chore: drop the handoff file and fail on conflict markers.
+Last pushed commit: `5abe25e` — fix: scope transport security to the canonical host.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
 ## Checklist
 
 - [x] 1. Cleanup: delete the handoff file, rewrite this record, fail `npm run check` on merge-conflict markers in tracked text files — `500d2f5`
-- [x] 2. Transport security: drop `includeSubDomains` from the header and from its unit test — this commit
-- [ ] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps
+- [x] 2. Transport security: drop `includeSubDomains` from the header and from its unit test — `5abe25e`
+- [x] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps — this commit
 - [ ] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2
 - [ ] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8
 - [ ] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test
@@ -28,9 +28,10 @@ names the commit its work landed in rather than the commit that records it.
 
 ## Next step
 
-Work step 3: set `preview_urls` to `false` in `wrangler.jsonc`, point the route test at the
-committed value, and write the owner's Access steps into SETUP.md. Run `CI=1 npm run check`,
-commit, push, then read the Cloudflare Workers Builds documentation for step 4.
+Work step 4: the Cloudflare Workers Builds image is documented without the system libraries
+Playwright's browsers need and without root access, so the deploy default is the prepared
+GitHub Actions workflow; finish the browser install script, pin Node through `.nvmrc`, write
+SETUP.md section 2 and record the dry-run summaries.
 
 ## Owner steps ready
 
@@ -52,9 +53,18 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   not true today: the four hostnames are the only ones this site serves, and a subdomain added
   later for something else would inherit the pin without anyone deciding it.
 
+- Preview URLs (step 3, posted in chat): `preview_urls` is committed as `false`, because an
+  uploaded version gets a public address on the account's shared Workers subdomain unless
+  Cloudflare Access protects it. The recommended path is to enable Access for previews,
+  limited to the owner's email, and then flip the one line to `true`; leaving it off is the
+  alternative, and production is unaffected either way.
+
 ## Open owner questions
 
-Initially empty; each entry names the options and the recommendation.
+- Redirect path handling (step 5): the canonical-host rule sends every alternate host to the
+  home page. Options are (a) keep the home-page redirect, (b) keep the request path and drop
+  the query string, (c) keep both path and query. Recommendation: (b), with the reasoning in
+  section 5 of this record.
 
 ## Earlier decisions (slices 1 to 10)
 

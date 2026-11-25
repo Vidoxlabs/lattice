@@ -39,6 +39,25 @@ DNS are owner actions.
       pattern entries, so this is the only form that keeps the redirect working. If
       host-based patterns ever become supported, switching saves those invocations.
 
+### Preview URLs and Cloudflare Access
+
+A preview build uploads a version, and a version gets its own address on the account's
+shared Workers subdomain unless Cloudflare Access stands in front of it. This repository
+therefore commits `"preview_urls": false`: a branch build still creates a version you can
+inspect in the dashboard, but that version has no public address.
+
+- [ ] Recommended: open the Worker in the dashboard, then **Settings → Domains & Routes →
+      Preview URLs**, and enable Cloudflare Access for previews with one policy that allows
+      your own email address and nobody else.
+- [ ] Then turn the addresses back on: set `preview_urls` to `true` in `wrangler.jsonc`. That
+      one line is the whole change; the next build applies it, and reviewers can open a
+      branch preview.
+- [ ] If you would rather not run Access, leave it at `false`. Production is unaffected, and
+      a version is still there for you to inspect.
+- [ ] A route test (`tests/routes/deploy-config.test.mjs`) pins whichever value is committed
+      and fails if the source file and the built configuration disagree, so the switch can
+      only be flipped deliberately.
+
 ## 3. Deploy hook in the documentation repository
 
 - [ ] Create a deploy hook URL for the Worker and store it as `LATTICE_DEPLOY_HOOK_URL` in
@@ -91,8 +110,8 @@ The defaults keep cloud models off, so no provider key is needed for the site to
       deploy attaches `vidoxlabs.com`, `www.vidoxlabs.com`, `vidoxlabs.dev` and
       `www.vidoxlabs.dev` as custom domains; that is a deploy-time action and it also
       creates the DNS records. Do not pre-create conflicting records.
-- [ ] The developer subdomain stays off and preview URLs stay on, so a version preview has
-      an address of its own without claiming a production name.
+- [ ] The developer subdomain stays off, so the site answers only on the four custom
+      domains. Preview addresses follow the setting in section 2.
 - [ ] After the first production deploy, submit `https://vidoxlabs.com/sitemap.xml` in the
       search consoles you use. The sitemap is generated from the published routes, so it
       needs no maintenance.

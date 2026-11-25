@@ -5,7 +5,12 @@
   "compatibility_date": "2026-11-25",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
-  "preview_urls": true,
+  // Off until Cloudflare Access protects preview addresses. An uploaded preview
+  // version otherwise gets a public address on the account's shared Workers
+  // subdomain, which a branch build would publish without anyone deciding to.
+  // Turn it back on (this one line) once Access is enabled for previews; SETUP.md
+  // carries the owner steps and a route test pins whichever value is committed.
+  "preview_urls": false,
   // Production only. `wrangler versions upload` publishes a preview version and
   // does not attach routes, so a preview build never claims these hostnames.
   "routes": [
