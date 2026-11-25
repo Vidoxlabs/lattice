@@ -4,15 +4,15 @@ Public-safe running record for the agent continuing this backlog. Update it in t
 
 ## Current slice and branch
 
-Slice 6 (diagrams) on `slice-06-diagrams`, stacked on `slice-05-pipeline`.
+Slice 7 (docs ingestion) on `slice-07-docs`, stacked on `slice-06-diagrams`.
 
 ## Last pushed commit
 
-`d1a3250` — feat: generate data-driven diagrams and port the orbital hero and family stack.
+`c09739d` — feat: ingest the documentation hub with verified digests and a search index.
 
 ## Next step
 
-Push this branch, open its pull request against `slice-05-pipeline`, watch `check`, then start slice 7 (docs ingestion) from this head: the content loader, navigation with the Vivarium section, source labels, presentation templates, the search index at `src/data/docs-index.json`, ADR-0004 and the disabled enrichment stub.
+Push this branch and open its pull request against `slice-06-diagrams`, then start slice 8 (chat) from this head: the family-package adapter with `TODO(family):` notes, retrieval from the docs index, the mock provider first, the SSE endpoint with rate limit and origin checks, the chat page and dock, tests, ADR-0003. A scheduled reminder at 12:09 ET refreshes the offline snapshot so the hub pages land in it; commit that when it arrives.
 
 ## Defaults taken and open owner questions
 
@@ -25,6 +25,10 @@ Push this branch, open its pull request against `slice-05-pipeline`, watch `chec
 - Worker bundle hygiene: the framework manifest embeds absolute build-machine paths into the generated Worker bundle; `scripts/postbuild.mjs` rewrites them to a neutral root, a route test asserts the bundle carries no build-machine paths, and the whole-tree scan covers exactly what git would publish plus the built output and the fetched-content bundle (local workspace overlays that git excludes are outside the scan and never committed).
 - Visual checks assert structure and token-driven styling in both themes instead of pixel baselines: the diagrams are generated from live upstream data, so any baseline would break on every sync.
 - The videsign ADR texts referenced as guidance for the homepage graphics are not present in the package or the repository at the pinned commit; the published specimens (preview markup, hero CSS, the orbital engine) stand in as the concrete guidance.
+- Docs ingestion scope: the four structural portal components (layout, sidebar navigation, article meta, prose renderer) are ported with lattice CSS on videsign tokens; the decorative portal suite (command palette, code tabs, quickstart grid, citation popover, api rows, copy bar) stays unported and listed for a later visual-polish slice. Syntax highlighting is off because the default highlighter emits inline styles the strict content security policy forbids; code blocks render plainly.
+- Eight upstream documentation pages (bloom's README and three backend pages, capillary's family page, seed's lexicon, videsign's README and design matrix) fail the public-safety scan at their source: they contain the private team vocabulary the needle list forbids. The site renders them as clearly labelled placeholders linking to the upstream file instead. The smallest upstream fix is to scrub those names in the owning repositories; out of scope for this run and noted for the owner.
+- Mermaid blocks render as labelled source with a note (the allowed fallback): wiring a build-time static-SVG mermaid renderer for one block in the corpus was not worth a runtime dependency.
+- The hub's own pages need one GitHub trees call per build; when the unauthenticated rate window is exhausted the corpus falls back to the snapshot, and when no snapshot pages exist either, the hub index renders a clearly labelled notice. A scheduled reminder refreshes the snapshot at the next rate window so the hub pages are committed.
 - Status schema label: mirrors the contract proposed in docs#6 at commit `a2c406b38483efece01a0925e77465f48cc35b58`, labelled a proposed mirror to be reconciled when the upstream schema publishes.
 - The committed status snapshot was captured during the previous session; it is a labelled fallback only (`npm run snapshot:refresh` rewrites it) and was not re-captured to conserve the public API rate budget.
 - Sleep-ban test moved to its own file with plain literals and a self-exclusion; it previously lived inside the no-TypeScript test assembled from pieces.
