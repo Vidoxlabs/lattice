@@ -177,11 +177,34 @@ inspect in the dashboard, but that version has no public address.
 
 Nothing in this block has been executed. Each line is an owner action.
 
-- [ ] Create the deploy token: dashboard, My Profile, API Tokens, Create Custom Token, named
-      `lattice-deploy`, with Workers Scripts: Edit, Workers Routes: Edit, and Zone: Read scoped
-      to both zones. Through the API the same token is `POST /accounts/<account>/tokens` with
-      those three permission groups and the two zone resources. The identifiers are exactly
-      the values this repository cannot hold, so the dashboard is the shorter route.
+- [ ] Create the deploy token through the API, named `lattice-deploy`, with Workers Scripts:
+      Edit, Workers Routes: Edit, and Zone: Read, on both zones and nothing else. This needs a
+      credential allowed to create account tokens; where none exists yet, create this one token
+      once in the dashboard (My Profile, API Tokens, Custom Token) and use the API from then on.
+
+      POST /accounts/<account>/tokens
+      {
+        "name": "lattice-deploy",
+        "policies": [{
+          "effect": "allow",
+          "resources": {
+            "com.cloudflare.api.account.<account>": "*",
+            "com.cloudflare.api.account.zone.<zone>": "*",
+            "com.cloudflare.api.account.zone.<zone>": "*"
+          },
+          "permission_groups": [
+            { "id": "<workers-scripts-edit>" },
+            { "id": "<workers-routes-edit>" },
+            { "id": "<zone-read>" }
+          ]
+        }]
+      }
+
+      `GET /accounts/<account>/tokens/permission_groups` resolves those three ids by name, one
+      key per zone in the resource map. Pipe the response into the secret so the value is never
+      printed, logged or kept in a file:
+
+      ... | jq -r '.result.value' | gh secret set CLOUDFLARE_API_TOKEN --env production
 - [ ] Create the environment and add its two secrets. Both commands prompt for the value and
       neither accepts it on the command line:
 

@@ -46,7 +46,8 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 
 - [ ] Section 1: squash-merge #4, close #1 to #3, then review and squash-merge #10 and close #5
       to #9. Every merge is the owner's.
-- [ ] Section 2, the deploy token and secrets: create the scoped token, then the `production`
+- [ ] Section 2, the deploy token and secrets: create the scoped token through the API and pipe
+      its value straight into the secret, then the `production`
       environment whose deployment branch rule allows `main` alone, holding
       `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, both required and both secrets. Until
       they exist the deploy job is inert.
@@ -59,7 +60,8 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 - [ ] Section 5 and section 6: the chat and site variables, the `CHAT_API_KEY` secret, and the
       rate-limit binding with its account-scoped identifier.
 - [ ] Section 8: the audit found both zones active in one account, three of the four hostnames
-      clear and one conflicting record on the preview host to delete first; then the four
+      clear and one conflicting record on the preview host that you delete at publish time;
+      then the four
       `curl -sI` checks and the sitemap submission.
 - [ ] Section 11: allow Actions to create pull requests, add the `LIVE_SMOKE_ENABLED` variable,
       and confirm the maintainers team.
