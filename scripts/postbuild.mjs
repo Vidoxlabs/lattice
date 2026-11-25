@@ -4,6 +4,8 @@ import { headersFileBody } from '../src/lib/security-headers.mjs';
 import { collectStyleHashes } from '../src/lib/csp-hashes.mjs';
 import { builtRoutes, robotsTxt, sitemapXml } from '../src/lib/discoverability.mjs';
 import { siteOrigin } from '../src/lib/site.mjs';
+import { llmsFull, llmsIndex } from '../src/lib/llms.mjs';
+import { getCatalog } from '../src/lib/repository-data.mjs';
 
 // The Cloudflare build emits one of two deploy configurations:
 // - a full Worker deploy (dist/server/wrangler.json, main entry) when at least
@@ -101,3 +103,12 @@ const routes = builtRoutes('dist/client');
 writeFileSync('dist/client/sitemap.xml', sitemapXml(routes, origin));
 writeFileSync('dist/client/robots.txt', robotsTxt(origin));
 console.log(`Wrote the sitemap and robots file for ${routes.length} routes on ${origin}.`);
+
+// The language-model files come from the same verified corpus and repository
+// data the pages render, so a docs sync updates them without an edit.
+const pipeline = JSON.parse(readFileSync('src/data/generated/build-pipeline.json', 'utf8'));
+const { repositories } = await getCatalog();
+const llmsInput = { pages: pipeline.docsPages, repositories, origin, status: pipeline.status, snapshot: pipeline.snapshot };
+writeFileSync('dist/client/llms.txt', llmsIndex(llmsInput));
+writeFileSync('dist/client/llms-full.txt', llmsFull({ ...llmsInput }));
+console.log(`Wrote llms.txt and llms-full.txt for ${pipeline.docsPages.length} documentation pages.`);

@@ -8,8 +8,8 @@ the commit that carries this file is the next one on the branch.
 
 ## Status
 
-Step 3 of the slice 9 and 10 backlog. Branch `slice-09-seo`, last pushed commit
-`34f6838` (feat: apply a strict content security policy to pages and Worker routes),
+Step 4 of the slice 9 and 10 backlog. Branch `slice-09-seo`, last pushed commit
+`8aa33cf` (feat: publish canonical links, a generated sitemap and a robots file),
 branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 
 ## Checklist
@@ -17,8 +17,8 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 - [x] Step 0: resume and record — `4c9d59f` keeps the unfinished edits, `951e7a1` starts slice 9
 - [x] Step 1: Worker bundle path cleanup, independent of the checkout folder name — `d478c5a`
 - [x] Step 2: security headers and strict CSP on static and Worker responses — `34f6838`
-- [x] Step 3: canonical links, generated sitemap and robots — this commit
-- [ ] Step 4: generated `llms.txt` and `llms-full.txt`
+- [x] Step 3: canonical links, generated sitemap and robots — `8aa33cf`
+- [x] Step 4: generated `llms.txt` and `llms-full.txt` — this commit
 - [ ] Step 5: production-only custom-domain routes
 - [ ] Step 6: Open Graph images and tags
 - [ ] Step 7: budget checks, then the slice 9 pull request goes ready for review
@@ -28,10 +28,10 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 
 ## Next step
 
-Step 4: generate `llms.txt` and `llms-full.txt` at build time from the same verified
-docs corpus and repository data the pages use, with every entry linking its source
-repository and head, and verification-failed pages listed as placeholders only. Run the
-public-safety scan over both outputs, add tests, then `CI=1 npm run check`, commit and push.
+Step 5: add the production-only custom-domain routes for the two company domains and their
+`www` hosts to `wrangler.jsonc`, keep `workers_dev: false`, confirm against the current
+Cloudflare documentation that a versions upload and the preview path ignore routes, and
+extend the deploy-config route test. Configuration only: no deploy, no DNS change.
 
 ## Open pull requests
 
