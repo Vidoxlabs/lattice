@@ -108,8 +108,8 @@ test('a verified page is published with the neutral mapping, title and headings 
   const sha256 = createHash('sha256').update(raw).digest('hex');
   const manifest = { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256 }] } } };
   const fetchImpl = async (url) => url.includes('sources/seed/README.md')
-    ? { ok: true, status: 200, text: async () => raw }
-    : { ok: false, status: 404, text: async () => '' };
+    ? { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) }
+    : { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
   const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
   const page = pages.find((entry) => entry.slug === 'seed');
   assert.equal(page.kind, 'source');
@@ -124,8 +124,8 @@ test('the mapping runs after verification: a digest mismatch still renders a pla
   const raw = '# Peer sync\n\nsibling\n';
   const manifest = { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256: 'f'.repeat(64) }] } } };
   const fetchImpl = async (url) => url.includes('sources/seed/README.md')
-    ? { ok: true, status: 200, text: async () => raw }
-    : { ok: false, status: 404, text: async () => '' };
+    ? { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) }
+    : { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
   const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
   assert.equal(pages.find((entry) => entry.slug === 'seed').kind, 'placeholder');
 });
