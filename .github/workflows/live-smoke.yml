@@ -10,7 +10,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 */6 * * *'
-  push:
+  # After the deploy finishes, not on the push: a smoke that starts with the
+  # build checks the previous version.
+  workflow_run:
+    workflows: [deploy]
+    types: [completed]
     branches: [main]
 
 permissions:
@@ -23,7 +27,9 @@ concurrency:
 jobs:
   smoke:
     name: smoke
-    if: vars.LIVE_SMOKE_ENABLED == 'true'
+    if: >-
+      vars.LIVE_SMOKE_ENABLED == 'true' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -35,8 +41,9 @@ jobs:
           failures=0
           fail() { echo "::error title=live smoke::$1"; failures=$((failures + 1)); }
 
-          # A push to main deploys after this run starts, so wait for the site to
-          # answer before checking it. Other triggers check immediately.
+          # A deploy that just finished can still be propagating, and the
+          # scheduled and manual runs may catch a rollout in progress, so wait
+          # for the site to answer before checking it.
           ready=0
           for attempt in $(seq 1 12); do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$ORIGIN/api/status" || true)

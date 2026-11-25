@@ -14,7 +14,7 @@ answered provisionally, and the verification receipt for each step.
 3. Section 8 — the four hostnames and the sitemap.
 4. Section 5 and section 6 — the variables, the one chat secret and the rate-limit binding.
 5. Section 12 — run the live smoke once by hand, then switch it on.
-6. Section 3 — the deploy hook, and today's fallback for a rebuild after a docs sync.
+6. Section 3 — how the site learns that the documentation changed, and the daily rebuild.
 7. Section 13 — the documentation pull request that would replace that fallback.
 
 ## 1. Merge plan and the publish sequence
@@ -50,15 +50,15 @@ Two squash merges, in two rounds. Nothing else merges.
 ### Then publish, in this order
 
 - [ ] Enable Cloudflare Access for preview addresses, or leave previews off (section 2).
-- [ ] Turn on the deploy path: the account token for the committed GitHub Actions workflow
-      (section 2, Path A), or Workers Builds if its first build proves the browser stage
-      (section 2, Path B).
+- [ ] Turn on the deploy path: the `production` environment with both account secrets for the
+      committed GitHub Actions workflow (section 2, Path A), or Workers Builds if its first build
+      proves the browser stage (section 2, Path B).
 - [ ] Confirm the DNS records and attach the four hostnames (section 8).
 - [ ] Set the variables, the one chat secret and the rate-limit binding (sections 5 and 6).
 - [ ] Watch the first production build finish, and open the site.
 - [ ] Run the live smoke once by hand, then set `LIVE_SMOKE_ENABLED` to `true` (section 12).
-- [ ] Answer docs#6's three questions, or leave it a proposal and accept the daily rebuild
-      fallback in section 3.
+- [ ] Answer docs#6's three questions, or leave it a proposal and rely on the daily scheduled
+      rebuild in section 3.
 
 ## 2. Workers Builds, and the deploy path this repository takes
 
@@ -81,17 +81,27 @@ right answer the moment a first build there proves the browser stage.
 
 ### Path A: deploy from GitHub Actions (the committed default)
 
-- [ ] Add the repository secret `CLOUDFLARE_API_TOKEN`: a user API token with Workers Scripts
-      edit, Workers Routes edit for both zones, and Zone read for both zones.
-- [ ] Add the repository variable `CLOUDFLARE_ACCOUNT_ID` only if the token can reach more
-      than one account. It is an identifier, so it belongs in the variable and never in a file.
+The deploy job runs in a GitHub environment named `production`, and both account values are
+secrets inside it. An environment secret is only visible to a job that names the environment, so
+a workflow added later cannot read them by accident.
+
+- [ ] Settings → Environments → New environment, named `production`, with a deployment branch
+      rule that allows `main` and nothing else.
+- [ ] Add two environment secrets to it, both required:
+      `CLOUDFLARE_API_TOKEN`, a user API token with Workers Scripts edit, Workers Routes edit for
+      both zones and Zone read for both zones; and `CLOUDFLARE_ACCOUNT_ID`, the account
+      identifier. The second is a secret, never a repository variable: an identifier in a
+      variable is readable by every workflow and every reader of the settings page.
 - [ ] Merge the pull request first: a `workflow_run` trigger fires only for a workflow that
       exists on the default branch.
-- [ ] Then every push to `main` runs `check` in full, uploads the built output, and `deploy`
-      publishes exactly that output with `npx wrangler deploy --config dist/server/wrangler.json`.
-      No build happens twice and no browser stage is skipped.
-- [ ] With no token, the deploy job prints a notice, exits green and publishes nothing. It
-      never deploys without a token and never fails `check` for a missing one.
+- [ ] Then a run of `check` on `main` — from a push, the daily schedule, a manual run or the
+      documentation repository's dispatch — uploads the built output, and `deploy` publishes
+      exactly that output with `npx wrangler deploy --config dist/server/wrangler.json`. No build
+      happens twice and no browser stage is skipped.
+- [ ] With either value missing, the deploy job prints a notice, exits green and publishes
+      nothing. It never deploys without both and never fails `check` for a missing one.
+- [ ] If the environment also requires a reviewer, the deploy waits for that approval. That is a
+      valid setting, and it makes the first publish a manual step.
 
 ### Path B: Workers Builds
 
@@ -150,27 +160,27 @@ inspect in the dashboard, but that version has no public address.
       and fails if the source file and the built configuration disagree, so the switch can
       only be flipped deliberately.
 
-## 3. The deploy hook, and how the site learns that the documentation changed
+## 3. How the site learns that the documentation changed
 
-The site rebuilds when something asks it to. Two callers can do that, and only one of them
-exists yet.
+The site rebuilds on its own: `check` carries a daily schedule, so the pages, the sitemap, both
+language-model files and the diagrams are regenerated once a day whether or not anything asks.
+That is the current answer while the documentation repository cannot notify it. The intended
+answer is one event, and no deploy hook exists anywhere in this repository.
 
-- [ ] Create a deploy hook for the Worker and keep its URL as a secret named
-      `LATTICE_DEPLOY_HOOK_URL`. The URL is a credential: it is never committed, printed or
-      pasted into a pull request.
+- [ ] Nothing to create today. There is no deploy hook to hold and no second secret to copy.
 - [ ] The intended caller is `Vidoxlabs/docs` after a sync, once docs#6 lands and its three
-      questions are answered. That pull request is still a proposal, so nothing calls the hook
+      questions are answered. That pull request is still a proposal, so nothing sends the event
       today.
-- [ ] Until then the fallback is `.github/workflows/scheduled-rebuild.yml` in this repository: it
-      runs daily and posts to the same hook. To turn it on, add `LATTICE_DEPLOY_HOOK_URL` as an
-      Actions secret here. With no secret it prints a notice and exits green, so committing it
-      changed nothing. This deliberately keeps a copy of the hook in a second repository, which
-      is the cost of the site updating without docs#6; remove the workflow, and the secret with
-      it, as soon as the documentation repository notifies the site on its own.
-- [ ] With neither caller configured, the site updates on the next build of any kind, including
-      a push to `main`. Its pages, sitemap, both language-model files and diagrams come from
-      whatever the last build read, so a stale site is a missing rebuild rather than a wrong
-      page.
+- [ ] When it lands: the docs workflow posts a repository dispatch to `Vidoxlabs/lattice` with
+      event type `docs-sync`, using a token held in the docs repository as
+      `LATTICE_DISPATCH_TOKEN` (contents write on this repository, nothing else). `check` accepts
+      that event on the default branch, runs the full check, and `deploy` publishes on success,
+      exactly as it does for a push.
+- [ ] The event carries nothing but its type: no branch name, no path, no payload to validate.
+      The site rebuilds from what the last sync published, so the event only has to say "look
+      again".
+- [ ] Until then the daily schedule is the whole mechanism, and a push to `main` also rebuilds.
+      A stale site is a missed run, not a wrong page.
 
 ## 4. Optional read token
 
@@ -200,9 +210,9 @@ Actions secret or variable is set in this repository under **Settings → Secret
 | `GITHUB_READ_TOKEN` | Build secret | unset | Section 4; a build secret in Workers Builds, or an Actions secret on the deploy path, or an environment variable for a local build. |
 | `ENRICH_ENABLED` | Worker variable | `0` | Committed. Leave at `0`; ADR-0004 records why. |
 | `ENRICH_MAX_USD` | Worker variable | `0` | Committed. A positive cap is required before an enabled run does anything. |
-| `CLOUDFLARE_API_TOKEN` | Actions secret | unset | Section 2, Path A. Deploy only. |
-| `CLOUDFLARE_ACCOUNT_ID` | Actions variable | unset | Section 2, Path A, only when the token reaches more than one account. |
-| `LATTICE_DEPLOY_HOOK_URL` | Docs repository secret, and an Actions secret here only for the fallback | unset | Section 3 and section 13. The docs repository holds it; this repository holds a copy only while the daily fallback runs. |
+| `CLOUDFLARE_API_TOKEN` | Actions secret in the `production` environment, required | unset | Section 2, Path A. Deploy only. |
+| `CLOUDFLARE_ACCOUNT_ID` | Actions secret in the `production` environment, required | unset | Section 2, Path A. A secret and never a variable, so only the deploy job can read it. |
+| `LATTICE_DISPATCH_TOKEN` | Docs repository secret | unset | Section 3 and section 13. It lives in `Vidoxlabs/docs` and never here, and it exists only after docs#6 lands. |
 
 The defaults keep cloud models off, so the site runs with no provider key at all: `mock`
 answers deterministically from the documentation index, and that is what every test and
@@ -322,6 +332,8 @@ in `wrangler.jsonc`, so a deploy attaches them and nothing else does.
       reopen the pull request, before treating that pull request as reviewed.
 - [ ] Add the repository variable `LIVE_SMOKE_ENABLED` with the value `true` after the first
       production deploy. Section 12 covers what it turns on.
+- [ ] The `production` environment from section 2 is the other setting this repository expects:
+      both account secrets live there, and its deployment branch rule allows `main` alone.
 - [ ] No bypass is needed for the refresh: its pull request goes through the same rules and the
       same required check as any other.
 
@@ -338,9 +350,10 @@ foreign origin, which the origin rule rejects first.
       workflow, and expect every check to pass.
 - [ ] Then set the repository variable `LIVE_SMOKE_ENABLED` to `true`. Until then its only job
       is skipped, which keeps a repository without a deployment quiet.
-- [ ] It then runs every six hours, on demand, and after each push to `main`. The push run waits
-      for the deploy to answer before it checks anything, so a deploy that is still uploading
-      does not report a failure.
+- [ ] It then runs every six hours, on demand, and after each successful deploy on `main` — not
+      on the push, because a smoke that starts with the build checks the version that is still
+      live. It waits for the site to answer before checking anything, so a deploy that is still
+      propagating does not report a failure.
 
 ## 13. Upstream items for you
 
@@ -357,9 +370,10 @@ Each one is a decision in another repository; this repository works around all t
   - `Vidoxlabs/videsign`: `README.md`, `DESIGN.md`
 - [ ] Design-system token naming: the aliases in `scripts/sync-videsign.mjs` exist because
       of the naming upstream. Neutral names there remove the mapping.
-- [ ] docs#6: answer its three questions in the pull request. On a yes to all three, the
-      site's status schema is reconciled with the published one, the deploy hook in section 3
-      starts rebuilding the site after each sync, and the daily fallback can be deleted.
+- [ ] docs#6: answer its three questions in the pull request. On a yes to all three, the site's
+      status schema is reconciled with the published one, the docs workflow posts the
+      `docs-sync` dispatch described in section 3 after each sync, and the daily schedule becomes
+      a safety net rather than the only trigger.
 - [ ] The word "family": `docs/naming-inventory.md` lists every group, an owner for each, a
       neutral vocabulary and the order to change in — videsign names, then docs prose, then the
       site's own copy. No visible copy changed in this run.

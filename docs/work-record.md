@@ -5,8 +5,10 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-All ten steps done. Branch `slice-10-finish`, pull request #10, ready for review. Nothing is
-merged: `main` still holds the initial commit.
+All ten steps done, plus one follow-up that replaced the deploy hook with a repository dispatch, a
+daily schedule on `check`, an environment-scoped deploy and a live smoke that follows the deploy.
+Branch `slice-10-finish`, pull request #10, ready for review. Nothing is merged: `main` still
+holds the initial commit.
 
 Last pushed commit: `1fed691` — docs: finish the owner setup and the deployment record.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
@@ -27,7 +29,8 @@ wrangler dry runs exit 0 without account access; their summary is in the deploy-
 - [x] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test — `f109d20`
 - [x] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it — `b9ce248`
 - [x] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed — `79f7f62`
-- [x] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body — this commit
+- [x] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body — `1fed691`, `286be25`
+- [x] follow-up: the deploy hook removed for a `docs-sync` dispatch and a daily `check`; both account values are secrets in a `production` environment limited to `main`; the live smoke follows the deploy; no checkout keeps a credential — this commit
 
 ## Next step
 
@@ -41,15 +44,15 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 
 - [ ] Section 1: squash-merge #4, close #1 to #3, then review and squash-merge #10 and close #5
       to #9. Every merge is the owner's.
-- [ ] Section 2, the deploy token: `CLOUDFLARE_API_TOKEN` as an Actions secret (and
-      `CLOUDFLARE_ACCOUNT_ID` only if the token reaches more than one account). Until then the
-      deploy job is inert.
+- [ ] Section 2, the deploy secrets: a `production` environment whose deployment branch rule
+      allows `main` alone, holding `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, both
+      required and both secrets. Until they exist the deploy job is inert.
 - [ ] Section 2, previews: enable Cloudflare Access for the Worker's preview addresses, limited to
       the owner's email, then set `preview_urls` back to `true`.
 - [ ] Section 2, alternative: connect Workers Builds with the production and preview commands if
       a first build there proves the browser stage.
-- [ ] Section 3: create the deploy hook and decide whether the daily fallback runs here until
-      docs#6 notifies the site itself.
+- [ ] Section 3: nothing to create today. The daily schedule rebuilds the site; once docs#6 lands,
+      the docs repository sends a `docs-sync` dispatch, and its token lives there.
 - [ ] Section 5 and section 6: the chat and site variables, the `CHAT_API_KEY` secret, and the
       rate-limit binding with its account-scoped identifier.
 - [ ] Section 8: both zones in one account, conflicting records cleared, the four `curl -sI`
@@ -72,6 +75,21 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   Cloudflare Access protects it. The recommended path is to enable Access for previews,
   limited to the owner's email, and then flip the one line to `true`; leaving it off is the
   alternative, and production is unaffected either way.
+- Deploy triggers (follow-up): `check` also runs on a daily schedule and on manual dispatch, and
+  it accepts a `docs-sync` repository dispatch; `deploy` follows any successful `check` on `main`
+  from those triggers as well as from a push. The daily run is what rebuilds the site after a docs
+  sync until the docs repository can send the event, so no deploy hook and no second copy of a
+  credential is needed anywhere.
+- Deploy secrets (follow-up): both account values are required secrets in a GitHub environment
+  named `production`, restricted to `main`, rather than repository secrets or variables. A
+  repository variable is readable by every workflow and visible to anyone who can see the
+  settings page, which is the wrong home for an account identifier.
+- Checkout credentials (follow-up): every `actions/checkout` sets `persist-credentials: false`.
+  The one job that pushes a branch authenticates inside the pushing step, so no later step in any
+  workflow can borrow the token from the checkout.
+- Live smoke (follow-up): it follows a successful `deploy` rather than a push, because a smoke
+  that starts with the build checks the version that is still live. The schedule and the manual
+  run stay, and a failed deploy never triggers a smoke.
 - Deploy path (step 4, posted in chat): the Cloudflare Workers Builds image documents an
   Ubuntu 24.04 package list without the libraries Chromium and WebKit link against and
   documents no root access, while Playwright installs those libraries through the system
@@ -119,7 +137,8 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   output and fetched content) is the enforced gate and passes; the team scan was run on every
   diff and reported only public hostnames and reserved example names.
 - Workflows (step 7): `snapshot-refresh.yml` and `live-smoke.yml` join `check.yml`,
-  `codeql.yml` and the new `deploy.yml`. Every action is pinned to a commit with its version
+  `codeql.yml` and the new `deploy.yml`; a fifth file, `scheduled-rebuild.yml`, was removed in
+  the follow-up once the daily schedule lived on `check`. Every action is pinned to a commit with its version
   beside it, every job states a timeout and its own permissions, and
   `tests/unit/workflows.test.mjs` parses all five with `yaml` (now a direct development
   dependency rather than a transitive one) and asserts the triggers, the permissions ceiling,
@@ -131,10 +150,9 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   ever prompted. A push to `main` waits for the deploy before checking.
 - Self-update path (step 8, posted in chat): docs#6 still has no answers — zero comments and
   only an unrelated bot review — so nothing in the docs repository changed and no commit was
-  made there. The fallback is a daily `scheduled-rebuild.yml` that posts to the same deploy hook
-  from this repository, inert with a notice while `LATTICE_DEPLOY_HOOK_URL` is unset here.
-  SETUP.md section 3 records that this deliberately keeps the hook in a second repository and
-  that the workflow and its secret go away once docs#6 notifies the site.
+  made there. The rebuild trigger is the daily schedule on `check`, and the notification the docs
+  repository will send is a `docs-sync` repository dispatch, so no deploy hook exists to hold in
+  two places. SETUP.md section 3 records both.
 - Naming inventory (step 9, posted in chat): `docs/naming-inventory.md` separates the ordinary
   vocabulary (`font-family`, the typography tokens, "page family") from the internal group name,
   counts both over every tracked file and over the built output, names an owner per group, and
@@ -168,10 +186,10 @@ small follow-up change, named with each entry.
   Options: (a) keep the home-page redirect the previous spec described, (b) as taken, (c) keep
   the path and the query. Recommendation: (b). Reverting to (a) is one line in
   `src/lib/host.mjs` plus its two tests.
-- Scheduled rebuild (step 8): with docs#6 unanswered, a daily job posts to the deploy hook from
-  this repository. Options: (a) as taken; (b) no scheduled rebuild, so the site updates on the
-  next build of any kind; (c) wait for docs#6. Recommendation: (a) while docs#6 stays open,
-  because a stale site is otherwise invisible.
+- Rebuild after a docs sync (follow-up): with docs#6 unanswered, `check` runs daily, so the site
+  rebuilds without anything asking it to. Options: (a) as taken; (b) no scheduled run, so the site
+  updates on the next build of any kind; (c) wait for docs#6. Recommendation: (a) while docs#6
+  stays open, because a stale site is otherwise invisible.
 - The word "family" (step 9): no visible copy changed. Options: (a) rename the site's own copy
   now, (b) one org-wide pass in the order the inventory sets, (c) keep the word. Recommendation:
   (b), with the inventory as the plan.

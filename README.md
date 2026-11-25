@@ -61,12 +61,17 @@ hand-maintains repository state. See [CONTRIBUTING.md](CONTRIBUTING.md) and
 Production deploys when `check` passes on `main`. The workflow at
 `.github/workflows/deploy.yml` publishes the exact output that run verified, so nothing reaches
 the site without the full check, browser stage included, having passed on the same bytes. It
-stays inert until the account token exists as a repository secret, and it never deploys without
-one.
+runs in a `production` environment limited to the default branch, and it stays inert until both
+account secrets exist there.
 
 | Trigger | Build | Deploy |
 | --- | --- | --- |
-| a successful `check` on `main` | the run that already passed | `npx wrangler deploy --config dist/server/wrangler.json` |
+| a push, the daily schedule, a manual run or the docs dispatch, then a successful `check` on `main` | the run that already passed | `npx wrangler deploy --config dist/server/wrangler.json` |
+
+`check` also runs on a daily schedule, so the pages, the sitemap and both language-model files
+are regenerated whether or not anything asks. Once the documentation repository can notify the
+site, it posts a `docs-sync` repository dispatch and that becomes the precise trigger; no deploy
+hook exists anywhere in this repository.
 
 The build produces static assets plus one Worker script. The Worker applies the canonical-host
 rule and the response headers ahead of the framework handler, because the framework serves a
@@ -83,10 +88,10 @@ build proves the browser stage: the published build image does not document the 
 Chromium and WebKit need, or root access to install them. SETUP.md carries both paths, the exact
 commands, the variables, and what a successful build log looks like.
 
-Everything the owner has to do — the merge order, the deploy path, Access for previews, the
-variables and the one chat secret by name, the rate-limit binding, the domains and the
-verification commands, the live smoke, the deploy hook and the decisions that belong upstream —
-is in [SETUP.md](SETUP.md). [docs/work-record.md](docs/work-record.md) is the running record, and
+Everything the owner has to do — the merge order, the deploy path and its `production`
+environment with two account secrets, Access for previews, the variables and the one chat secret
+by name, the rate-limit binding, the domains and the verification commands, the live smoke, the
+documentation notification and the decisions that belong upstream — is in [SETUP.md](SETUP.md). [docs/work-record.md](docs/work-record.md) is the running record, and
 [docs/naming-inventory.md](docs/naming-inventory.md) is the open naming proposal.
 
 ## Links

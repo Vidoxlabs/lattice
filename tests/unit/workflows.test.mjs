@@ -28,8 +28,8 @@ function triggers(workflow) {
 
 const loaded = workflows();
 
-test('the workflow set is exactly the six this deployment relies on', () => {
-  assert.deepEqual([...loaded.keys()], ['check.yml', 'codeql.yml', 'deploy.yml', 'live-smoke.yml', 'scheduled-rebuild.yml', 'snapshot-refresh.yml']);
+test('the workflow set is exactly the five this deployment relies on', () => {
+  assert.deepEqual([...loaded.keys()], ['check.yml', 'codeql.yml', 'deploy.yml', 'live-smoke.yml', 'snapshot-refresh.yml']);
 });
 
 test('every job has a timeout and least-privilege permissions', () => {
@@ -50,10 +50,8 @@ test('every job has a timeout and least-privilege permissions', () => {
 test('every action is pinned to a full commit with a version comment beside it', () => {
   for (const [name, { source }] of loaded) {
     const lines = source.split('\n').filter((line) => /^\s*(?:- )?uses:/.test(line));
-    // Two workflows need nothing but curl, so they legitimately use no action.
-    if (name === 'live-smoke.yml' || name === 'scheduled-rebuild.yml') {
-      assert.deepEqual(lines, [], `${name} keeps to the runner shell`);
-    }
+    // The live smoke needs nothing but curl, so it legitimately uses no action.
+    if (name === 'live-smoke.yml') assert.deepEqual(lines, [], 'the live smoke keeps to the runner shell');
     else assert.ok(lines.length > 0, `${name}: no actions found`);
     for (const line of lines) {
       const pinned = /^\s*(?:- )?uses:\s+([\w.-]+\/[\w./-]+)@([0-9a-f]{40})\s+#\s*(v\d+(?:\.\d+)*)\s*$/.exec(line);
@@ -62,11 +60,28 @@ test('every action is pinned to a full commit with a version comment beside it',
   }
 });
 
-test('check runs on every push and pull request', () => {
+test('every checkout keeps no credentials in the workspace', () => {
+  let checkouts = 0;
+  for (const [name, { workflow }] of loaded) {
+    for (const [jobName, job] of Object.entries(workflow.jobs)) {
+      for (const step of job.steps) {
+        if (!String(step.uses ?? '').startsWith('actions/checkout')) continue;
+        checkouts += 1;
+        assert.equal(step.with?.['persist-credentials'], false, `${name}:${jobName} leaves the token in the checkout`);
+      }
+    }
+  }
+  assert.ok(checkouts >= 4, 'every workflow that checks out declares it');
+});
+
+test('check runs on every push, pull request, the daily schedule and a docs dispatch', () => {
   const { workflow } = loaded.get('check.yml');
   const on = triggers(workflow);
   assert.ok('push' in on, 'a push triggers the check');
   assert.ok('pull_request' in on, 'a pull request triggers the check');
+  assert.deepEqual(on.schedule, [{ cron: '15 6 * * *' }], 'the site rebuilds once a day');
+  assert.ok('workflow_dispatch' in on, 'a manual run is possible');
+  assert.deepEqual(on.repository_dispatch, { types: ['docs-sync'] }, 'the docs sync arrives as a dispatch');
   assert.deepEqual(workflow.permissions, { contents: 'read' });
   const steps = workflow.jobs.check.steps;
   // The browser stage installs its own engines: a separate install step would
@@ -74,11 +89,11 @@ test('check runs on every push and pull request', () => {
   assert.equal(steps.some((step) => String(step.run ?? '').includes('playwright install')), false);
   const artifact = steps.find((step) => String(step.uses ?? '').startsWith('actions/upload-artifact'));
   assert.ok(artifact, 'the verified output is uploaded for the deploy job');
-  assert.equal(artifact.if, "github.event_name == 'push' && github.ref == 'refs/heads/main'");
+  assert.equal(artifact.if, "github.ref == 'refs/heads/main'", 'only a default-branch run offers its output');
   assert.equal(artifact.with.name, 'lattice-dist');
 });
 
-test('deploy follows a successful check on main and stays inert without a token', () => {
+test('deploy follows a successful default-branch check from any trigger, in the production environment', () => {
   const { workflow, source } = loaded.get('deploy.yml');
   const on = triggers(workflow);
   assert.deepEqual(on.workflow_run.workflows, ['check']);
@@ -86,10 +101,23 @@ test('deploy follows a successful check on main and stays inert without a token'
   assert.deepEqual(on.workflow_run.branches, ['main']);
   assert.deepEqual(workflow.permissions, { contents: 'read', actions: 'read' });
   const deploy = workflow.jobs.deploy;
+  assert.equal(deploy.environment?.name, 'production', 'the deploy secrets live in a limited environment');
   assert.match(deploy.if, /conclusion == 'success'/);
-  assert.match(deploy.if, /event == 'push'/);
-  assert.match(source, /if \[ -z "\$\{CLOUDFLARE_API_TOKEN\}" \]/, 'an absent token skips the deploy instead of failing or publishing');
+  assert.match(deploy.if, /head_branch == 'main'/);
+  for (const event of ['push', 'schedule', 'workflow_dispatch', 'repository_dispatch']) {
+    assert.ok(deploy.if.includes(`"${event}"`), `a ${event} check can deploy`);
+  }
+  assert.match(source, /if \[ -z "\$\{CLOUDFLARE_API_TOKEN\}" \] \|\| \[ -z "\$\{CLOUDFLARE_ACCOUNT_ID\}" \]/, 'both secrets are required, and an absent one skips instead of publishing');
+  assert.match(source, /secrets\.CLOUDFLARE_ACCOUNT_ID/);
+  assert.doesNotMatch(source, /vars\.CLOUDFLARE_ACCOUNT_ID/, 'the account identifier is a secret, never a variable');
   assert.match(source, /npx wrangler deploy --config dist\/server\/wrangler\.json/, 'the host-entry configuration is deployed');
+});
+
+test('the documentation repository notifies the site with a dispatch, and no deploy hook exists', () => {
+  for (const [name, { source }] of loaded) {
+    assert.doesNotMatch(source, /LATTICE_DEPLOY_HOOK_URL/, `${name} must not carry a deploy hook`);
+    assert.doesNotMatch(source, /deploy[_-]hook/i, `${name} must not call a deploy hook`);
+  }
 });
 
 test('the snapshot refresh opens a draft pull request and never pushes to main', () => {
@@ -101,33 +129,26 @@ test('the snapshot refresh opens a draft pull request and never pushes to main',
   const job = workflow.jobs.refresh;
   const script = job.steps.map((step) => String(step.run ?? '')).join('\n');
   assert.match(script, /GITHUB_READ_TOKEN="\$\{READ_TOKEN:-\$WORKFLOW_TOKEN\}"/, 'a dedicated token is used when present, the workflow token otherwise');
+  assert.match(script, /gh auth setup-git/, 'the push authenticates in its own step');
   assert.match(script, /git push origin "\$branch"/);
   assert.doesNotMatch(script, /git push[^\n]*\bmain\b/, 'the refresh never pushes to the default branch');
   assert.match(script, /gh pr create --draft/);
   assert.match(script, /--title "chore: refresh the status snapshot"/);
 });
 
-test('the scheduled rebuild is inert without its hook and posts only to it', () => {
-  const { workflow } = loaded.get('scheduled-rebuild.yml');
-  const on = triggers(workflow);
-  assert.ok('schedule' in on, 'a daily schedule is the fallback until the documentation repository notifies the site');
-  assert.ok('workflow_dispatch' in on);
-  assert.deepEqual(workflow.permissions, { contents: 'read' });
-  const script = workflow.jobs.rebuild.steps.map((step) => String(step.run ?? '')).join('\n');
-  assert.match(script, /if \[ -z "\$\{HOOK\}" \]/, 'an absent hook is a notice, not a failure');
-  assert.match(script, /-X POST "\$HOOK"/, 'the only request is to the deploy hook');
-  assert.doesNotMatch(script, /wrangler|curl[^\n]*vidoxlabs/, 'it never deploys or touches the site directly');
-});
-
-test('live smoke is gated, covers every published surface and never prompts the model', () => {
+test('live smoke runs after a successful deploy, gated, and never prompts the model', () => {
   const { workflow, source } = loaded.get('live-smoke.yml');
   const on = triggers(workflow);
   assert.ok('workflow_dispatch' in on);
   assert.ok('schedule' in on, 'the six-hourly schedule is present');
-  assert.deepEqual(on.push.branches, ['main'], 'a push to main runs the smoke after the deploy');
+  assert.equal('push' in on, false, 'a push is not what it follows');
+  assert.deepEqual(on.workflow_run.workflows, ['deploy'], 'it follows the deploy');
+  assert.deepEqual(on.workflow_run.types, ['completed']);
+  assert.deepEqual(on.workflow_run.branches, ['main']);
   assert.deepEqual(workflow.permissions, { contents: 'read' });
   const job = workflow.jobs.smoke;
-  assert.equal(job.if, "vars.LIVE_SMOKE_ENABLED == 'true'", 'the variable is the switch');
+  assert.match(job.if, /vars\.LIVE_SMOKE_ENABLED == 'true'/, 'the variable is the switch');
+  assert.match(job.if, /workflow_run\.conclusion == 'success'/, 'a failed deploy is not smoked');
   const script = job.steps.map((step) => String(step.run ?? '')).join('\n');
   const pathLine = script.split('\n').find((line) => line.includes('for path in '));
   assert.ok(pathLine, 'the check walks a list of published paths');
@@ -138,5 +159,5 @@ test('live smoke is gated, covers every published surface and never prompts the 
   assert.match(script, /www\.vidoxlabs\.com vidoxlabs\.dev www\.vidoxlabs\.dev/, 'all three alternate hosts are checked');
   assert.match(source, /'origin: https:\/\/example\.invalid'/, 'the chat check comes from a foreign origin');
   assert.match(script, /--data '\{"messages":\[\]\}'/, 'the chat check sends no question');
-  assert.match(source, /for attempt in \$\(seq 1 12\)/, 'a push waits for the deploy to finish');
+  assert.match(source, /for attempt in \$\(seq 1 12\)/, 'a fresh deploy is given time to propagate');
 });

@@ -25,11 +25,17 @@ production domain, including ones this site does not serve.
 ## Decision
 
 **Deploy from GitHub Actions.** Production deploys when `check` completes successfully on
-`main`. The job downloads the built output that run verified and runs
+`main`, whatever asked for that run: a push, the daily schedule, a manual run, or the
+`docs-sync` repository dispatch the documentation repository will send once it can. The job
+downloads the built output that run verified and runs
 `npx wrangler deploy --config dist/server/wrangler.json`, so the bytes that deploy are the bytes
-that passed. The workflow is inert without its account token: it prints a notice and publishes
-nothing. Workers Builds stays documented as the alternative, with its production and preview
-commands, and becomes the preferred path the moment a first build there proves the browser stage.
+that passed. It runs in a GitHub environment named `production`, restricted to the default
+branch, and both the account token and the account identifier are secrets inside that
+environment rather than repository values: an identifier in a repository variable is readable by
+every workflow and every reader of the settings page. The workflow is inert without both
+secrets: it prints a notice and publishes nothing. Workers Builds stays documented as the
+alternative, with its production and preview commands, and becomes the preferred path the moment
+a first build there proves the browser stage.
 
 **One browser install path.** `npm run test:browser` installs the engines itself. It adds the
 system packages only where root exists, and it launches Chromium and WebKit once so a missing
@@ -42,6 +48,10 @@ no build variable duplicates it.
 **Preview addresses stay off until they are gated.** `preview_urls` is `false` while previews
 are public, and the route test follows whichever value is committed. The owner's step is to
 enable Cloudflare Access for previews, limited to one address, and then flip that single line.
+
+**Nothing keeps a credential in a checkout.** Every `actions/checkout` step sets
+`persist-credentials: false`, and the one job that pushes a branch authenticates inside the step
+that pushes.
 
 **Transport security covers the canonical host alone.**
 `Strict-Transport-Security: max-age=31536000`, without `includeSubDomains` and without
