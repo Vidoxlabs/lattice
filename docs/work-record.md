@@ -8,9 +8,13 @@ never from recall. Update it in the same commit as the work it describes.
 All ten steps done. Branch `slice-10-finish`, pull request #10, ready for review. Nothing is
 merged: `main` still holds the initial commit.
 
-Last pushed commit: `79f7f62` — docs: inventory the group name and propose a neutral vocabulary.
+Last pushed commit: `1fed691` — docs: finish the owner setup and the deployment record.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
+
+Verification for this head: `CI=1 npm run check` green — 65 unit, 29 route and 66 browser tests on
+Chromium and WebKit — and the `check` and CodeQL runs on the pushed head green as well. Both
+wrangler dry runs exit 0 without account access; their summary is in the deploy-path entry below.
 
 ## Checklist
 
