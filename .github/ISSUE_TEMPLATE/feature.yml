@@ -1,0 +1,22 @@
+name: Feature request
+description: Propose a website or pipeline improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome
+      description: What should a visitor be able to understand or do?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Content and evidence source
+      description: Name the docs page or public repository data that would drive it.
+    validations:
+      required: true
+  - type: textarea
+    id: constraints
+    attributes:
+      label: Accessibility, design or pipeline constraints
