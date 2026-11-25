@@ -5,6 +5,7 @@ import HeroBillboard from '../../components/videsign/hero-billboard.astro';
 import PublicRepoCard from '../../components/videsign/public-repo-card.astro';
 import ClaimMaturityBadge from '../../components/videsign/claim-maturity-badge.astro';
 import RepositoryActivity from '../../components/diagrams/repository-activity.astro';
+import brandManifest from '../../data/brand-manifest.json' with { type: 'json' };
 import { getCatalog, getRepository, sourceUrl } from '../../lib/repository-data.mjs';
 export async function getStaticPaths() {
   const { repositories } = await getCatalog();
@@ -13,8 +14,11 @@ export async function getStaticPaths() {
 const repository = await getRepository(Astro.params.repo);
 if (!repository) return Astro.redirect('/404');
 const { sources } = await getCatalog();
+const banner = brandManifest.banners.includes(`${repository.name}-banner-dark.svg`)
+  ? `/brand/${repository.name}-banner-dark.svg`
+  : '/brand/vidoxlabs-banner-dark.svg';
 ---
-<BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`}>
+<BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`} ogImage={banner}>
   <HeroBillboard title={repository.name} lede={repository.summary || 'Documentation has not synced yet.'}>
     <p><a href={`https://github.com/Vidoxlabs/${repository.name}`}>Repository</a> · <a href={sourceUrl(repository.name, repository.head)}>Source README at {repository.head?.slice(0, 7) ?? 'main'}</a></p>
   </HeroBillboard>

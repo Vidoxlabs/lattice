@@ -108,5 +108,8 @@ const sums = readdirSync(brandOutput, { withFileTypes: true })
   .sort()
   .map((name) => `${createHash('sha256').update(readFileSync(resolve(brandOutput, name))).digest('hex')}  ${name}`);
 writeFileSync(resolve(brandOutput, 'SHA256SUMS'), `${sums.join('\n')}\n`);
+writeFileSync(resolve('src/data/brand-manifest.json'), `${JSON.stringify({
+  banners: sums.map((line) => line.split('  ')[1]).filter((name) => name.endsWith('-banner-dark.svg')).sort()
+}, null, 2)}\n`);
 writeFileSync(resolve(brandOutput, 'PIN'), `Vidoxlabs/videsign ${pin}\nVidoxlabs/.github ${organizationPin}\n`);
 console.log(`Synced videsign at ${pin}, published 7 filtered stylesheets, 2 same-origin hero scripts and ${brandFiles.length + 2} brand assets.`);

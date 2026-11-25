@@ -7,13 +7,27 @@ import '../styles/diagrams.css';
 import '../styles/docs.css';
 import '../styles/chat.css';
 import pipeline from '../data/generated/build-pipeline.json' with { type: 'json' };
-const { title, description = 'Vivarium, its systems, live status and docs.', currentPath = Astro.url.pathname, chatPage = false } = Astro.props;
+const {
+  title,
+  description = 'Vivarium, its systems, live status and docs.',
+  currentPath = Astro.url.pathname,
+  chatPage = false,
+  ogImage = '/brand/vidoxlabs-banner-dark.svg'
+} = Astro.props;
+const SITE_ORIGIN = import.meta.env.SITE_ORIGIN ?? process.env.SITE_ORIGIN ?? 'https://vidoxlabs.com';
+const canonical = `${SITE_ORIGIN}${currentPath.replace(/\/+$/, '')}`;
 ---
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={`${SITE_ORIGIN}${ogImage}`} />
     <link rel="icon" href="/brand/brand_mark_header_v008.svg" type="image/svg+xml" />
     <title>{title}</title>
   </head>

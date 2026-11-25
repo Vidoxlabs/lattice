@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import { createServer } from 'node:net';
+import { existsSync } from 'node:fs';
 
 const reservation = createServer();
 await new Promise((resolve, reject) => { reservation.listen(0, () => resolve(undefined)).once('error', reject); });
@@ -8,7 +9,12 @@ if (!address || typeof address === 'string') throw new Error('Could not reserve 
 const { port } = address;
 await new Promise((resolve) => { reservation.close(() => resolve(undefined)); });
 
-const server = spawn('node_modules/.bin/wrangler', ['dev', '--port', String(port)], {
+const server = spawn('node_modules/.bin/wrangler', [
+  'dev',
+  ...(existsSync('dist/server/wrangler.dev.json') ? ['--config', 'dist/server/wrangler.dev.json'] : []),
+  '--port',
+  String(port)
+], {
   stdio: ['ignore', 'pipe', 'pipe'],
   env: { ...process.env, WRANGLER_SEND_METRICS: 'false' },
   detached: true
