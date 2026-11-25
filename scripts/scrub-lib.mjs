@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -79,15 +80,39 @@ export function scanText(path, source) {
 }
 
 /**
- * Scan the given roots and return the deduplicated failure list.
+ * The file set git would publish: tracked files plus untracked files that no
+ * ignore rule excludes. Local workspace overlays (excluded through ignore
+ * rules and never committed) are outside the scan. Returns null outside a
+ * repository, where every walked file is treated as publishable.
+ * @returns {Set<string> | null}
+ */
+function gitPublishableFiles() {
+  try {
+    const output = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], { encoding: 'utf8' });
+    return new Set(output.split('\0').filter(Boolean));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Scan the given roots and return the deduplicated failure list. Everything
+ * git would publish is scanned, plus the built output and the fetched-content
+ * bundle, which are ignored by git on purpose.
  * @param {string[]} roots
  * @returns {{ failures: string[], scanned: number }}
  */
 export function scanPaths(roots) {
   const failures = [];
   const files = collectFiles(roots);
-  for (const file of files) {
+  const publishable = gitPublishableFiles();
+  const deliberate = ['dist/', 'src/data/generated/'];
+  const effective = files.filter((file) => {
+    if (publishable && !publishable.has(file) && !deliberate.some((prefix) => file.startsWith(prefix))) return false;
+    return true;
+  });
+  for (const file of effective) {
     failures.push(...scanText(file, readFileSync(file, 'utf8')));
   }
-  return { failures: [...new Set(failures)], scanned: files.length };
+  return { failures: [...new Set(failures)], scanned: effective.length };
 }

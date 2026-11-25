@@ -1,0 +1,114 @@
+/* Build-time SVG diagrams style themselves only through videsign tokens.
+   Node state resolves from data attributes set by the generators. */
+
+.diagram-svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+  margin-block: var(--vi-space-rhythm-4-base);
+}
+
+.diagram-node-box {
+  fill: var(--vi-colors-surface-background-secondary-base);
+  stroke: var(--vi-colors-text-content-secondary-base);
+  stroke-width: 1;
+}
+
+.diagram-node-label {
+  fill: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.diagram-label,
+.diagram-tier {
+  fill: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  letter-spacing: var(--vi-typography-typography-tracking-wide-base);
+}
+
+.diagram-edge {
+  stroke: var(--vi-colors-text-content-secondary-base);
+  stroke-dasharray: 4 4;
+}
+
+.diagram-edge-label,
+.diagram-stage-state {
+  fill: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+/* CI state through tokens only. */
+.diagram-node[data-ci='success'] .diagram-node-box {
+  stroke: var(--vi-colors-surface-accent-brand-base);
+}
+
+.diagram-node[data-ci='failure'] .diagram-node-box,
+.diagram-node[data-ci='timed_out'] .diagram-node-box,
+.diagram-node[data-ci='cancelled'] .diagram-node-box,
+.diagram-node[data-ci='action_required'] .diagram-node-box,
+.diagram-node[data-ci='startup_failure'] .diagram-node-box {
+  stroke: var(--vi-colors-status-indicator-error-base);
+}
+
+.diagram-node[data-drift='true'] .diagram-node-box {
+  stroke: var(--vi-colors-status-indicator-warning-base);
+  stroke-dasharray: 6 3;
+}
+
+.diagram-node[role='stage'] .diagram-node-box,
+.diagram-node[data-role='stage'] .diagram-node-box {
+  fill: var(--vi-colors-surface-background-primary-base);
+}
+
+/* HTML text-table equivalents stay closed until requested. */
+.lattice-diagram-table {
+  margin-block: var(--vi-space-rhythm-4-base);
+}
+
+.lattice-diagram-table summary {
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-diagram-table table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-diagram-table th,
+.lattice-diagram-table td {
+  text-align: start;
+  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
+  border-block-end: 1px solid var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-diagram-table tr[data-fresh='fresh'] td:last-child {
+  color: var(--vi-colors-status-indicator-success-base);
+}
+
+.lattice-diagram-table tr[data-fresh='stale'] td:last-child {
+  color: var(--vi-colors-status-indicator-error-base);
+}
+
+/* Orbital hero surface pairing. */
+.lattice-orbital-copy {
+  display: grid;
+  gap: var(--vi-space-gap-comfortable-default);
+  padding: var(--vi-space-rhythm-8-base);
+  text-align: center;
+  justify-items: center;
+}
+
+.lattice-orbital-heading {
+  margin: 0;
+  color: var(--vi-colors-text-content-primary-base);
+  font-size: var(--vi-typography-typography-fluid-h2-base);
+  line-height: var(--vi-typography-typography-leading-tight-base);
+  text-wrap: balance;
+}

@@ -4,6 +4,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import HeroBillboard from '../../components/videsign/hero-billboard.astro';
 import PublicRepoCard from '../../components/videsign/public-repo-card.astro';
 import ClaimMaturityBadge from '../../components/videsign/claim-maturity-badge.astro';
+import RepositoryActivity from '../../components/diagrams/repository-activity.astro';
 import { getCatalog, getRepository, sourceUrl } from '../../lib/repository-data.mjs';
 export async function getStaticPaths() {
   const { repositories } = await getCatalog();
@@ -32,6 +33,7 @@ const { sources } = await getCatalog();
     <p>Last push: <span data-status-field="lastPushAt">{repository.status.lastPushAt ?? 'Unknown'}</span>.</p>
     {repository.repositoryHead && <p><a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}/checks`}>Checks for {repository.repositoryHead.slice(0, 7)}</a></p>}
   </section>
+  <RepositoryActivity repository={repository} />
   <section aria-labelledby="quickstart-title">
     <h2 id="quickstart-title">Quickstart</h2>
     {repository.quickstart ? <pre class="lattice-command"><code>{repository.quickstart}</code></pre> : <p>No quickstart block is present in the synced README.</p>}

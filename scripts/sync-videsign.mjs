@@ -71,11 +71,18 @@ if (sync.status !== 0) process.exit(sync.status ?? 1);
 
 // Only the artifacts this site imports are published. The upstream package
 // also generates data files that carry private vocabulary; they stay behind.
-for (const name of ['themes.css', 'specimen-layouts.css', 'core-components.css']) {
+for (const name of ['themes.css', 'specimen-layouts.css', 'core-components.css', 'family-surfaces.css', 'vi-orbital-hero.css']) {
   copyFileSync(resolve(packageRoot, 'dist', name), resolve(output, name));
 }
-for (const name of ['tokens.css', 'glass.css', 'themes.css', 'specimen-layouts.css', 'core-components.css']) {
+for (const name of ['tokens.css', 'glass.css', 'themes.css', 'specimen-layouts.css', 'core-components.css', 'family-surfaces.css', 'vi-orbital-hero.css']) {
   publishStylesheet(name);
+}
+
+// The orbital hero runs as a same-origin custom element pair.
+const scriptsOutput = resolve('public/videsign');
+mkdirSync(scriptsOutput, { recursive: true });
+for (const name of ['vi-orbital-field.js', 'orbital-field-engine.js']) {
+  copyFileSync(resolve(packageRoot, 'dist', name), resolve(scriptsOutput, name));
 }
 
 const brandOutput = resolve('public/brand');
@@ -102,4 +109,4 @@ const sums = readdirSync(brandOutput, { withFileTypes: true })
   .map((name) => `${createHash('sha256').update(readFileSync(resolve(brandOutput, name))).digest('hex')}  ${name}`);
 writeFileSync(resolve(brandOutput, 'SHA256SUMS'), `${sums.join('\n')}\n`);
 writeFileSync(resolve(brandOutput, 'PIN'), `Vidoxlabs/videsign ${pin}\nVidoxlabs/.github ${organizationPin}\n`);
-console.log(`Synced videsign at ${pin}, published 5 filtered stylesheets and ${brandFiles.length + 2} brand assets.`);
+console.log(`Synced videsign at ${pin}, published 7 filtered stylesheets, 2 same-origin hero scripts and ${brandFiles.length + 2} brand assets.`);

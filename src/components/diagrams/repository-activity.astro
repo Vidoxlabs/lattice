@@ -1,0 +1,16 @@
+---
+import { renderRepositoryActivity } from '../../lib/diagrams/repository-activity.mjs';
+const { repository } = Astro.props;
+const { graphic, rows } = renderRepositoryActivity(repository);
+---
+<section aria-labelledby="activity-timeline-heading">
+  <div class="lattice-card__meta"><h2 id="activity-timeline-heading">Activity timeline</h2></div>
+  <div class="lattice-diagram" set:html={graphic} />
+  <details class="lattice-diagram-table">
+    <summary>Read the timeline as a table</summary>
+    <table>
+      <thead><tr><th>Event</th><th>Recorded value</th></tr></thead>
+      <tbody>{rows.map((row) => <tr><td>{row.event}</td><td>{row.value}</td></tr>)}</tbody>
+    </table>
+  </details>
+</section>

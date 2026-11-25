@@ -1,0 +1,20 @@
+---
+import { renderDocsFreshness } from '../../lib/diagrams/docs-freshness.mjs';
+const { catalog } = Astro.props;
+const { graphic, rows } = renderDocsFreshness(catalog);
+---
+<section aria-labelledby="docs-freshness-heading">
+  <div class="lattice-card__meta"><h2 id="docs-freshness-heading">Documentation freshness</h2></div>
+  <div class="lattice-diagram" set:html={graphic} />
+  <details class="lattice-diagram-table">
+    <summary>Read freshness as a table</summary>
+    <table>
+      <thead><tr><th>Repository</th><th>Synced head</th><th>Repository head</th><th>State</th></tr></thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr data-fresh={row.state}><td>{row.name}</td><td>{row.synced}</td><td>{row.head}</td><td>{row.state}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </details>
+</section>

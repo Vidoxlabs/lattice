@@ -5,8 +5,11 @@ import HeroBillboard from '../components/videsign/hero-billboard.astro';
 import BentoFeatureGrid from '../components/videsign/bento-feature-grid.astro';
 import StatementProofRow from '../components/videsign/statement-proof-row.astro';
 import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
+import ViOrbitalField from '../components/videsign/vi-orbital-field.astro';
+import FamilyStackDiagram from '../components/videsign/family-stack-diagram.astro';
+import PipelineFlow from '../components/diagrams/pipeline-flow.astro';
 import { getCatalog, sourceUrl } from '../lib/repository-data.mjs';
-const { repositories, manifest, vivarium, pinsPending, status, sources } = await getCatalog();
+const { repositories, manifest, vivarium, pinsPending, status, sources, snapshot } = await getCatalog();
 const product = repositories.find((repository) => repository.name === 'vivarium');
 const systems = repositories.filter((repository) => repository.kind === 'system');
 const successful = systems.filter((repository) => repository.status.ciConclusion === 'success').length;
@@ -18,20 +21,23 @@ const evidence = [
   { label: 'CI evidence', value: `${successful}/${systems.length} successful`, href: '/repositories' },
   { label: 'Last umbrella push', value: status.repositories.vivarium?.lastPushAt ?? 'Unknown', href: 'https://github.com/Vidoxlabs/vivarium/commits/main' }
 ];
+const pipelineInput = { manifest, status, sources, snapshot };
 ---
 <BaseLayout title={title}>
-  <HeroBillboard title={title} lede={product?.summary || 'Vivarium documentation has not synced yet.'}>
+  <ViOrbitalField eyebrow="Vivarium" heading={title}>
     <p><a href="/vivarium">Understand Vivarium</a> · <a href="/repositories">Inspect the evidence</a></p>
-  </HeroBillboard>
+  </ViOrbitalField>
   <StatementProofRow items={evidence} />
   <p>Build-time status: {sources.status === 'site' ? 'gathered by the site' : sources.status === 'docs' ? 'published by docs' : 'committed snapshot'}. Documentation manifest: {manifest.generatedAt}.</p>
   <section aria-labelledby="systems-title">
     <div class="lattice-card__meta"><h2 id="systems-title">Seven systems, one product</h2><ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} /></div>
     <p class="lattice-prose">bloom is the interface layer. The manifest supplies every role, version and pin below.</p>
-    <BentoFeatureGrid items={systems} />
+    <FamilyStackDiagram repositories={repositories} />
   </section>
+  <BentoFeatureGrid items={systems} />
+  <PipelineFlow pipeline={pipelineInput} freshness={{ freshCount: fresh, systemCount: systems.length }} />
   <section aria-labelledby="pipeline-title">
-    <h2 id="pipeline-title">The site updates from its sources</h2>
+    <h2 id="pipeline-title">Where the numbers come from</h2>
     <ol>
       <li><a href="https://github.com/Vidoxlabs/docs/blob/main/sources.json">A system changes its own documentation.</a></li>
       <li><a href="https://github.com/Vidoxlabs/docs/actions/workflows/sync-sources.yml">The documentation hub syncs and records digests.</a></li>

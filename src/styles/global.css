@@ -3,6 +3,8 @@
 @import './videsign/glass.css';
 @import './videsign/specimen-layouts.css';
 @import './videsign/core-components.css';
+@import './videsign/family-surfaces.css';
+@import './videsign/vi-orbital-hero.css';
 
 :root {
   color-scheme: dark;

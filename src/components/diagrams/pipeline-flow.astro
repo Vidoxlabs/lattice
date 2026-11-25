@@ -1,0 +1,16 @@
+---
+import { renderPipelineFlow } from '../../lib/diagrams/pipeline-flow.mjs';
+const { pipeline, freshness } = Astro.props;
+const { graphic, rows } = renderPipelineFlow(pipeline, freshness);
+---
+<section aria-labelledby="pipeline-flow-heading">
+  <div class="lattice-card__meta"><h2 id="pipeline-flow-heading">The self-updating pipeline</h2></div>
+  <div class="lattice-diagram" set:html={graphic} />
+  <details class="lattice-diagram-table">
+    <summary>Read the pipeline as a table</summary>
+    <table>
+      <thead><tr><th>Stage</th><th>State on this build</th></tr></thead>
+      <tbody>{rows.map((row) => <tr><td>{row.stage}</td><td>{row.state}</td></tr>)}</tbody>
+    </table>
+  </details>
+</section>
