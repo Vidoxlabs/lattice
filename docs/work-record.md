@@ -5,11 +5,10 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 4 of 10 (Workers Builds readiness) done; starting step 5 (domains). Branch
-`slice-10-finish`, pull request #10, currently a draft. Nothing is merged: `main` still holds
-the initial commit.
+Step 5 of 10 (domains) done; starting step 6 (secrets and bindings). Branch `slice-10-finish`,
+pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
 
-Last pushed commit: `9b64289` — fix: keep preview addresses off until Access protects them.
+Last pushed commit: `10a5a36` — build: make the browser stage install its own engines.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -18,8 +17,8 @@ names the commit its work landed in rather than the commit that records it.
 - [x] 1. Cleanup: delete the handoff file, rewrite this record, fail `npm run check` on merge-conflict markers in tracked text files — `500d2f5`
 - [x] 2. Transport security: drop `includeSubDomains` from the header and from its unit test — `5abe25e`
 - [x] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps — `9b64289`
-- [x] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2 — this commit
-- [ ] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8
+- [x] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2 — `10a5a36`
+- [x] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8 — this commit
 - [ ] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test
 - [ ] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test
 - [ ] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it
@@ -28,9 +27,9 @@ names the commit its work landed in rather than the commit that records it.
 
 ## Next step
 
-Work step 5: decide whether the canonical-host redirect keeps the request path, then write
-SETUP.md section 8 as the domains runbook: both zones in one account, no conflicting records,
-what the first deploy attaches, and the four `curl -sI` checks that must answer 301.
+Work step 6: write SETUP.md sections 5 and 6 with names only for every variable and secret,
+the commented rate-limit block with its placeholder, and a unit test that the Worker falls back
+when the binding is unbound. Then run `CI=1 npm run check`, commit and push.
 
 ## Owner steps ready
 
@@ -73,6 +72,12 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   step is gone, so every build takes the same path, and a failed install fails the build.
 - Node pin (step 4): `.nvmrc` already carried `24.13.1`, and Workers Builds reads that file
   (the `NODE_VERSION` build variable overrides it), so no duplicate pin was added.
+- Redirect path (step 5, posted in chat): the canonical-host rule now keeps the request path
+  and drops the query string. A `www` link is an ordinary way in, so sending every deep link to
+  the home page would break the link someone typed or shared; no route reads a query string, so
+  a parameter attached to a foreign hostname does not become part of the canonical URL. Options
+  were (a) keep the home-page redirect as specified, (b) keep the path and drop the query, or
+  (c) keep both. Took (b).
 - Dry runs (step 4): `npx wrangler deploy --dry-run` and `npx wrangler versions upload --dry-run`
   both resolved the redirected configuration at `dist/server/wrangler.json`, read 15 modules
   (2386.88 KiB) and 393 asset files, reported a 2388.10 KiB upload (696.01 KiB gzip) with the
@@ -80,10 +85,11 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 
 ## Open owner questions
 
-- Redirect path handling (step 5): the canonical-host rule sends every alternate host to the
-  home page. Options are (a) keep the home-page redirect, (b) keep the request path and drop
-  the query string, (c) keep both path and query. Recommendation: (b), with the reasoning in
-  section 5 of this record.
+- Redirect path handling (step 5): the rule now keeps the request path and drops the query
+  string, which is option (b) below and the default taken. Options were (a) keep the
+  home-page redirect the previous spec described, (b) keep the request path and drop the query
+  string, or (c) keep both path and query. Recommendation: (b). Reverting to (a) is a one-line
+  change in `src/lib/host.mjs` plus its two tests.
 
 ## Earlier decisions (slices 1 to 10)
 

@@ -157,19 +157,41 @@ The defaults keep cloud models off, so no provider key is needed for the site to
       Change it in the Wrangler variables, and for a build outside Workers Builds set the
       same value in the environment, or the built files will point at the default.
 
-## 8. Domains and search submission
+## 8. Domains, DNS and search submission
 
-- [ ] Confirm both zones exist in the account with the nameservers the host expects. The
-      deploy attaches `vidoxlabs.com`, `www.vidoxlabs.com`, `vidoxlabs.dev` and
-      `www.vidoxlabs.dev` as custom domains; that is a deploy-time action and it also
-      creates the DNS records. Do not pre-create conflicting records.
+`https://vidoxlabs.com` is canonical. The other three hostnames answer a 301 to it from the
+Worker's host check, which runs before any asset is served. All four are custom-domain routes
+in `wrangler.jsonc`, so a deploy attaches them and nothing else does.
+
+- [ ] Both zones, `vidoxlabs.com` and `vidoxlabs.dev`, must be in the same Cloudflare account
+      as the Worker. A custom domain in a different account cannot be attached by this deploy,
+      and the failure looks like a permissions error rather than a missing zone.
+- [ ] Before the first production deploy, remove or confirm absent any existing DNS record for
+      the four hostnames: check DNS → Records in each zone for `@`, `www`, and the corresponding
+      `.dev` names. A custom domain creates its own records, and an existing A, AAAA or CNAME
+      record on the same name makes the attach fail instead of being overwritten.
+- [ ] The first production deploy then attaches four custom domains and provisions their
+      certificates. Until a certificate is issued the host answers a TLS error, not a redirect,
+      so give it a few minutes before treating a failure as a defect.
+- [ ] Verify each hostname, and the canonical host, with the response headers only:
+
+      curl -sI https://www.vidoxlabs.com/     # 301, location: https://vidoxlabs.com/
+      curl -sI https://vidoxlabs.dev/         # 301, location: https://vidoxlabs.com/
+      curl -sI https://www.vidoxlabs.dev/     # 301, location: https://vidoxlabs.com/
+      curl -sI https://vidoxlabs.com/         # 200, strict-transport-security: max-age=31536000
+
+- [ ] A deep link keeps its path, and a query string is not carried across:
+
+      curl -sI https://www.vidoxlabs.com/vivarium        # location: https://vidoxlabs.com/vivarium
+      curl -sI 'https://vidoxlabs.dev/docs?from=share'   # location: https://vidoxlabs.com/docs
+
+- [ ] Transport security is pinned on the canonical host only, and without `includeSubDomains`,
+      so no other hostname under the domain inherits it.
 - [ ] The developer subdomain stays off, so the site answers only on the four custom
       domains. Preview addresses follow the setting in section 2.
 - [ ] After the first production deploy, submit `https://vidoxlabs.com/sitemap.xml` in the
-      search consoles you use. The sitemap is generated from the published routes, so it
-      needs no maintenance.
-- [ ] `www` and the `.dev` hosts redirect to the canonical host in the Worker; transport
-      security is pinned on the canonical host only.
+      search consoles you use. The sitemap is generated from the published routes, so it needs
+      no maintenance and a documentation sync appears in it with no edit.
 
 ## 9. Enrichment
 

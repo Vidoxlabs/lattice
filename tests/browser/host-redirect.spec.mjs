@@ -11,10 +11,18 @@ const workerDeploy = existsSync('dist/server/wrangler.json') && JSON.parse(readF
 test.describe('canonical host redirect', () => {
   test.skip(!workerDeploy, 'assets-only deploy has no Worker script yet');
 
-  test('non-canonical public hosts are redirected to the canonical home', async ({ request }) => {
-    const alternate = await request.get('/', { headers: { Host: 'vidoxlabs.dev' }, maxRedirects: 0 });
+  test('every alternate public host is redirected to the canonical home', async ({ request }) => {
+    for (const host of ['www.vidoxlabs.com', 'vidoxlabs.dev', 'www.vidoxlabs.dev']) {
+      const alternate = await request.get('/', { headers: { Host: host }, maxRedirects: 0 });
+      expect(alternate.status(), host).toBe(301);
+      expect(alternate.headers().location, host).toBe('https://vidoxlabs.com/');
+    }
+  });
+
+  test('a deep link keeps its path and drops the query string', async ({ request }) => {
+    const alternate = await request.get('/vivarium?from=share', { headers: { Host: 'vidoxlabs.dev' }, maxRedirects: 0 });
     expect(alternate.status()).toBe(301);
-    expect(alternate.headers().location).toBe('https://vidoxlabs.com/');
+    expect(alternate.headers().location).toBe('https://vidoxlabs.com/vivarium');
   });
 
   test('the canonical host is served without a redirect', async ({ request }) => {
