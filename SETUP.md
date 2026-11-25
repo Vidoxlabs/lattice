@@ -49,14 +49,25 @@ Two squash merges, in two rounds. Nothing else merges.
 
 ### Then publish, in this order
 
+- [ ] Remove the conflicting DNS record first (section 8): the proxied A record on
+      `www.vidoxlabs.dev`. The first deploy refuses that host's attach while the record
+      exists, and after the step below every `check` run on `main` deploys by itself — the
+      daily 06:15 UTC schedule included — so nothing that deploys may run before it.
+- [ ] Create the deploy token named `lattice-deploy` in the dashboard (My Profile, API
+      Tokens, Custom token), scoped to Workers Scripts edit on this account, Workers Routes
+      edit and Zone read on both zones, and nothing else (section 2, Path A).
+- [ ] Turn on the deploy path: the `production` environment, restricted to `main`, with both
+      account secrets in it (section 2, Path A). From this moment the site deploys itself on
+      every `check` run of `main`; expect the daily schedule to publish without a hand
+      trigger.
+- [ ] Trigger the first deploy by hand anyway: run `check` on `main` once and watch it and
+      the `deploy` job after it (section 2, Prepared, not run).
+- [ ] Confirm the four hostnames attached and their certificates went active, and verify the
+      response headers (section 8).
 - [ ] Enable Cloudflare Access for preview addresses, or leave previews off (section 2).
-- [ ] Turn on the deploy path: the `production` environment with both account secrets for the
-      committed GitHub Actions workflow (section 2, Path A), or Workers Builds if its first build
-      proves the browser stage (section 2, Path B).
-- [ ] Confirm the DNS records and attach the four hostnames (section 8).
 - [ ] Set the variables, the one chat secret and the rate-limit binding (sections 5 and 6).
-- [ ] Watch the first production build finish, and open the site.
-- [ ] Run the live smoke once by hand, then set `LIVE_SMOKE_ENABLED` to `true` (section 12).
+- [ ] Open the site, run the live smoke once by hand, then set `LIVE_SMOKE_ENABLED` to `true`
+      (section 12).
 - [ ] Answer docs#6's three questions, or leave it a proposal and rely on the daily scheduled
       rebuild in section 3.
 
@@ -76,7 +87,7 @@ What the Cloudflare Workers Builds documentation says, checked on 2026-11-25:
 Both engines therefore cannot be guaranteed there, so the committed default builds and
 deploys from GitHub Actions, where the runner has root and the browser stage installs both
 engines with their dependencies. That workflow is `.github/workflows/deploy.yml`, and it is
-inert until one secret exists. The Workers Builds path stays below as Path B, and it is the
+inert until both secrets exist. The Workers Builds path stays below as Path B, and it is the
 right answer the moment a first build there proves the browser stage.
 
 ### What the launch audit found, 2026-11-25
@@ -177,34 +188,20 @@ inspect in the dashboard, but that version has no public address.
 
 Nothing in this block has been executed. Each line is an owner action.
 
-- [ ] Create the deploy token through the API, named `lattice-deploy`, with Workers Scripts:
-      Edit, Workers Routes: Edit, and Zone: Read, on both zones and nothing else. This needs a
-      credential allowed to create account tokens; where none exists yet, create this one token
-      once in the dashboard (My Profile, API Tokens, Custom Token) and use the API from then on.
+- [ ] Create the deploy token in the dashboard, so no value is ever printed, logged or kept
+      in a file: **My Profile → API Tokens → Create Token → Custom token**, named
+      `lattice-deploy`, with:
 
-      POST /accounts/<account>/tokens
-      {
-        "name": "lattice-deploy",
-        "policies": [{
-          "effect": "allow",
-          "resources": {
-            "com.cloudflare.api.account.<account>": "*",
-            "com.cloudflare.api.account.zone.<zone>": "*",
-            "com.cloudflare.api.account.zone.<zone>": "*"
-          },
-          "permission_groups": [
-            { "id": "<workers-scripts-edit>" },
-            { "id": "<workers-routes-edit>" },
-            { "id": "<zone-read>" }
-          ]
-        }]
-      }
+      - Account › Workers Scripts › Edit, account resources: this account only;
+      - Zone › Workers Routes › Edit;
+      - Zone › Zone › Read;
+      - zone resources: `vidoxlabs.com` and `vidoxlabs.dev` only, and nothing else — no DNS,
+        KV, R2 or user scopes;
+      - optionally a long expiry and a client-IP filter for the Actions runner ranges.
 
-      `GET /accounts/<account>/tokens/permission_groups` resolves those three ids by name, one
-      key per zone in the resource map. Pipe the response into the secret so the value is never
-      printed, logged or kept in a file:
+      Copy the value once, at creation, and put it straight into the environment secret
+      below; a token value is never pasted into chat, a file or a log.
 
-      ... | jq -r '.result.value' | gh secret set CLOUDFLARE_API_TOKEN --env production
 - [ ] Create the environment and add its two secrets. Both commands prompt for the value and
       neither accepts it on the command line:
 
@@ -250,19 +247,20 @@ answer is one event, and no deploy hook exists anywhere in this repository.
 ## 5. Secrets and variables
 
 Names only. No value belongs in this file, a commit, a log or a chat message. "Worker variable"
-is set in `wrangler.jsonc` under `vars`, or in the dashboard at **Settings → Variables &
-Secrets**; "Worker secret" is set with the command shown, or on the same dashboard page; an
+is committed in `wrangler.jsonc` under `vars` — a variable set only in the dashboard does not
+survive the next Actions deploy, as the paragraph after the table explains; "Worker secret" is
+set with the command shown, or on the same dashboard page; an
 Actions secret or variable is set in this repository under **Settings → Secrets and variables
 → Actions**.
 
 | Name | Where | Default | How |
 | --- | --- | --- | --- |
 | `CHAT_PROVIDER` | Worker variable | `mock` | Committed in `wrangler.jsonc`. Set `openai-compatible` or `gemini` for a cloud provider. |
-| `CHAT_MODEL` | Worker variable | unset | Dashboard. Required by a cloud provider; the model name only. |
-| `CHAT_ENDPOINT` | Worker variable | unset | Dashboard. Required by a cloud provider; a local server is written `<your-endpoint>`. |
+| `CHAT_MODEL` | Worker variable | unset | Committed in `wrangler.jsonc` when set. Required by a cloud provider; the model name only. |
+| `CHAT_ENDPOINT` | Worker variable | unset | Committed in `wrangler.jsonc` when set. Required by a cloud provider; a local server is written `<your-endpoint>`. |
 | `CHAT_ASSISTANT_NAME` | Worker variable | `Vidoxlabs assistant` | Committed. The only place the display name is set. |
 | `CHAT_ALLOW_CLOUD` | Worker variable | `0` | Committed. A cloud provider answers only when this is `1` **and** `CHAT_ENDPOINT`, `CHAT_MODEL` and `CHAT_API_KEY` are set. |
-| `CHAT_ALLOWED_ORIGINS` | Worker variable | unset (same origin) | Dashboard. Comma-separated origins, for a widget served from somewhere else. |
+| `CHAT_ALLOWED_ORIGINS` | Worker variable | unset (same origin) | Committed in `wrangler.jsonc` when set. Comma-separated origins, for a widget served from somewhere else. |
 | `CHAT_API_KEY` | Worker secret | unset | `npx wrangler secret put CHAT_API_KEY` |
 | `CHAT_RATE_LIMITER` | Worker binding | unbound | Section 6; uncomment the block in `wrangler.jsonc` and replace the placeholder. |
 | `SITE_ORIGIN` | Worker variable | `https://vidoxlabs.com` | Committed. Drives canonical links, the sitemap, `robots.txt`, both language-model files and the social card URLs. |
@@ -280,6 +278,14 @@ workflow uses. Turning a cloud provider on is a per-deployment decision: set
 send one question and confirm the answer arrives with citations. Set `CHAT_ALLOW_CLOUD` back
 to `0` to turn it off; the mock is the fallback whenever a value is missing, and the route
 reports which one answered.
+
+A Worker variable set only in the dashboard does not survive: every Actions deploy runs
+`wrangler deploy`, which replaces the variables that are not in `wrangler.jsonc`
+(`keep_vars` defaults to false), so the daily deploy would erase it. A non-secret chat
+variable therefore belongs in `wrangler.jsonc` under `vars` when a deployment needs one, and
+the dashboard page is for inspection. A Worker secret is different: `CHAT_API_KEY` survives
+every deploy, which is why it is the one chat value set with `wrangler secret put`. None of
+this affects launch: with the defaults committed, the site runs on the mock provider.
 
 `SITE_ORIGIN` is the one variable that changes what the build emits, so a build outside the
 committed default has to set it too; section 7 covers that case.
