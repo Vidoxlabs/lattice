@@ -24,15 +24,15 @@ review; slice 10 is a draft against it.
 - [x] Step 6: Open Graph images and tags — `48908ca`
 - [x] Step 7: budget checks, then the slice 9 pull request goes ready for review — `99fb64b`
 - [x] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items — this commit
-- [ ] Step 9: docs#6 (blocked: the owner has not answered its three questions)
-- [ ] Step 10: optional extras — snapshot refresh, CSP-safe highlighting, unported components
+- [ ] Step 9: docs#6 — skipped: the owner has not answered its three questions (checked in the pull request, no replies), so no docs commit was made
+- [ ] Step 10: optional extras — the snapshot refresh was attempted and could not complete; CSP-safe highlighting and the unported components were not started
 
 ## Next step
 
-Step 9 (docs#6) is skipped: the owner has not answered its three questions, so nothing in the
-docs repository changes. Step 10 is optional and only if budget remains: refresh the status
-snapshot with `npm run snapshot:refresh` and record the capture time, then syntax
-highlighting that emits classes rather than inline styles.
+The backlog is done except for what section 6 and the owner block: docs#6 stays a proposal,
+the status snapshot still carries its original capture, and syntax highlighting and the
+decorative documentation-portal components remain unported. The next action is the owner's:
+merge in the order SETUP.md records. Nothing else is pending on this branch.
 
 ## Open pull requests
 
@@ -52,7 +52,13 @@ highlighting that emits classes rather than inline styles.
 
 ## Blocked or skipped
 
-- Nothing skipped yet.
+- Step 9 (docs#6) is skipped: its three questions have no answer in the pull request, and the
+  rules forbid touching the docs repository without one.
+- Step 10 is partial by budget. `npm run snapshot:refresh` was attempted at
+  `2026-11-25T18:03:21Z` and returned no repository data because the unauthenticated API
+  window was closed, so the previous snapshot was kept rather than replaced with empty
+  values. Syntax highlighting that emits classes and the decorative documentation-portal
+  components were not started.
 - `slice-09-recovered` (`4c9d59f`) holds the unfinished edits a previous session left
   uncommitted on `slice-08-chat`: a first pass at `_headers`, canonical and Open Graph
   tags, sitemap, robots, the two llms files and custom-domain routes. It is a salvage
