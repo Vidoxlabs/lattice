@@ -4,15 +4,15 @@ Public-safe running record for the agent continuing this backlog. Update it in t
 
 ## Current slice and branch
 
-Slice 7 (docs ingestion) on `slice-07-docs`, stacked on `slice-06-diagrams`.
+Slice 8 (chat) on `slice-08-chat`, stacked on `slice-07-docs`.
 
 ## Last pushed commit
 
-`c09739d` — feat: ingest the documentation hub with verified digests and a search index.
+`33f789c` — feat: add the grounded documentation chat on family contracts.
 
 ## Next step
 
-Push this branch and open its pull request against `slice-06-diagrams`, then start slice 8 (chat) from this head: the family-package adapter with `TODO(family):` notes, retrieval from the docs index, the mock provider first, the SSE endpoint with rate limit and origin checks, the chat page and dock, tests, ADR-0003. A scheduled reminder at 12:09 ET refreshes the offline snapshot so the hub pages land in it; commit that when it arrives.
+Push this branch, open its pull request against `slice-07-docs`, then start slice 9 (SEO, CSP, llms.txt, domains) from this head: the §5 security headers and CSP with the inline-script browser test, canonical URLs, sitemap, robots, `llms.txt` and `llms-full.txt`, Open Graph images from the family banners, budget checks in Playwright, and the custom-domain routes (production only). Then slice 10: SETUP.md completion, ADR-0001 final, README refresh, timeline, final report.
 
 ## Defaults taken and open owner questions
 
@@ -29,6 +29,7 @@ Push this branch and open its pull request against `slice-06-diagrams`, then sta
 - Eight upstream documentation pages (bloom's README and three backend pages, capillary's family page, seed's lexicon, videsign's README and design matrix) fail the public-safety scan at their source: they contain the private team vocabulary the needle list forbids. The site renders them as clearly labelled placeholders linking to the upstream file instead. The smallest upstream fix is to scrub those names in the owning repositories; out of scope for this run and noted for the owner.
 - Mermaid blocks render as labelled source with a note (the allowed fallback): wiring a build-time static-SVG mermaid renderer for one block in the corpus was not worth a runtime dependency.
 - The hub's own pages need one GitHub trees call per build; when the unauthenticated rate window is exhausted the corpus falls back to the snapshot, and when no snapshot pages exist either, the hub index renders a clearly labelled notice. A scheduled reminder refreshes the snapshot at the next rate window so the hub pages are committed.
+- Chat status tools follow seed's tool-id grammar: the status face is `repos.read`, because "status" is not in the grammar's closed verb set. Capillary's literal search fans out per term for natural questions (the whole-phrase query matched nothing); packets and provenance still come from capillary. The rate-limit binding needs an account namespace identifier the public configuration file cannot carry, so the Worker uses it when bound and a documented best-effort per-isolate counter until then; SETUP.md records the owner step.
 - Status schema label: mirrors the contract proposed in docs#6 at commit `a2c406b38483efece01a0925e77465f48cc35b58`, labelled a proposed mirror to be reconciled when the upstream schema publishes.
 - The committed status snapshot was captured during the previous session; it is a labelled fallback only (`npm run snapshot:refresh` rewrites it) and was not re-captured to conserve the public API rate budget.
 - Sleep-ban test moved to its own file with plain literals and a self-exclusion; it previously lived inside the no-TypeScript test assembled from pieces.
