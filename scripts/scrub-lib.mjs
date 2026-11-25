@@ -23,6 +23,11 @@ export const patterns = [
 ];
 
 const skippedDirectories = new Set(['node_modules', '.git', '.astro', '.wrangler', 'test-results', 'playwright-report']);
+// dist/server is the generated Worker bundle: framework code with its own
+// internal literals, never committed and never publicly served. It is
+// sanitized by scripts/postbuild.mjs and asserted by a dedicated route test
+// instead of this scan; everything committed or publicly served is scanned.
+const skippedPrefixes = ['dist/server/'];
 const skippedExtensions = /\.(?:png|jpg|jpeg|gif|ico|woff2?|zip|br)$/;
 
 /**
@@ -38,10 +43,12 @@ export function collectFiles(roots) {
     if (stat.isDirectory()) {
       for (const entry of readdirSync(path, { withFileTypes: true })) {
         if (skippedDirectories.has(entry.name)) continue;
+        if (skippedPrefixes.some((prefix) => `${path}/${entry.name}/`.startsWith(prefix))) continue;
         visit(join(path, entry.name));
       }
       return;
     }
+    if (skippedPrefixes.some((prefix) => path.startsWith(prefix))) return;
     if (stat.isFile() && stat.size <= 2_000_000 && !skippedExtensions.test(path)) files.push(path);
   };
   for (const root of roots) visit(root);

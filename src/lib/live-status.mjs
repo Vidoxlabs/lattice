@@ -11,7 +11,19 @@ export function ciSummary(checkRuns) {
   return [...conclusions].sort().join(', ');
 }
 
-async function getJson(fetchImpl, url, token) {
+/**
+ * @typedef {object} FetchLikeResponse
+ * @property {boolean} ok
+ * @property {number} status
+ * @property {() => Promise<any>} json
+ */
+
+/**
+ * Minimal fetch signature so tests can stub responses.
+ * @typedef {(url: string, init?: { headers: Record<string, string> }) => Promise<FetchLikeResponse>} FetchLike
+ */
+
+async function getJson(/** @type {FetchLike} */ fetchImpl, /** @type {string} */ url, /** @type {string} */ token) {
   const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'Vidoxlabs-lattice' };
   if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetchImpl(url, { headers });
@@ -19,6 +31,13 @@ async function getJson(fetchImpl, url, token) {
   return response.json();
 }
 
+/**
+ * Refresh only the live fields (head, CI conclusion, last push) of the
+ * build-time status from the public GitHub REST API. Degrades to the
+ * build-time values on any error.
+ * @param {any} buildStatus
+ * @param {{ fetchImpl?: FetchLike, token?: string, now?: () => Date }} [options]
+ */
 export async function refreshLiveFields(buildStatus, { fetchImpl = fetch, token = '', now = () => new Date() } = {}) {
   const entries = await Promise.all(Object.keys(buildStatus.repositories).map(async (name) => {
     const previous = buildStatus.repositories[name];

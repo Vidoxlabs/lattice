@@ -1,10 +1,19 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
 function readJson(path) {
   return JSON.parse(readFileSync(path, 'utf8'));
 }
+
+test('the generated Worker bundle carries no build-machine paths', () => {
+  if (!existsSync('dist/server/wrangler.json')) return;
+  for (const entry of readdirSync('dist/server', { withFileTypes: true })) {
+    if (!entry.isFile() || !entry.name.endsWith('.mjs')) continue;
+    const source = readFileSync(`dist/server/${entry.name}`, 'utf8');
+    assert.doesNotMatch(source, /\/(?:Users|home)\/[A-Za-z0-9._-]+\//, `dist/server/${entry.name} still embeds an absolute build path`);
+  }
+});
 
 test('the generated deploy configuration is sanitized and host-checked', () => {
   if (existsSync('dist/server/wrangler.json')) {

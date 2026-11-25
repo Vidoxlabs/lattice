@@ -12,7 +12,7 @@ The site must update because upstream documentation and public repository state 
 
 Vidoxlabs/docs is the only source of documentation prose. A prebuild step fetches and validates `manifest.json`, fetches `vivarium.json` for product pins, and verifies every rendered document against its manifest digest and the public-safety rules. A missing or mismatched digest produces no prose.
 
-The same step reads `status.json` when docs publishes it. Until then, lattice gathers the equivalent fields from public GitHub REST endpoints and labels the result `gatheredBy: site`. Both JSON inputs are validated with Ajv against versioned schemas. The local status schema is explicitly identified as a fallback contract at docs proposal commit `a2c406b38483efece01a0925e77465f48cc35b58`; it is not represented as an upstream mirror.
+The same step reads `status.json` when docs publishes it. Until then, lattice gathers the equivalent fields from public GitHub REST endpoints and labels the result `gatheredBy: site`. Both JSON inputs are validated with Ajv against versioned schemas. The local status schema mirrors the contract proposed in Vidoxlabs/docs#6 at commit `a2c406b38483efece01a0925e77465f48cc35b58` and is labelled a proposed mirror until that pull request merges and publishes the upstream schema; it is then reconciled with the published form.
 
 One generated build bundle feeds static pages and `/api/status`. The API refreshes only head, CI conclusion and last push, uses the Cache API for five minutes, and returns build-time fields on errors or rate limits. A small same-origin client refreshes visible status islands without changing layout.
 

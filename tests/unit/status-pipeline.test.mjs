@@ -78,7 +78,7 @@ test('stable serialization sorts object keys recursively', () => {
 });
 
 test('committed snapshot remains schema valid after refresh', async () => {
-  const snapshot = JSON.parse(await readFile(new URL('../src/data/snapshot/pipeline.json', import.meta.url), 'utf8'));
+  const snapshot = JSON.parse(await readFile(new URL('../../src/data/snapshot/pipeline.json', import.meta.url), 'utf8'));
   validateManifest(snapshot.manifest);
   validateStatus(snapshot.status);
   assert.ok(snapshot.capturedAt);

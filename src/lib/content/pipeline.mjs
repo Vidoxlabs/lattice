@@ -14,22 +14,33 @@ function headers(token) {
   return result;
 }
 
-async function request(fetchImpl, url, token = '') {
+/**
+ * @typedef {object} FetchLikeResponse
+ * @property {boolean} ok
+ * @property {number} status
+ * @property {{ get(name: string): string | null }} headers
+ * @property {() => Promise<any>} json
+ * @property {() => Promise<string>} text
+ */
+
+/**
+ * Minimal fetch signature shared by the pipeline so tests can stub responses.
+ * The second argument is the standard request init carrying the token header.
+ * @typedef {(url: string, init?: { headers: Record<string, string> }) => Promise<FetchLikeResponse>} FetchLike
+ */
+
+async function request(/** @type {FetchLike} */ fetchImpl, /** @type {string} */ url, /** @type {string} */ token = '') {
   const response = await fetchImpl(url, { headers: headers(token) });
-  if (!response.ok) {
-    const error = new Error(`Public data returned ${response.status}`);
-    error.status = response.status;
-    throw error;
-  }
+  if (!response.ok) throw new Error(`Public data returned ${response.status}`);
   return response;
 }
 
-async function json(fetchImpl, url, token = '') {
+async function json(/** @type {FetchLike} */ fetchImpl, /** @type {string} */ url, /** @type {string} */ token = '') {
   const response = await request(fetchImpl, url, token);
   return { value: await response.json(), response };
 }
 
-async function optional(fetchImpl, url, token = '') {
+async function optional(/** @type {FetchLike} */ fetchImpl, /** @type {string} */ url, /** @type {string} */ token = '') {
   try {
     return await json(fetchImpl, url, token);
   } catch {
@@ -48,7 +59,7 @@ function unknown(base, fields) {
   return { ...base, unknownFields: [...new Set([...base.unknownFields, ...fields])].sort() };
 }
 
-export async function gatherRepositoryStatus(fetchImpl, name, manifest, token = '') {
+export async function gatherRepositoryStatus(/** @type {FetchLike} */ fetchImpl, /** @type {string} */ name, /** @type {any} */ manifest, /** @type {string} */ token = '') {
   const docsHead = manifest.sources?.[name]?.head ?? null;
   let value = {
     head: null,
@@ -100,8 +111,8 @@ export async function gatherRepositoryStatus(fetchImpl, name, manifest, token = 
   return value;
 }
 
-export async function gatherSiteStatus(fetchImpl, manifest, vivarium, token = '') {
-  const names = [...new Set([...Object.keys(manifest.sources ?? {}), SITE_REPOSITORY])].sort();
+export async function gatherSiteStatus(/** @type {FetchLike} */ fetchImpl, manifest, vivarium, /** @type {string} */ token = '') {
+  const names = [...new Set([...Object.keys(manifest.sources ?? {}), ...ADDITIONAL_REPOSITORIES])].sort();
   const entries = await Promise.all(names.map(async (name) => [name, await gatherRepositoryStatus(fetchImpl, name, manifest, token)]));
   const repositories = Object.fromEntries(entries);
   const systems = Object.fromEntries((vivarium.systems ?? []).map((system) => {
@@ -120,7 +131,7 @@ export async function gatherSiteStatus(fetchImpl, manifest, vivarium, token = ''
   }));
 }
 
-async function collectDocuments(fetchImpl, manifest, snapshotDocuments = {}) {
+async function collectDocuments(/** @type {FetchLike} */ fetchImpl, manifest, snapshotDocuments = {}) {
   const entries = [];
   for (const [name, source] of Object.entries(manifest.sources ?? {})) {
     const record = source.files?.find((file) => file.path === 'README.md');

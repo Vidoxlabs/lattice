@@ -12,7 +12,7 @@ test.describe('canonical host redirect', () => {
   test.skip(!workerDeploy, 'assets-only deploy has no Worker script yet');
 
   test('non-canonical public hosts are redirected to the canonical home', async ({ request }) => {
-    const alternate = await request.get('/', { headers: { Host: 'vidoxlabs.dev' } });
+    const alternate = await request.get('/', { headers: { Host: 'vidoxlabs.dev' }, maxRedirects: 0 });
     expect(alternate.status()).toBe(301);
     expect(alternate.headers().location).toBe('https://vidoxlabs.com/');
   });

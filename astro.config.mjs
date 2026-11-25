@@ -10,7 +10,8 @@ export default defineConfig({
   },
   vite: {
     build: {
-      assetsInlineLimit: 0
+      assetsInlineLimit: 0,
+      sourcemap: false
     }
   }
 });
