@@ -2,6 +2,8 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { sanitizeWorkerBundle } from './bundle-hygiene.mjs';
 import { headersFileBody } from '../src/lib/security-headers.mjs';
 import { collectStyleHashes } from '../src/lib/csp-hashes.mjs';
+import { builtRoutes, robotsTxt, sitemapXml } from '../src/lib/discoverability.mjs';
+import { siteOrigin } from '../src/lib/site.mjs';
 
 // The Cloudflare build emits one of two deploy configurations:
 // - a full Worker deploy (dist/server/wrangler.json, main entry) when at least
@@ -91,3 +93,11 @@ const headersPath = 'dist/client/_headers';
 const existingHeaders = existsSync(headersPath) ? readFileSync(headersPath, 'utf8').trimStart() : '';
 writeFileSync(headersPath, `${headersFileBody(collectStyleHashes('dist/client'))}${existingHeaders ? `\n${existingHeaders}` : ''}`);
 console.log('Wrote dist/client/_headers from the shared header definition.');
+
+// The sitemap and robots file are derived from the routes the build published,
+// so a documentation sync arrives in both without anyone editing a list.
+const origin = siteOrigin();
+const routes = builtRoutes('dist/client');
+writeFileSync('dist/client/sitemap.xml', sitemapXml(routes, origin));
+writeFileSync('dist/client/robots.txt', robotsTxt(origin));
+console.log(`Wrote the sitemap and robots file for ${routes.length} routes on ${origin}.`);

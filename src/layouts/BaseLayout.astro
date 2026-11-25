@@ -7,13 +7,16 @@ import '../styles/diagrams.css';
 import '../styles/docs.css';
 import '../styles/chat.css';
 import pipeline from '../data/generated/build-pipeline.json' with { type: 'json' };
+import { canonicalUrl } from '../lib/site.mjs';
 const { title, description = 'Vivarium, its systems, live status and docs.', currentPath = Astro.url.pathname, chatPage = false } = Astro.props;
+const canonical = canonicalUrl(currentPath);
 ---
 <html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
     <link rel="icon" href="/brand/brand_mark_header_v008.svg" type="image/svg+xml" />
     <title>{title}</title>
   </head>
