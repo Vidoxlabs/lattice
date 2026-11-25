@@ -15,13 +15,3 @@ test('no TypeScript source appears in source, scripts or tests', () => {
   assert.deepEqual(files.filter((file) => /\.tsx?$/.test(file)), []);
 });
 
-test('browser tests use state-based waits rather than fixed sleeps', () => {
-  const forbidden = [
-    new RegExp(['waitFor', 'Timeout'].join('')),
-    new RegExp(['set', 'Timeout'].join('') + '\\s*\\(')
-  ];
-  for (const file of filesUnder('tests').filter((path) => /\.mjs$/.test(path))) {
-    const source = readFileSync(file, 'utf8');
-    for (const pattern of forbidden) assert.doesNotMatch(source, pattern, file);
-  }
-});

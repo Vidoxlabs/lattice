@@ -8,42 +8,60 @@ if (!address || typeof address === 'string') throw new Error('Could not reserve 
 const { port } = address;
 await new Promise((resolve) => { reservation.close(() => resolve(undefined)); });
 
-const loopbackHost = 'local' + 'host';
-const origin = `http://${loopbackHost}:${port}`;
-const preview = spawn('npx', ['astro', 'preview', '--port', String(port)], {
+const server = spawn('node_modules/.bin/wrangler', ['dev', '--port', String(port)], {
   stdio: ['ignore', 'pipe', 'pipe'],
-  env: process.env
+  env: { ...process.env, WRANGLER_SEND_METRICS: 'false' },
+  detached: true
 });
-preview.stdout.on('data', (chunk) => process.stdout.write(chunk));
-preview.stderr.on('data', (chunk) => process.stderr.write(chunk));
+server.stdout.setEncoding('utf8');
+server.stderr.setEncoding('utf8');
 
-async function waitUntilReady() {
-  const deadline = Date.now() + 60000;
-  let detail = 'listener not started';
-  while (Date.now() < deadline) {
-    if (preview.exitCode !== null) throw new Error('The Worker preview exited before becoming ready.');
-    try {
-      const response = await fetch(origin);
-      if (response.ok) return;
-      detail = `status ${response.status}: ${await response.text()}`;
-    } catch (error) {
-      detail = error instanceof Error ? error.message : String(error);
-    }
-    await new Promise((resolve) => setTimeout(resolve, 100));
+async function stopServer() {
+  if (server.exitCode === null) {
+    try { process.kill(-server.pid, 'SIGTERM'); } catch { /* the group is already gone */ }
+    const grace = setTimeout(() => {
+      try { process.kill(-server.pid, 'SIGKILL'); } catch { /* the group is already gone */ }
+    }, 2000);
+    grace.unref();
+    await new Promise((resolve) => server.once('exit', resolve));
   }
-  throw new Error(`The Worker preview did not become ready: ${detail}`);
+  server.stdout.destroy();
+  server.stderr.destroy();
 }
 
+async function readServerOrigin() {
+  let buffer = '';
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('The local Worker runtime did not report its address.')), 90000);
+    const collect = (chunk) => {
+      buffer += chunk;
+      const match = buffer.match(/Ready on (https?:\/\/[^\s]+)/);
+      if (match) {
+        clearTimeout(timer);
+        resolve(match[1]);
+      }
+    };
+    server.stdout.on('data', collect);
+    server.stderr.on('data', collect);
+    server.once('exit', () => {
+      clearTimeout(timer);
+      reject(new Error('The local Worker runtime exited before reporting its address.'));
+    });
+  });
+}
+
+let exitCode = 1;
 try {
-  await waitUntilReady();
-  await new Promise((resolve, reject) => {
+  const origin = await readServerOrigin();
+  exitCode = await new Promise((resolve) => {
     const tests = spawn('npx', ['playwright', 'test'], {
       stdio: 'inherit',
       env: { ...process.env, PLAYWRIGHT_BASE_URL: origin }
     });
-    tests.once('error', reject);
-    tests.once('exit', (code) => code === 0 ? resolve(undefined) : reject(new Error(`Browser tests failed with ${code}.`)));
+    tests.once('error', () => resolve(1));
+    tests.once('exit', (code) => resolve(code ?? 1));
   });
 } finally {
-  preview.kill('SIGTERM');
+  await stopServer();
 }
+process.exit(exitCode);
