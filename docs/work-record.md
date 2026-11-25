@@ -4,15 +4,18 @@ Public-safe running record for the agent continuing this backlog. Update it in t
 
 ## Current slice and branch
 
-Slice 8 (chat) on `slice-08-chat`, stacked on `slice-07-docs`.
+Slice 9 (hardening, discoverability and domains) on `slice-09-seo`, branched from the
+frozen `slice-08-chat` head; slice 8's pull request is #8 and is frozen for review.
 
 ## Last pushed commit
 
-`33f789c` — feat: add the grounded documentation chat on family contracts.
+`b2ca236` — docs: record the slice 8 chat state (the frozen base of this branch).
 
 ## Next step
 
-Push this branch, open its pull request against `slice-07-docs`, then start slice 9 (SEO, CSP, llms.txt, domains) from this head: the §5 security headers and CSP with the inline-script browser test, canonical URLs, sitemap, robots, `llms.txt` and `llms-full.txt`, Open Graph images from the family banners, budget checks in Playwright, and the custom-domain routes (production only). Then slice 10: SETUP.md completion, ADR-0001 final, README refresh, timeline, final report.
+Work the backlog in `HANDOFF.md` in order, starting at step 1: the Worker bundle path
+cleanup. Everything before it is recorded there. Do not push to `slice-01` to
+`slice-08`; fix any defect they carry forward on the current branch instead.
 
 ## Defaults taken and open owner questions
 
