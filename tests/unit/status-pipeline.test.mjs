@@ -192,8 +192,7 @@ test('a fresh snapshot text still renders when the manifest came in live but the
   assert.equal(pipeline.documents['sources/seed/README.md'], mapped);
 });
 
-test('a stale snapshot text does not pass for moved upstream text', async () => {
-  const raw = '# Sibling sync\n\nThe queue drains sibling jobs.\n';
+test('a stale snapshot text does not pass for moved upstream text', async () => {  const raw = '# Sibling sync\n\nThe queue drains sibling jobs.\n';
   const mapped = '# Peer sync\n\nThe queue drains peer jobs.\n';
   const snapshot = snapshotFixture({
     head: 'a'.repeat(40),
@@ -215,4 +214,20 @@ test('a stale snapshot text does not pass for moved upstream text', async () => 
   const pipeline = await collectPipeline({ fetchImpl: halfUp, snapshot });
   const page = pipeline.docsPages.find((entry) => entry.slug === 'seed');
   assert.equal(page.kind, 'placeholder', 'upstream moved past the snapshot, so the page is a labelled placeholder');
+});
+
+test('a no-network build succeeds entirely from the committed snapshot', async () => {
+  const snapshot = JSON.parse(await readFile(new URL('../../src/data/snapshot/pipeline.json', import.meta.url), 'utf8'));
+  assert.ok(snapshot.docsPages.some((page) => page.kind === 'hub'), 'the committed snapshot carries hub pages');
+  assert.ok(snapshot.docsPages.some((page) => page.kind === 'hub' && page.repo === 'docs'), "it carries the docs repository's own pages");
+  const offline = async () => { throw new Error('offline'); };
+  const pipeline = await collectPipeline({ fetchImpl: offline, snapshot });
+  assert.equal(pipeline.snapshot.used, true);
+  assert.equal(pipeline.docsPages.length, snapshot.docsPages.length, 'every page the snapshot stores renders');
+  assert.equal(
+    pipeline.docsPages.filter((page) => page.kind === 'placeholder').length,
+    snapshot.docsPages.filter((page) => page.kind === 'placeholder').length,
+    'no page degrades beyond the placeholders the snapshot already records'
+  );
+  assert.equal(Object.keys(pipeline.documents).length, Object.keys(snapshot.documents).length, 'every stored document renders');
 });
