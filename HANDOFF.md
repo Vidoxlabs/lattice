@@ -8,9 +8,9 @@ the commit that carries this file is the next one on the branch.
 
 ## Status
 
-Step 7 of the slice 9 and 10 backlog. Branch `slice-09-seo`, last pushed commit
-`48908ca` (feat: give every page a generated social card and card metadata), branched
-from the frozen `slice-08-chat` head. Pull request #9 leaves draft with this commit.
+Step 7 of the slice 9 and 10 backlog, plus its first cloud-run fix. Branch `slice-09-seo`,
+last pushed commit `99fb64b` (test: hold every page type inside its performance budget),
+branched from the frozen `slice-08-chat` head. Pull request #9 is ready for review.
 
 ## Checklist
 
@@ -21,7 +21,7 @@ from the frozen `slice-08-chat` head. Pull request #9 leaves draft with this com
 - [x] Step 4: generated `llms.txt` and `llms-full.txt` — `bc2e15a`
 - [x] Step 5: production-only custom-domain routes — `fe30ad4`
 - [x] Step 6: Open Graph images and tags — `48908ca`
-- [x] Step 7: budget checks, then the slice 9 pull request goes ready for review — this commit
+- [x] Step 7: budget checks, then the slice 9 pull request goes ready for review — `99fb64b`, with the block ceiling relaxed for runner hardware in this commit
 - [ ] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items
 - [ ] Step 9: docs#6 (blocked: the owner has not answered its three questions)
 - [ ] Step 10: optional extras — snapshot refresh, CSP-safe highlighting, unported components
