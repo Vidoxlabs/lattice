@@ -21,7 +21,7 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is ready for revi
 - [x] Step 4: generated `llms.txt` and `llms-full.txt` — `bc2e15a`
 - [x] Step 5: production-only custom-domain routes — `fe30ad4`
 - [x] Step 6: Open Graph images and tags — `48908ca`
-- [x] Step 7: budget checks, then the slice 9 pull request goes ready for review — `99fb64b`, with the block ceiling relaxed for runner hardware in this commit
+- [x] Step 7: budget checks, then the slice 9 pull request goes ready for review — `99fb64b`, with the longest block reported rather than budgeted, because the runner's own startup dominates it
 - [ ] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items
 - [ ] Step 9: docs#6 (blocked: the owner has not answered its three questions)
 - [ ] Step 10: optional extras — snapshot refresh, CSP-safe highlighting, unported components
