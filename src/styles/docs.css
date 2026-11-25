@@ -139,6 +139,17 @@
   text-align: start;
 }
 
+/* Table alignment from the upstream renderer arrives as an attribute, because
+   the content security policy allows no inline style attributes. */
+.lattice-docs-prose [data-align='center'] {
+  text-align: center;
+}
+
+.lattice-docs-prose [data-align='right'],
+.lattice-docs-prose [data-align='end'] {
+  text-align: end;
+}
+
 /* Claim-status badges from the family's vocabulary. */
 .lattice-claim-badge {
   display: inline-block;

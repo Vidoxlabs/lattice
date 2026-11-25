@@ -114,7 +114,14 @@ export function prepare(body, context) {
       fragment: target.includes('#') ? `#${target.split('#')[1]}` : ''
     };
   };
-  const links = body.replace(/\[([^\]]*)\]\(([^)]+)\)/g, (whole, label, target) => {
+  // A badge image wrapped in a link would become a link inside a link once the
+  // policy turns third-party images into references, so the pair collapses into
+  // the outer link before rendering.
+  const references = body.replace(/\[!\[([^\]]*)\]\(([^)\s]+)\)\]\(([^)\s]+)\)/g, (whole, label, source, target) => {
+    if (!/^https?:\/\//i.test(source)) return whole;
+    return `[${label.trim() || 'Source'}](${target})`;
+  });
+  const links = references.replace(/\[([^\]]*)\]\(([^)]+)\)/g, (whole, label, target) => {
     if (/^[a-z]+:\/\//i.test(target) || target.startsWith('#') || target.startsWith('mailto:')) return whole;
     const resolved = resolve(target);
     return resolved ? `[${label}](${resolved.href}${resolved.fragment})` : whole;

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { buildResolver, prepare } from '../lib/content/docs-corpus.mjs';
 import { enrichDocsCorpus } from '../lib/content/enrich.mjs';
-import { badgeClaimLines, sanitizeRenderedHtml } from '../lib/content/render-docs.mjs';
+import { RENDER_REVISION, badgeClaimLines, sanitizeRenderedHtml } from '../lib/content/render-docs.mjs';
 
 /**
  * Content-layer loader for the documentation corpus. The prebuild step has
@@ -41,7 +41,7 @@ export function docsLoader() {
           },
           body,
           rendered,
-          digest: generateDigest(body)
+          digest: generateDigest(`${RENDER_REVISION}:${body}`)
         });
       }
     }

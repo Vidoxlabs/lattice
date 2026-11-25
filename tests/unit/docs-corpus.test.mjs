@@ -48,6 +48,13 @@ test('hub relative links resolve within the hub and external links stay untouche
   assert.match(prepared, /\[the site\]\(https:\/\/example\.invalid\/x\)/);
 });
 
+test('a badge image inside a link collapses into the link, never nesting anchors', () => {
+  const resolve = buildResolver(corpus);
+  const prepared = prepare('[![seed tests](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml)', { repo: 'seed', head: 'c'.repeat(40), sourcePath: 'README.md', resolve });
+  assert.match(prepared, /^\[seed tests\]\(https:\/\/github\.com\/Vidoxlabs\/seed\/actions\/workflows\/ci\.yml\)$/);
+  assert.doesNotMatch(prepared, /!\[/);
+});
+
 test('mermaid fences render as source with a note, never as a live block', () => {
   const resolve = buildResolver(corpus);
   const prepared = prepare('Intro\n\n```mermaid\nflowchart LR\n  A --> B\n```\n', { repo: 'seed', head: 'c'.repeat(40), sourcePath: 'README.md', resolve });
@@ -62,6 +69,22 @@ test('rendered documentation html is stripped of interactive markup', () => {
   assert.doesNotMatch(clean, /<script|<iframe|onmouseover|javascript:/);
   assert.match(clean, /<p>ok<\/p>/);
   assert.match(clean, /<a href="\/x">link<\/a>/);
+});
+
+test('inline styles become selectable attributes and third-party images become links', () => {
+  const html = [
+    '<table><thead><tr><th style="text-align: left">Module</th><th style="color: red">Raw</th></tr></thead></table>',
+    '<p><img src="https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml/badge.svg" alt="seed tests">',
+    '<img src=".github/assets/banner.svg" alt="Banner"></p>',
+    '<p><img src="/brand/brand_mark_header_v008.svg" alt="mark"><img src="data:image/gif;base64,AA" alt="inline"></p>'
+  ].join('');
+  const clean = sanitizeRenderedHtml(html);
+  assert.doesNotMatch(clean, /style=/i);
+  assert.match(clean, /<th data-align="left">Module<\/th>/);
+  assert.match(clean, /<a href="https:\/\/github.com\/Vidoxlabs\/seed\/actions\/workflows\/ci.yml\/badge.svg" rel="noopener">seed tests<\/a>/);
+  assert.doesNotMatch(clean, /banner\.svg/);
+  assert.match(clean, /<img src="\/brand\/brand_mark_header_v008.svg"/);
+  assert.match(clean, /<img src="data:image\/gif;base64,AA"/);
 });
 
 test('claim-status lines become badges only for the family vocabulary', () => {

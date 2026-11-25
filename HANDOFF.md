@@ -8,15 +8,15 @@ the commit that carries this file is the next one on the branch.
 
 ## Status
 
-Step 1 of the slice 9 and 10 backlog. Branch `slice-09-seo`, last pushed commit
-`951e7a1` (docs: open the slice 9 hardening branch and record the resume point),
+Step 2 of the slice 9 and 10 backlog. Branch `slice-09-seo`, last pushed commit
+`d478c5a` (fix: rewrite the build machine's project root out of the Worker bundle),
 branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 
 ## Checklist
 
 - [x] Step 0: resume and record — `4c9d59f` keeps the unfinished edits, `951e7a1` starts slice 9
-- [x] Step 1: Worker bundle path cleanup, independent of the checkout folder name — this commit
-- [ ] Step 2: security headers and strict CSP on static and Worker responses
+- [x] Step 1: Worker bundle path cleanup, independent of the checkout folder name — `d478c5a`
+- [x] Step 2: security headers and strict CSP on static and Worker responses — this commit
 - [ ] Step 3: canonical links, generated sitemap and robots
 - [ ] Step 4: generated `llms.txt` and `llms-full.txt`
 - [ ] Step 5: production-only custom-domain routes
@@ -28,13 +28,10 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 
 ## Next step
 
-Step 2: generate `dist/client/_headers` at build time and apply the same headers in the
-Worker for `/api/status`, `/api/chat` and redirects: a strict CSP (`default-src 'self'`,
-no `unsafe-inline`, no `unsafe-eval`, `frame-ancestors 'none'`, `base-uri 'none'`,
-`form-action 'self'`), plus Referrer-Policy, X-Content-Type-Options, Permissions-Policy,
-a cross-origin opener policy, and HSTS on the canonical production host only. Add the
-CSP-violation browser test (all built pages, both engines) and the inline-script and
-`style` attribute unit test, then run `CI=1 npm run check`, commit and push.
+Step 3: add the canonical `<link>` to the layout from `SITE_ORIGIN`, generate
+`sitemap.xml` from the built routes (so docs pages appear automatically), and generate
+`robots.txt` pointing at the sitemap with `/api/` excluded. Add route tests for all
+three, run `CI=1 npm run check`, commit and push.
 
 ## Open pull requests
 
