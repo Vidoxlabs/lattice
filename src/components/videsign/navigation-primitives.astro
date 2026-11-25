@@ -1,0 +1,11 @@
+---
+const { items = [], current = '' } = Astro.props;
+---
+<section data-videsign="navigation-primitives" class="vi-navigation-primitives" aria-label="Navigation primitives">
+  <nav aria-label="Breadcrumb">
+    <ol class="vi-site-footer__links">
+      <li><a href="/">Home</a></li>
+      {items.map((item) => <li aria-current={item === current ? 'page' : undefined}>{item}</li>)}
+    </ol>
+  </nav>
+</section>

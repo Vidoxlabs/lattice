@@ -1,0 +1,13 @@
+---
+const { currentPath = '/' } = Astro.props;
+---
+<div data-videsign="island-nav" class="vi-glass-shell vi-glass-shell--pill vi-island-nav">
+  <nav aria-label="Section navigation" class="vi-glass-core vi-glass-core--pill vi-site-nav">
+    <a href="/" class="vi-brand">Vidoxlabs</a>
+    <ul class="vi-site-nav__links">
+      <li><a href="/vivarium" aria-current={currentPath === '/vivarium' ? 'page' : undefined}>Vivarium</a></li>
+      <li><a href="/repositories" aria-current={currentPath.startsWith('/repositories') ? 'page' : undefined}>Repositories</a></li>
+      <li><a href="/docs" aria-current={currentPath.startsWith('/docs') ? 'page' : undefined}>Docs</a></li>
+    </ul>
+  </nav>
+</div>

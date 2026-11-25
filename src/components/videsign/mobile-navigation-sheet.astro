@@ -1,0 +1,21 @@
+---
+const { currentPath = '/' } = Astro.props;
+const links = [
+  ['Vivarium', '/vivarium'],
+  ['Repositories', '/repositories'],
+  ['Docs', '/docs'],
+  ['About', '/about'],
+  ['Security', '/security']
+];
+---
+<div data-videsign="mobile-navigation-sheet" id="site-nav-sheet" class="vi-mobile-navigation" role="dialog" aria-modal="true" aria-labelledby="mobile-nav-title" hidden>
+  <div class="vi-site-footer__row">
+    <h2 id="mobile-nav-title">Site navigation</h2>
+    <button type="button" class="vi-theme-toggle" data-menu-close>Close</button>
+  </div>
+  <nav aria-label="Mobile primary navigation">
+    <ul>
+      {links.map(([label, href]) => <li><a href={href} aria-current={currentPath === href || currentPath.startsWith(`${href}/`) ? 'page' : undefined}>{label}<span aria-hidden="true"> →</span></a></li>)}
+    </ul>
+  </nav>
+</div>

@@ -1,0 +1,26 @@
+---
+const { currentPath = '/' } = Astro.props;
+const links = [
+  ['Vivarium', '/vivarium'],
+  ['Repositories', '/repositories'],
+  ['Docs', '/docs'],
+  ['About', '/about']
+];
+---
+<header data-videsign="site-header-island" class="vi-site-header">
+  <div class="vi-glass-shell vi-glass-shell--pill vi-site-header__inner">
+    <nav aria-label="Primary navigation" class="vi-glass-core vi-glass-core--pill vi-site-nav">
+      <a href="/" class="vi-brand" aria-label="Vidoxlabs home">
+        <img src="/brand/brand_mark_header_v008.svg" alt="" /> Vidoxlabs
+      </a>
+      <ul class="vi-site-nav__links">
+        {links.map(([label, href]) => <li><a href={href} aria-current={currentPath === href || (href !== '/' && currentPath.startsWith(`${href}/`)) ? 'page' : undefined}>{label}</a></li>)}
+      </ul>
+      <div class="vi-site-nav__actions">
+        <button type="button" class="vi-theme-toggle" data-theme-toggle aria-pressed="false">Theme</button>
+        <a href="/chat">Chat</a>
+        <button type="button" class="vi-theme-toggle vi-menu-toggle" data-menu-toggle aria-expanded="false" aria-controls="site-nav-sheet">Menu</button>
+      </div>
+    </nav>
+  </div>
+</header>

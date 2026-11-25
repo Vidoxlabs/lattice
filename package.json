@@ -12,6 +12,7 @@
     "dev": "astro dev",
     "build": "astro build && node scripts/postbuild.mjs",
     "preview": "astro preview",
+    "videsign:sync": "node scripts/sync-videsign.mjs",
     "lint": "node scripts/lint.mjs",
     "typecheck": "tsc --noEmit -p jsconfig.json",
     "test:unit": "node --test tests/unit/*.test.mjs",
@@ -27,6 +28,8 @@
   "devDependencies": {
     "@playwright/test": "1.65.1",
     "@types/node": "24.10.1",
+    "@vidoxlabs/videsign": "github:Vidoxlabs/videsign#08707d61780ab2c873ac51cbfd39f2b29abfce9a",
+    "tailwindcss": "3.4.19",
     "typescript": "7.0.2",
     "wrangler": "4.168.0"
   }

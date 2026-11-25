@@ -1,0 +1,15 @@
+---
+import SiteHeaderIsland from './site-header-island.astro';
+import MobileNavigationSheet from './mobile-navigation-sheet.astro';
+import SiteFooter from './site-footer.astro';
+const { currentPath = '/' } = Astro.props;
+---
+<div data-videsign="layout-public-site" class="lattice-shell">
+  <a class="lattice-skip" href="#main-content">Skip to main content</a>
+  <SiteHeaderIsland currentPath={currentPath} />
+  <MobileNavigationSheet currentPath={currentPath} />
+  <main id="main-content" class="lattice-main">
+    <slot />
+  </main>
+  <SiteFooter />
+</div>

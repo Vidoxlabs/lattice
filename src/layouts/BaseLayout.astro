@@ -1,0 +1,20 @@
+---
+import LayoutPublicSite from '../components/videsign/layout-public-site.astro';
+import '../styles/global.css';
+const { title, description = 'Vivarium, its systems, live status and docs.', currentPath = Astro.url.pathname } = Astro.props;
+---
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/brand/brand_mark_header_v008.svg" type="image/svg+xml" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <LayoutPublicSite currentPath={currentPath}>
+      <slot />
+    </LayoutPublicSite>
+    <script src="../scripts/theme.mjs"></script>
+  </body>
+</html>

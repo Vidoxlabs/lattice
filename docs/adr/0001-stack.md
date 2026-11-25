@@ -14,6 +14,8 @@ Use current stable Astro with the official Cloudflare adapter, ESM JavaScript an
 
 Use npm with a committed lockfile and minimal dependencies. Do not add a client UI framework or TypeScript source. Keep build-time content and diagram generation in JavaScript modules.
 
+Pin videsign as a development dependency at `08707d61780ab2c873ac51cbfd39f2b29abfce9a`. `npm run videsign:sync` runs its token generator and fail-closed consumer sync from that pinned package, then copies the companion artifacts and brand files. This avoids sibling-checkout and manual-copy drift.
+
 ## Consequences
 
 One build produces static pages and Worker routes. Browser checks run against built output through the local Worker runtime. CSP, asset and compatibility requirements are tested rather than assumed. Any concrete adapter blocker requires a new decision record and an explicit alternative.
