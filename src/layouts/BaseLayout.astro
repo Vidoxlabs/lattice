@@ -1,11 +1,13 @@
 ---
 import LayoutPublicSite from '../components/videsign/layout-public-site.astro';
+import ChatDock from '../components/videsign/chat-dock.astro';
 import '../styles/global.css';
 import '../styles/pages.css';
 import '../styles/diagrams.css';
 import '../styles/docs.css';
+import '../styles/chat.css';
 import pipeline from '../data/generated/build-pipeline.json' with { type: 'json' };
-const { title, description = 'Vivarium, its systems, live status and docs.', currentPath = Astro.url.pathname } = Astro.props;
+const { title, description = 'Vivarium, its systems, live status and docs.', currentPath = Astro.url.pathname, chatPage = false } = Astro.props;
 ---
 <html lang="en" data-theme="dark">
   <head>
@@ -20,7 +22,9 @@ const { title, description = 'Vivarium, its systems, live status and docs.', cur
       {pipeline.snapshot.used && <aside aria-label="Offline content notice">Showing committed snapshot data captured at {pipeline.snapshot.capturedAt ?? 'an unknown time'}.</aside>}
       <slot />
     </LayoutPublicSite>
+    {!chatPage && <ChatDock />}
     <script src="../scripts/theme.mjs"></script>
     <script src="../scripts/status-refresh.mjs"></script>
+    <script src="../scripts/chat.mjs"></script>
   </body>
 </html>

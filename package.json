@@ -26,7 +26,10 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.9",
-    "ajv": "8.17.1",
+    "@vidoxlabs/capillary": "github:Vidoxlabs/capillary#0caa855cca2780f29d1d11167f4f352ba28ee9f5",
+    "@vidoxlabs/drosera": "github:Vidoxlabs/drosera#34c5c29c15f1d1f8baa6de6d5016f4809d68f098",
+    "@vidoxlabs/seed": "github:Vidoxlabs/seed#0d158cd7e1fb5098162c98d303ddde8172001062",
+    "ajv": "8.20.0",
     "astro": "7.4.13"
   },
   "devDependencies": {

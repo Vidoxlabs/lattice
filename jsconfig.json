@@ -9,7 +9,19 @@
     "resolveJsonModule": true,
     "strict": false,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ],
+    "maxNodeModuleJsDepth": 0
   },
-  "include": ["src/**/*.js", "src/**/*.mjs", "scripts/**/*.js", "scripts/**/*.mjs", "tests/**/*.js", "tests/**/*.mjs", "astro.config.mjs", "playwright.config.mjs"]
+  "include": [
+    "src/**/*.js",
+    "src/**/*.mjs",
+    "scripts/**/*.js",
+    "scripts/**/*.mjs",
+    "tests/**/*.js",
+    "tests/**/*.mjs",
+    "astro.config.mjs",
+    "playwright.config.mjs"
+  ]
 }

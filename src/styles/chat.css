@@ -1,0 +1,202 @@
+/* Chat surfaces: a launcher and non-modal dialog, on tokens only. */
+
+.lattice-chat-launcher {
+  position: fixed;
+  inset-block-end: var(--vi-space-rhythm-4-base);
+  inset-inline-end: var(--vi-space-rhythm-4-base);
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vi-space-gap-compact-default);
+  padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-4-base);
+  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  border: 1px solid var(--vi-colors-surface-accent-brand-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  cursor: pointer;
+}
+
+.lattice-chat-launcher-mark {
+  display: grid;
+  place-items: center;
+  inline-size: var(--vi-size-indicator-fivebar-base);
+  block-size: var(--vi-size-indicator-fivebar-base);
+  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  background: var(--vi-colors-surface-accent-brand-base);
+  color: var(--vi-colors-text-content-primary-base);
+}
+
+.lattice-chat-surface {
+  display: grid;
+  gap: var(--vi-space-rhythm-2-base);
+  inline-size: min(100%, var(--vi-size-layout-width-conversation-base, 34rem));
+  padding: var(--vi-space-rhythm-3-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  border: 1px solid var(--vi-colors-text-content-secondary-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+}
+
+.lattice-chat-surface[hidden] {
+  display: none;
+}
+
+[data-chat-surface='dock'] {
+  position: fixed;
+  inset-block-end: calc(var(--vi-space-rhythm-4-base) * 3);
+  inset-inline-end: var(--vi-space-rhythm-4-base);
+  z-index: 11;
+}
+
+.lattice-chat-page .lattice-chat-surface {
+  position: static;
+  inline-size: 100%;
+}
+
+.lattice-chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0;
+}
+
+.lattice-chat-assistant {
+  margin: 0;
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-chat-close {
+  background: none;
+  border: none;
+  color: var(--vi-colors-text-content-secondary-base);
+  font-size: var(--vi-typography-typography-size-md-base);
+  cursor: pointer;
+}
+
+.lattice-chat-log {
+  display: grid;
+  gap: var(--vi-space-rhythm-2-base);
+  max-block-size: 60dvh;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lattice-chat-empty,
+.lattice-chat-note {
+  margin: 0;
+  color: var(--vi-colors-text-content-secondary-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-chat-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vi-space-rhythm-1-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lattice-chat-starters button {
+  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
+  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  border: 1px solid var(--vi-colors-text-content-secondary-base);
+  background: var(--vi-colors-surface-background-primary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  cursor: pointer;
+}
+
+.lattice-chat-visitor {
+  margin: 0;
+  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+  background: var(--vi-colors-surface-background-primary-base);
+  justify-self: end;
+  max-inline-size: 80%;
+}
+
+.lattice-chat-reply {
+  margin: 0;
+  color: var(--vi-colors-text-content-primary-base);
+}
+
+.lattice-chat-reply[data-turn-state='streaming'] {
+  border-inline-start: 2px solid var(--vi-colors-status-indicator-info-base);
+  padding-inline-start: var(--vi-space-rhythm-2-base);
+}
+
+.lattice-chat-reply[data-turn-state='failed'] {
+  border-inline-start: 2px solid var(--vi-colors-status-indicator-error-base);
+  padding-inline-start: var(--vi-space-rhythm-2-base);
+}
+
+.lattice-chat-tool {
+  margin: 0;
+  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
+  border: 1px dashed var(--vi-colors-text-content-secondary-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-chat-citations {
+  margin: 0;
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-chat-citations summary {
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  cursor: pointer;
+}
+
+.lattice-chat-citations ul {
+  margin: var(--vi-space-rhythm-1-base) 0 0;
+  padding-inline-start: var(--vi-space-rhythm-4-base);
+}
+
+.lattice-chat-question {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--vi-space-rhythm-1-base);
+}
+
+.lattice-chat-question input {
+  padding: var(--vi-space-rhythm-2-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border: 1px solid var(--vi-colors-text-content-secondary-base);
+  background: var(--vi-colors-surface-background-primary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+}
+
+.lattice-chat-question button {
+  padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-3-base);
+  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border: 1px solid var(--vi-colors-surface-accent-brand-base);
+  background: var(--vi-colors-surface-background-primary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  cursor: pointer;
+}
+
+.lattice-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+html[data-motion='paused'] .lattice-chat-reply,
+html[data-motion='paused'] .lattice-chat-tool {
+  transition: none;
+}
