@@ -5,10 +5,11 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 7 of 10 (workflows) done; starting step 8 (self-update path). Branch `slice-10-finish`,
-pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
+Step 8 of 10 (self-update path) done; starting step 9 (naming inventory). Branch
+`slice-10-finish`, pull request #10, currently a draft. Nothing is merged: `main` still holds
+the initial commit.
 
-Last pushed commit: `83c2628` — docs: name every variable and secret the deployment needs.
+Last pushed commit: `f109d20` — ci: add the snapshot refresh and the live smoke.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -20,16 +21,16 @@ names the commit its work landed in rather than the commit that records it.
 - [x] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2 — `10a5a36`
 - [x] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8 — `b7c6efd`
 - [x] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test — `83c2628`
-- [x] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test — this commit
-- [ ] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it
+- [x] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test — `f109d20`
+- [x] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it — this commit
 - [ ] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed
 - [ ] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body
 
 ## Next step
 
-Work step 8: docs#6 has no answers in the pull request, so leave docs untouched, prepare
-`scheduled-rebuild.yml` inert against `LATTICE_DEPLOY_HOOK_URL`, and record in SETUP.md that the
-hook lives in a second repository until docs#6 notifies the site.
+Work step 9: write `docs/naming-inventory.md` as a proposal with a count, a visibility and an
+owner for every group of occurrences, propose the neutral vocabulary and the change order, and
+rename only the lattice-internal `TODO(family)` marker to `TODO(upstream)`.
 
 ## Owner steps ready
 
@@ -106,6 +107,12 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   the eight published surfaces, the policy and transport headers, the three redirecting hosts
   and one refused foreign-origin chat request with an empty message list, so no provider is
   ever prompted. A push to `main` waits for the deploy before checking.
+- Self-update path (step 8, posted in chat): docs#6 still has no answers — zero comments and
+  only an unrelated bot review — so nothing in the docs repository changed and no commit was
+  made there. The fallback is a daily `scheduled-rebuild.yml` that posts to the same deploy hook
+  from this repository, inert with a notice while `LATTICE_DEPLOY_HOOK_URL` is unset here.
+  SETUP.md section 3 records that this deliberately keeps the hook in a second repository and
+  that the workflow and its secret go away once docs#6 notifies the site.
 - Dry runs (step 4): `npx wrangler deploy --dry-run` and `npx wrangler versions upload --dry-run`
   both resolved the redirected configuration at `dist/server/wrangler.json`, read 15 modules
   (2386.88 KiB) and 393 asset files, reported a 2388.10 KiB upload (696.01 KiB gzip) with the

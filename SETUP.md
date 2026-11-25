@@ -111,13 +111,27 @@ inspect in the dashboard, but that version has no public address.
       and fails if the source file and the built configuration disagree, so the switch can
       only be flipped deliberately.
 
-## 3. Deploy hook in the documentation repository
+## 3. The deploy hook, and how the site learns that the documentation changed
 
-- [ ] Create a deploy hook URL for the Worker and store it as `LATTICE_DEPLOY_HOOK_URL` in
-      the `Vidoxlabs/docs` repository only. It is a secret; it is not set in this
-      repository, not committed, and not read here.
-- [ ] The hook is called once per docs sync, after `manifest.json` and `status.json` are
-      written. Until docs#6 lands nothing calls it, and the site updates on the next build.
+The site rebuilds when something asks it to. Two callers can do that, and only one of them
+exists yet.
+
+- [ ] Create a deploy hook for the Worker and keep its URL as a secret named
+      `LATTICE_DEPLOY_HOOK_URL`. The URL is a credential: it is never committed, printed or
+      pasted into a pull request.
+- [ ] The intended caller is `Vidoxlabs/docs` after a sync, once docs#6 lands and its three
+      questions are answered. That pull request is still a proposal, so nothing calls the hook
+      today.
+- [ ] Until then the fallback is `.github/workflows/scheduled-rebuild.yml` in this repository: it
+      runs daily and posts to the same hook. To turn it on, add `LATTICE_DEPLOY_HOOK_URL` as an
+      Actions secret here. With no secret it prints a notice and exits green, so committing it
+      changed nothing. This deliberately keeps a copy of the hook in a second repository, which
+      is the cost of the site updating without docs#6; remove the workflow, and the secret with
+      it, as soon as the documentation repository notifies the site on its own.
+- [ ] With neither caller configured, the site updates on the next build of any kind, including
+      a push to `main`. Its pages, sitemap, both language-model files and diagrams come from
+      whatever the last build read, so a stale site is a missing rebuild rather than a wrong
+      page.
 
 ## 4. Optional read token
 

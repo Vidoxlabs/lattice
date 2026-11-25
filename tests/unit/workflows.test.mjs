@@ -28,8 +28,8 @@ function triggers(workflow) {
 
 const loaded = workflows();
 
-test('the workflow set is exactly the five this deployment relies on', () => {
-  assert.deepEqual([...loaded.keys()], ['check.yml', 'codeql.yml', 'deploy.yml', 'live-smoke.yml', 'snapshot-refresh.yml']);
+test('the workflow set is exactly the six this deployment relies on', () => {
+  assert.deepEqual([...loaded.keys()], ['check.yml', 'codeql.yml', 'deploy.yml', 'live-smoke.yml', 'scheduled-rebuild.yml', 'snapshot-refresh.yml']);
 });
 
 test('every job has a timeout and least-privilege permissions', () => {
@@ -50,8 +50,10 @@ test('every job has a timeout and least-privilege permissions', () => {
 test('every action is pinned to a full commit with a version comment beside it', () => {
   for (const [name, { source }] of loaded) {
     const lines = source.split('\n').filter((line) => /^\s*(?:- )?uses:/.test(line));
-    // The live smoke needs nothing but curl, so it legitimately uses no action.
-    if (name === 'live-smoke.yml') assert.deepEqual(lines, [], 'the live smoke keeps to the runner shell');
+    // Two workflows need nothing but curl, so they legitimately use no action.
+    if (name === 'live-smoke.yml' || name === 'scheduled-rebuild.yml') {
+      assert.deepEqual(lines, [], `${name} keeps to the runner shell`);
+    }
     else assert.ok(lines.length > 0, `${name}: no actions found`);
     for (const line of lines) {
       const pinned = /^\s*(?:- )?uses:\s+([\w.-]+\/[\w./-]+)@([0-9a-f]{40})\s+#\s*(v\d+(?:\.\d+)*)\s*$/.exec(line);
@@ -103,6 +105,18 @@ test('the snapshot refresh opens a draft pull request and never pushes to main',
   assert.doesNotMatch(script, /git push[^\n]*\bmain\b/, 'the refresh never pushes to the default branch');
   assert.match(script, /gh pr create --draft/);
   assert.match(script, /--title "chore: refresh the status snapshot"/);
+});
+
+test('the scheduled rebuild is inert without its hook and posts only to it', () => {
+  const { workflow } = loaded.get('scheduled-rebuild.yml');
+  const on = triggers(workflow);
+  assert.ok('schedule' in on, 'a daily schedule is the fallback until the documentation repository notifies the site');
+  assert.ok('workflow_dispatch' in on);
+  assert.deepEqual(workflow.permissions, { contents: 'read' });
+  const script = workflow.jobs.rebuild.steps.map((step) => String(step.run ?? '')).join('\n');
+  assert.match(script, /if \[ -z "\$\{HOOK\}" \]/, 'an absent hook is a notice, not a failure');
+  assert.match(script, /-X POST "\$HOOK"/, 'the only request is to the deploy hook');
+  assert.doesNotMatch(script, /wrangler|curl[^\n]*vidoxlabs/, 'it never deploys or touches the site directly');
 });
 
 test('live smoke is gated, covers every published surface and never prompts the model', () => {
