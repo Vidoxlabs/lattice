@@ -14,6 +14,22 @@ test('an identifier that contains the word keeps its letters', () => {
   assert.equal(neutralize('siblingCount and siblingsList stay as written'), 'siblingCount and siblingsList stay as written');
 });
 
+test('fenced code blocks and inline code keep their letters', () => {
+  assert.equal(
+    neutralize('prose about siblings first\n\n```sh\n# a sibling checkout stays as written\nnpm ci\n```\n\nafter text about a sibling'),
+    'prose about peers first\n\n```sh\n# a sibling checkout stays as written\nnpm ci\n```\n\nafter text about a peer'
+  );
+  assert.equal(
+    neutralize('the `repo-self-test-runs-without-siblings` capability keeps its name'),
+    'the `repo-self-test-runs-without-siblings` capability keeps its name'
+  );
+  assert.equal(neutralize('`a` siblings `b` between code'), '`a` peers `b` between code');
+  assert.equal(
+    neutralize('~~~\nsibling sample\n~~~\nprose siblings'),
+    '~~~\nsibling sample\n~~~\nprose peers'
+  );
+});
+
 test('the persona clause is dropped from the design-law sentence', () => {
   assert.equal(
     neutralize('The family follows one design law: ordinary botanical words for public products, mirroring five flower-named personas.'),

@@ -107,9 +107,11 @@ test('a verified page is published with the neutral mapping, title and headings 
   const raw = '# Sibling sync\n\nThe queue drains sibling jobs, mirroring five flower-named personas.\n\n## Sibling queues\n';
   const sha256 = createHash('sha256').update(raw).digest('hex');
   const manifest = { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256 }] } } };
-  const fetchImpl = async (url) => url.includes('sources/seed/README.md')
-    ? { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) }
-    : { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  const fetchImpl = async (url) => {
+    if (url.includes('sources/seed/README.md')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) };
+    if (url.includes('/git/trees/')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => '', json: async () => ({ sha: 'b'.repeat(40), tree: [] }) };
+    return { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  };
   const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
   const page = pages.find((entry) => entry.slug === 'seed');
   assert.equal(page.kind, 'source');
@@ -123,9 +125,68 @@ test('a verified page is published with the neutral mapping, title and headings 
 test('the mapping runs after verification: a digest mismatch still renders a placeholder', async () => {
   const raw = '# Peer sync\n\nsibling\n';
   const manifest = { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256: 'f'.repeat(64) }] } } };
-  const fetchImpl = async (url) => url.includes('sources/seed/README.md')
-    ? { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) }
-    : { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  const fetchImpl = async (url) => {
+    if (url.includes('sources/seed/README.md')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) };
+    if (url.includes('/git/trees/')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => '', json: async () => ({ sha: 'b'.repeat(40), tree: [] }) };
+    return { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  };
   const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
   assert.equal(pages.find((entry) => entry.slug === 'seed').kind, 'placeholder');
+});
+
+test('a documentation hub page is mapped like any other page', async () => {
+  const raw = '# Docs hub\n\nEvery sibling repository sends its pages, mirroring five flower-named personas.\n\n## Sibling folders\n';
+  const fetchImpl = async (url) => {
+    if (url.includes('/git/trees/')) {
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        text: async () => '',
+        json: async () => ({ sha: 'c'.repeat(40), tree: [{ type: 'blob', path: 'docs/sibling-page.md' }] })
+      };
+    }
+    if (url.includes('/docs/sibling-page.md')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) };
+    return { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  };
+  const pages = await collectDocsCorpus(fetchImpl, { sources: {} }, '', []);
+  const page = pages.find((entry) => entry.slug === 'sibling-page');
+  assert.equal(page.kind, 'hub');
+  assert.equal(page.title, 'Docs hub', 'the title maps too; this one carries no word of its own');
+  assert.match(page.body, /Every peer repository sends its pages\./);
+  assert.doesNotMatch(page.body, /sibling|personas/);
+  assert.deepEqual(page.headings, ['Peer folders']);
+});
+
+test('a hub page that cannot be fetched renders a placeholder instead of vanishing', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/git/trees/')) {
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        text: async () => '',
+        json: async () => ({ sha: 'c'.repeat(40), tree: [{ type: 'blob', path: 'docs/gone-page.md' }] })
+      };
+    }
+    return { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  };
+  const pages = await collectDocsCorpus(fetchImpl, { sources: {} }, '', []);
+  const page = pages.find((entry) => entry.slug === 'gone-page');
+  assert.equal(page.kind, 'placeholder', 'a missing hub page is visible as a placeholder, never silently dropped');
+  assert.match(page.body, /it could not be fetched in this build/);
+});
+
+test('a hub tree that cannot be fetched fails the build when no snapshot pages exist', async () => {
+  const fetchImpl = async () => ({ ok: false, status: 403, headers: { get: () => null }, text: async () => '', json: async () => ({}) });
+  await assert.rejects(collectDocsCorpus(fetchImpl, { sources: {} }, '', []), /documentation hub tree could not be fetched/);
+});
+
+test("a hub tree failure falls back to the snapshot's hub pages when they exist", async () => {
+  const snapshotHub = /** @type {import('../../src/lib/content/docs-corpus.mjs').DocsPage} */ ({ slug: 'kept', title: 'Kept', repo: 'docs', head: 'd'.repeat(40), sourcePath: 'docs/kept.md', kind: 'hub', body: '# Kept\n\nkept text', headings: [] });
+  const fetchImpl = async () => ({ ok: false, status: 403, headers: { get: () => null }, text: async () => '', json: async () => ({}) });
+  const pages = await collectDocsCorpus(fetchImpl, { sources: {} }, '', [snapshotHub]);
+  const page = pages.find((entry) => entry.slug === 'kept');
+  assert.equal(page.kind, 'hub', 'the snapshot keeps the hub alive when the tree is unreachable');
+  assert.equal(page.head, 'd'.repeat(40));
 });

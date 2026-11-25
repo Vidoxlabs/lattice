@@ -48,9 +48,10 @@ test('both generated files pass the public-safety scan', () => {
   assert.deepEqual(failures, []);
 });
 
-test('neither generated file carries the mapped vocabulary or the persona clause', () => {
+test('neither generated file carries the mapped vocabulary outside code', () => {
   for (const [name, text] of [['llms.txt', index], ['llms-full.txt', full]]) {
-    assert.doesNotMatch(text, /\bsiblings?\b/i, `${name} carries the word the pipeline maps`);
-    assert.ok(!text.includes('mirroring five flower-named personas'), `${name} carries the clause the pipeline drops`);
+    const prose = text.replace(/```[\s\S]*?(?:```|$)/g, ' ').replace(/`[^`\n]*`/g, ' ');
+    assert.doesNotMatch(prose, /\bsiblings?\b/i, `${name} carries the word outside code`);
+    assert.ok(!prose.includes('mirroring five flower-named personas'), `${name} carries the clause outside code`);
   }
 });

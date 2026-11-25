@@ -155,20 +155,51 @@ export function buildResolver(pages) {
 }
 
 /**
+ * Verify a text against the record the active manifest carries. A fetched text
+ * verifies against the upstream digest directly. A text taken from the
+ * snapshot carries the site's mapping, so it verifies against the stored
+ * digest the snapshot recorded for it — and only while the upstream digest the
+ * snapshot recorded still matches the active record, which is what keeps a
+ * stale snapshot from passing for moved upstream text.
+ *
+ * @param {string | null} text
+ * @param {{ sha256: string, storedSha256?: string }} record the active manifest's record
+ * @param {{ sha256: string, storedSha256?: string } | undefined} storedRecord the snapshot's record for the same file
+ * @returns {boolean}
+ */
+export function verifiedAgainstRecord(text, record, storedRecord) {
+  if (text === null) return false;
+  const digest = createHash('sha256').update(text).digest('hex');
+  if (digest === record.sha256) return true;
+  return Boolean(storedRecord?.storedSha256 && digest === storedRecord.storedSha256 && storedRecord.sha256 === record.sha256);
+}
+
+/**
  * Build the documentation corpus: every manifest markdown file, digest
  * verified, plus the documentation hub's own pages. A file whose digest fails
  * or that fails the public-safety scan renders a clear placeholder instead of
- * its text. A failed hub listing falls back to the snapshot's hub pages.
+ * its text. A hub page that cannot be fetched renders the same placeholder
+ * rather than vanishing; a hub tree that cannot be fetched at all, with no
+ * snapshot pages to fall back on, fails the build instead of publishing a site
+ * without the documentation hub.
+ *
+ * The neutral-vocabulary map is applied once, after every text has verified,
+ * to every page this returns.
  *
  * @param {import('./pipeline.mjs').FetchLike} fetchImpl
  * @param {any} manifest
  * @param {string} token
  * @param {DocsPage[]} fallbackPages
+ * @param {any} snapshotManifest the snapshot's own manifest, for stored-digest verification
  * @returns {Promise<DocsPage[]>}
  */
-export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPages = []) {
+export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPages = [], snapshotManifest = null) {
   const pages = [];
   const fallbackByPath = new Map(fallbackPages.map((page) => [`${page.repo}:${page.sourcePath}`, page]));
+  const storedRecords = new Map();
+  for (const [name, source] of Object.entries(snapshotManifest?.sources ?? {})) {
+    for (const record of source.files ?? []) storedRecords.set(`${source.name ?? name}\u0000${record.path}`, record);
+  }
 
   for (const [repo, source] of Object.entries(manifest.sources ?? {})) {
     for (const record of source.files ?? []) {
@@ -182,9 +213,9 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
       } catch {
         text = null;
       }
-      if (text === null) text = fallbackByPath.get(`${repo}:${record.path}`)?.body ?? null;
-      const digest = text === null ? null : createHash('sha256').update(text).digest('hex');
-      const verified = text !== null && digest === record.sha256;
+      const fromSnapshot = text === null;
+      if (fromSnapshot) text = fallbackByPath.get(`${repo}:${record.path}`)?.body ?? null;
+      const verified = verifiedAgainstRecord(text, record, fromSnapshot ? storedRecords.get(`${repo}\u0000${record.path}`) : undefined);
       if (!verified || !isPublicContentSafe(text ?? '')) {
         const reason = text === null ? 'it could not be fetched in this build' : !verified ? 'its digest did not verify' : 'it failed the public-safety scan';
         pages.push({
@@ -199,28 +230,26 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
         });
         continue;
       }
-      // The digest and the scan verify the upstream bytes; the page publishes
-      // the mapped text. A snapshot text is already mapped, and mapping is
-      // idempotent, so the fallback passes through unchanged.
-      const neutral = neutralize(text);
       pages.push({
         slug,
-        title: titleFor(neutral, record.path),
+        title: titleFor(text, record.path),
         repo,
         head: source.head ?? null,
         sourcePath: record.path,
         kind: 'source',
-        body: neutral,
-        headings: headingsFor(neutral)
+        body: text,
+        headings: headingsFor(text)
       });
     }
   }
 
   let hubHead = null;
   let hubPaths = [];
+  let hubFetched = false;
   try {
     const response = await fetchImpl(`${DOCS_API}/git/trees/main?recursive=1`, { headers: { Accept: 'application/vnd.github+json', ...(token ? { Authorization: `Bearer ${token}` } : {}) } });
     if (response.ok) {
+      hubFetched = true;
       const tree = await response.json();
       hubHead = typeof tree.sha === 'string' ? tree.sha : null;
       hubPaths = (tree.tree ?? [])
@@ -228,13 +257,15 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
         .map((entry) => entry.path.slice('docs/'.length));
     }
   } catch {
-    hubPaths = [];
+    hubFetched = false;
   }
   if (!hubPaths.length) {
     const fallbackHub = fallbackPages.filter((page) => page.kind === 'hub');
     if (fallbackHub.length) {
       hubHead = fallbackHub[0].head;
       hubPaths = fallbackHub.map((page) => page.sourcePath.replace(/^docs\//, ''));
+    } else if (!hubFetched) {
+      throw new Error('The documentation hub tree could not be fetched and the snapshot carries no hub pages to fall back on, so the build stops instead of publishing a site without the documentation hub.');
     }
   }
   for (const path of hubPaths.sort()) {
@@ -246,8 +277,21 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
       text = null;
     }
     if (text === null) text = fallbackByPath.get(`docs:docs/${path}`)?.body ?? null;
-    if (text === null || !isPublicContentSafe(text)) continue;
     const slug = slugFor('docs', path);
+    if (text === null || !isPublicContentSafe(text)) {
+      const reason = text === null ? 'it could not be fetched in this build' : 'it failed the public-safety scan';
+      pages.push({
+        slug,
+        title: titleFor(text ?? '', `docs/${path}`),
+        repo: 'docs',
+        head: hubHead,
+        sourcePath: `docs/${path}`,
+        kind: 'placeholder',
+        body: `> This page is in the documentation hub, but ${reason} at build time, so the site renders none of its text. Read it at the source repository instead: [docs at ${hubHead?.slice(0, 7) ?? 'main'}](https://github.com/Vidoxlabs/docs/blob/${hubHead ?? 'main'}/docs/${path}).`,
+        headings: []
+      });
+      continue;
+    }
     pages.push({
       slug,
       title: titleFor(text, path),
@@ -272,6 +316,16 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
       body: '> The documentation hub\'s own pages could not be fetched in this build, so only the synced repository pages are listed in the navigation. The hub\'s articles return on the next successful fetch; read them meanwhile at the [documentation repository](https://github.com/Vidoxlabs/docs/tree/main/docs).',
       headings: []
     });
+  }
+
+  // The published wording: the map runs once, here, after every text above has
+  // verified against its manifest digest. Placeholders are this site's own
+  // text and carry nothing to map.
+  for (const page of pages) {
+    if (page.kind === 'placeholder') continue;
+    page.title = neutralize(page.title);
+    page.headings = page.headings.map(neutralize);
+    page.body = neutralize(page.body);
   }
 
   return pages.sort((a, b) => a.slug.localeCompare(b.slug));
