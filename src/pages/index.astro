@@ -6,14 +6,17 @@ import BentoFeatureGrid from '../components/videsign/bento-feature-grid.astro';
 import StatementProofRow from '../components/videsign/statement-proof-row.astro';
 import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
 import { getCatalog, sourceUrl } from '../lib/repository-data.mjs';
-const { repositories, manifest, vivarium, pinsPending } = await getCatalog();
+const { repositories, manifest, vivarium, pinsPending, status, sources } = await getCatalog();
 const product = repositories.find((repository) => repository.name === 'vivarium');
 const systems = repositories.filter((repository) => repository.kind === 'system');
+const successful = systems.filter((repository) => repository.status.ciConclusion === 'success').length;
+const fresh = systems.filter((repository) => repository.status.docsFreshness.fresh === true).length;
 const title = 'Vidoxlabs builds Vivarium';
 const evidence = [
-  { label: 'Documentation sync', value: manifest.generatedAt ?? 'Not published', href: 'https://github.com/Vidoxlabs/docs/blob/main/manifest.json' },
+  { label: 'Documentation sync', value: `${fresh}/${systems.length} system docs current`, href: 'https://github.com/Vidoxlabs/docs/blob/main/manifest.json' },
   { label: 'System pins', value: pinsPending ? 'pins pending' : `${vivarium.systems.length} pinned systems`, href: 'https://github.com/Vidoxlabs/vivarium/blob/main/vivarium.json' },
-  { label: 'CI evidence', value: 'Repository checks', href: 'https://github.com/Vidoxlabs/vivarium/actions' }
+  { label: 'CI evidence', value: `${successful}/${systems.length} successful`, href: '/repositories' },
+  { label: 'Last umbrella push', value: status.repositories.vivarium?.lastPushAt ?? 'Unknown', href: 'https://github.com/Vidoxlabs/vivarium/commits/main' }
 ];
 ---
 <BaseLayout title={title}>
@@ -21,6 +24,7 @@ const evidence = [
     <p><a href="/vivarium">Understand Vivarium</a> · <a href="/repositories">Inspect the evidence</a></p>
   </HeroBillboard>
   <StatementProofRow items={evidence} />
+  <p>Build-time status: {sources.status === 'site' ? 'gathered by the site' : sources.status === 'docs' ? 'published by docs' : 'committed snapshot'}. Documentation manifest: {manifest.generatedAt}.</p>
   <section aria-labelledby="systems-title">
     <div class="lattice-card__meta"><h2 id="systems-title">Seven systems, one product</h2><ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} /></div>
     <p class="lattice-prose">bloom is the interface layer. The manifest supplies every role, version and pin below.</p>

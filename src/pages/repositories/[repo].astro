@@ -11,21 +11,26 @@ export async function getStaticPaths() {
 }
 const repository = await getRepository(Astro.params.repo);
 if (!repository) return Astro.redirect('/404');
+const { sources } = await getCatalog();
 ---
 <BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`}>
   <HeroBillboard title={repository.name} lede={repository.summary || 'Documentation has not synced yet.'}>
     <p><a href={`https://github.com/Vidoxlabs/${repository.name}`}>Repository</a> · <a href={sourceUrl(repository.name, repository.head)}>Source README at {repository.head?.slice(0, 7) ?? 'main'}</a></p>
   </HeroBillboard>
+  <p>Status source: {sources.status === 'site' ? 'gathered by the site' : sources.status === 'docs' ? 'published by docs' : 'committed snapshot'}.</p>
   <PublicRepoCard repository={repository} />
   <section aria-labelledby="pins-title">
     <div class="lattice-card__meta"><h2 id="pins-title">Pins and drift</h2><ClaimMaturityBadge label={repository.pin ? 'observed' : 'planned'} /></div>
     <p>{repository.pin ? <a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.pin}`}>Pinned at {repository.pin.slice(0, 7)}</a> : 'Not pinned by the Vivarium manifest.'}</p>
-    <p>Head: {repository.head ? <a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.head}`}>{repository.head.slice(0, 7)}</a> : 'Not synced yet'}. Drift is calculated by the status pipeline.</p>
+    <p>Repository head: {repository.repositoryHead ? <a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}`}>{repository.repositoryHead.slice(0, 7)}</a> : 'Unknown'}.</p>
+    <p>Pin drift: {repository.drift === null ? 'Unknown' : repository.drift ? 'Head differs from the pin' : 'Pin matches head'}.</p>
+    <p>Package version: {repository.version ?? 'Not published'}; latest release or tag: {repository.status.latestRelease ?? 'Unknown'}.</p>
   </section>
-  <section aria-labelledby="activity-title">
+  <section aria-labelledby="activity-title" data-status-repository={repository.name}>
     <h2 id="activity-title">Recent activity</h2>
-    <p>Documentation synced at {repository.syncedAt ?? 'an unknown time'}; last push is refreshed by the live status route.</p>
-    {repository.head && <p><a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.head}/checks`}>Checks for {repository.head.slice(0, 7)}</a></p>}
+    <p>Documentation synced at {repository.syncedAt ?? 'an unknown time'}.</p>
+    <p>Last push: <span data-status-field="lastPushAt">{repository.status.lastPushAt ?? 'Unknown'}</span>.</p>
+    {repository.repositoryHead && <p><a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}/checks`}>Checks for {repository.repositoryHead.slice(0, 7)}</a></p>}
   </section>
   <section aria-labelledby="quickstart-title">
     <h2 id="quickstart-title">Quickstart</h2>

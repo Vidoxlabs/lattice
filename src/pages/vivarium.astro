@@ -4,7 +4,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroBillboard from '../components/videsign/hero-billboard.astro';
 import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
 import { getCatalog } from '../lib/repository-data.mjs';
-const { repositories, vivarium, pinsPending } = await getCatalog();
+const { repositories, vivarium, pinsPending, status } = await getCatalog();
 const product = repositories.find((repository) => repository.name === 'vivarium');
 ---
 <BaseLayout title="Vivarium | Vidoxlabs" description="Vivarium's product definition, system map and direction.">
@@ -15,8 +15,11 @@ const product = repositories.find((repository) => repository.name === 'vivarium'
     <div class="lattice-card__meta"><h2 id="map-title">System map</h2><ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} /></div>
     {pinsPending && <p>Pins pending: the public manifest could not be read in this build.</p>}
     <table class="lattice-table">
-      <thead><tr><th>System</th><th>Layer</th><th>Version</th><th>Pinned commit</th><th>Role</th></tr></thead>
-      <tbody>{vivarium.systems?.map((system) => <tr><td><a href={`/repositories/${system.name}`}>{system.name}</a></td><td>{system.layer}</td><td>{system.version}</td><td><a href={`https://github.com/Vidoxlabs/${system.name}/commit/${system.commit}`}>{system.commit.slice(0, 7)}</a></td><td>{system.role}</td></tr>)}</tbody>
+      <thead><tr><th>System</th><th>Layer</th><th>Version</th><th>Pinned commit</th><th>Drift</th><th>Role</th></tr></thead>
+      <tbody>{vivarium.systems?.map((system) => {
+        const drift = status.vivarium.systems?.[system.name]?.drift;
+        return <tr><td><a href={`/repositories/${system.name}`}>{system.name}</a></td><td>{system.layer}</td><td>{system.version}</td><td><a href={`https://github.com/Vidoxlabs/${system.name}/commit/${system.commit}`}>{system.commit.slice(0, 7)}</a></td><td>{drift === null ? 'Unknown' : drift ? 'Head differs' : 'Current'}</td><td>{system.role}</td></tr>;
+      })}</tbody>
     </table>
   </section>
   <section aria-labelledby="direction-title">

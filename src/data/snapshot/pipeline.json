@@ -1,0 +1,1124 @@
+{
+  "documents": {
+    "sources/aestivation/README.md": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/assets/aestivation-banner-dark.svg\">\n  <img src=\".github/assets/aestivation-banner.svg\" alt=\"Aestivation banner: a closed bud with wrapping sepals, and the tagline Plans, verdicts, and the assembly gate.\" width=\"1280\">\n</picture>\n\nPlans, verdicts, and the assembly gate\n\n# aestivation\n\nPlan proposal, deterministic validation, review verdicts, and the assembly gate.\n\nAestivation is the admission and review member of the bloom agent family. Before work opens, it happens here: a plan is proposed, a deterministic rule pack validates it, reviewers record approve or revise verdicts, and a gate holds automatic assembly until the plan is both valid and approved. A revision verdict stops assembly; the reasons say what to change; the next plan is a new proposal.\n\n## Status\n\nVersion 0.5.0. The plan rule pack, verdict ledger, and assembly gate are `implemented` as a tested reference library. A durable ledger, live reviewers, and service interfaces remain `specified` or `planned`.\n\n## Install\n\n```bash\nnpm install @vidoxlabs/aestivation\n```\n\nRequires Node >= 22.13. Zero runtime dependencies.\n\n## Modules\n\n| Module | What it holds | Label |\n| :--- | :--- | :--- |\n| `plan.mjs` | Plan proposals: objective plus ordered steps, the SHA-256 digest of each proposal's content, and the deterministic rule pack that validates stages, titles, and order. | `implemented` |\n| `verdict.mjs` | Verdict records (approve or revise) that may name the plan digest they reviewed, the append-only ledger, and the soundness check over every record. | `implemented` |\n| `intent.mjs` | Read-only intent assessments that name missing sources and ground personal recall in admitted memory references. Tool and memory-write lists stay under caller admission. | `implemented` |\n| `correction.mjs` | Corrections within existing scope after an exact-digest revise verdict, with new frozen proposals, a two-replan limit per in-process lineage, and a check that refuses superseded results. The judge cannot apply the patch. | `implemented` |\n| `gate.mjs` | The assembly gate: one function that checks the ledger, holds a review of a different plan version as stale, and composes validation and verdicts into permitted or held, with the reason. | `implemented` |\n\n## The name\n\nAestivation is the arrangement of petals in a bud before it opens. That is the entire doctrine: the work of arranging before the opening. Nothing assembles until the arrangement has been validated and reviewed. When it opens, it opens because the gate said so for stated reasons.\n\n## The rule pack\n\nThe baseline deterministic rules a plan must pass:\n\n1. A plan has at least one step.\n2. Every step names a known stage: `research`, `work`, `review`, `assemble`, or `verify`.\n3. Every step has a non-empty title.\n4. When review and assemble are both present, review precedes the first assemble.\n5. When verify is present, it is the final step.\n\nThe same plan validates the same way every time, and no review can wave it through. The split runs both ways: no rule pack approves a plan on a reviewer's behalf. Judgment and rules are separate lanes; the gate composes them.\n\n## The family\n\nThe family follows one design law: ordinary botanical words for public products, mirroring five flower-named personas.\n\n| Name | Province |\n| :--- | :--- |\n| [`seed`](https://github.com/Vidoxlabs/seed) | Harness foundation: runs, tools, providers |\n| [`capillary`](https://github.com/Vidoxlabs/capillary) | Context retrieval and relations, provenance-first |\n| [`myosotis`](https://github.com/Vidoxlabs/myosotis) | Memory with consent and structural forget |\n| `aestivation` (this repo) | Plans, verdicts, and the gate before assembly |\n| [`drosera`](https://github.com/Vidoxlabs/drosera) | Tool faces, skills, hooks, cookbooks |\n| [`trellis`](https://github.com/Vidoxlabs/trellis) | Multi-point testing with dated evidence |\n| [`bloom`](https://github.com/Vidoxlabs/bloom) | The team workspace harness |\n| [`docs`](https://github.com/Vidoxlabs/docs) | Family documentation, synced from every public repository |\n\n## Documentation\n\n- `AGENTS.md`: start here before editing. Stay in this repository's province.\n- `docs/charter.md`: mission, principles, non-goals.\n- `docs/architecture.md`: the bud and its four whorls.\n- `docs/contracts/`: the plan, verdict, and gate contracts.\n- `docs/interop.md`: how bloom runs the loop, and how seed carries its effects.\n\n## Development\n\n```bash\nnpm test\n```\n\nTests use the Node built-in runner. Adding a rule means adding the test that holds it.\n\n## License\n\nMIT\n\nThe Vidoxlabs name and mark are trademarks of Vidoxlabs LLC. They are not covered by this repository's MIT license.\n",
+    "sources/capillary/README.md": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/assets/capillary-banner-dark.svg\">\n  <img src=\".github/assets/capillary-banner.svg\" alt=\"Capillary banner: branching capillary veins, and the tagline Context with its sources attached.\" width=\"1280\">\n</picture>\n\nContext with its sources attached\n\n# Capillary\n\nCapillary is an open, local-first **context retrieval system** for agent workspaces. It\nrecords sources with their digests, retrieves **bounded, provenance-honest packets** of\nthem, and keeps **typed relations** between the items it holds: the fine-channel work of\nlifting context up to the team that needs it, without letting prose smuggle in as fact.\n\nAgent surfaces like [Bloom](https://github.com/Vidoxlabs/bloom) consume capillary exactly\nwhere retrieving (and organizing) their source and context matters: a team brief admits\nsources, and specialists receive bounded excerpts that say what they are, where they came\nfrom, and what was shortened. Harness foundations like [Seed](https://github.com/Vidoxlabs/seed)\nadmit capillary's retrieval tools to their runs and record each retrieval as an intent.\n\n**Status: `1.3.0`, retrieval contracts and library modules.** The retrieval\nseam, source recording, and relation contracts are implemented and covered by `npm test`.\nThe backing stores (index, service) are specified, not shipped. Nothing in this repository\nopens a network listener or retrieves over the network today.\n\n## What is here today (`implemented`)\n\n| Module | What it does |\n| --- | --- |\n| `src/provenance.mjs` | Records source digests, origins, evidence classes and confidence, and records why sources are unknown |\n| `src/packet.mjs` | Builds bounded context packets with **declared** truncation, budgeted admission, declared unknown sources, and relevance and recency kept as separate fields |\n| `src/epoch-guard.mjs` | Refuses a packet when the deletion epoch at the end of a read differs from the epoch at its start, or cannot be read |\n| `src/read.mjs` | Reads caller-supplied text under an estimated token budget and declares truncation in an untrusted envelope |\n| `src/search.mjs` | Searches caller-supplied records for literal matches and reports recency and snippet cuts in an untrusted envelope |\n| `src/conversation.mjs` | Shapes one conversation's thread, a recent list, a brief of the newest operator intent and verified outcome, and an envelope around the parent walk, all from caller-supplied records |\n| `src/relations.mjs` | Typed, append-only relations and bounded walks over supplied parent links |\n\n`npm install && npm test` verifies all of it. No runtime dependencies.\n\n## Contracts\n\n- [Bounded retrieval](docs/contracts/retrieval.md): the packet, its budgets, declared shortening, declared omissions\n- [Provenance](docs/contracts/retrieval.md): digests and origin classes on every source\n\n## How capillary fits the family (`specified`)\n\nThe botanic line, per [docs/family.md](docs/family.md): **seed** (the foundation a runtime\ngrows from) → **capillary** (these channels, lifting context to it) → **myosotis**\n(governed memory: consent, keep, and forget) → **aestivation** (the bud's arrangement,\nadmission and review before assembly) → **drosera** (the sundew's tentacles: tools,\nskills, hooks, cookbooks) → **bloom** (the opened team workspace), with the whole line\ngrowing against **trellis** (the testing lattice that keeps every member honest).\n\nCapillary owns retrieval and organization only. Remembering with consent is the memory\nfabric's job (forget is a promise there, not a default); deciding what gets admitted into\nruns and what assembles is the gate's job. [docs/interop.md](docs/interop.md) draws each\nseam.\n\n## Documentation\n\n- [AGENTS.md](AGENTS.md): start here before editing. Stay in this repository's province.\n- [Charter](docs/charter.md): mission, principles, non-goals\n- [Architecture](docs/architecture.md): sources, index, packets, relations\n- [Contracts](docs/contracts/retrieval.md): bounded retrieval and provenance\n- [Relations contract](docs/contracts/relations.md): typed, append-only context relations\n- [Interop](docs/interop.md): Bloom, Seed, and the memory seam\n- [Family](docs/family.md): the botanic naming line\n\n## License\n\n[MIT](LICENSE)\n\nThe Vidoxlabs name and mark are trademarks of Vidoxlabs LLC. They are not covered by this repository's MIT license.\n",
+    "sources/drosera/README.md": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/assets/drosera-banner-dark.svg\">\n  <img src=\".github/assets/drosera-banner.svg\" alt=\"Drosera banner: sundew tendrils ending in small hooks, and the tagline Tools, skills, hooks, and cookbooks.\" width=\"1280\">\n</picture>\n\nTools, skills, hooks, and cookbooks\n\n# drosera\n\nTooling for agents: tool faces, skills, hooks, cookbooks.\n\nDrosera is the tooling member of the bloom agent family. It defines the four packaging forms an agent works with beyond its own context. Tool faces are neutral definitions of what can be called, following seed's tool-id grammar. Skills are packaged instructions that grow context without granting authority. Hooks are deterministic checks, fail closed, bound to run events. Cookbooks are recipes that compose published faces and skills, resolved at validation.\n\n## The name\n\nDrosera is the sundew. A sundew works by extension: sticky tentacles that reach out from the plant and hold what they touch, each one honest about what it has caught. That is the doctrine here: tools reach, each face says what it grips (summary, effect class), and the extensions never become the organism. The harness is the organism; drosera is what it holds.\n\n## Status\n\nVersion 2.2.0. Pack formats, validation, reference resolution, the skill document reader, and the in-memory skill catalog are `implemented` in the reference library. A live registry, connector bindings, and server interfaces remain `specified` or `planned`.\n\n## Install\n\n```bash\nnpm install @vidoxlabs/drosera\n```\n\nRequires Node >= 22.13. Zero runtime dependencies.\n\n## Modules\n\n| Module | What it holds | Label |\n| :--- | :--- | :--- |\n| `pack.mjs` | Tool faces under seed's neutral tool-id grammar, and the tool pack that collects them with unique IDs and domain listings. | `implemented` |\n| `skills.mjs` | Skill validation, lifecycle transitions, skill packs, and a catalog for promoted MIT skills. | `implemented` |\n| `skill-markdown.mjs` | Reads a skill document's text, which the caller already holds, into the record `skills.mjs` checks. It opens no file. | `implemented` |\n| `hooks.mjs` | Hook records: deterministic checks bound to run events, and the fail-closed hook pack. | `implemented` |\n| `cookbook.mjs` | Recipes composing faces and skills, with validation that every reference resolves. | `implemented` |\n\n## The family\n\nThe family follows one design law: ordinary botanical words for public products, mirroring five flower-named personas ([the law](https://github.com/Vidoxlabs/capillary/blob/main/docs/family.md)).\n\n| Name | Province |\n| :--- | :--- |\n| [`seed`](https://github.com/Vidoxlabs/seed) | Harness foundation: runs, tools, providers |\n| [`capillary`](https://github.com/Vidoxlabs/capillary) | Context retrieval and relations, provenance-first |\n| [`myosotis`](https://github.com/Vidoxlabs/myosotis) | Memory with consent and structural forget |\n| [`aestivation`](https://github.com/Vidoxlabs/aestivation) | Plans, verdicts, and the gate before assembly |\n| `drosera` (this repo) | Tool faces, skills, hooks, cookbooks |\n| [`trellis`](https://github.com/Vidoxlabs/trellis) | Multi-point testing with dated evidence |\n| [`bloom`](https://github.com/Vidoxlabs/bloom) | The team workspace harness |\n| [`docs`](https://github.com/Vidoxlabs/docs) | Family documentation, synced from every public repository |\n\n## Documentation\n\n- `AGENTS.md`: start here before editing. Stay in this repository's province.\n- `docs/charter.md`: mission, principles, non-goals.\n- `docs/architecture.md`: the tentacles and how they compose.\n- `docs/contracts/`: the tool, skill, hook, and cookbook contracts.\n- `docs/interop.md`: how each sibling meets this fabric.\n\n## Development\n\n```bash\nnpm test\n```\n\nTests use the Node built-in runner. Adding a rule means adding the test that holds it.\n\n## License\n\nMIT\n\nThe Vidoxlabs name and mark are trademarks of Vidoxlabs LLC. They are not covered by this repository's MIT license.\n",
+    "sources/myosotis/README.md": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/assets/myosotis-banner-dark.svg\">\n  <img src=\".github/assets/myosotis-banner.svg\" alt=\"Myosotis banner: a five-petal forget-me-not, and the tagline Memory that keeps only what you allow.\" width=\"1280\">\n</picture>\n\nMemory that keeps only what you allow\n\n# myosotis\n\nGoverned memory for agents: consent to keep, structural forget.\n\nMyosotis is the memory member of the bloom agent family. It holds the contracts and reference modules for agent memory where two promises sit on the face of the thing: memory is only kept under proper consent, and a real forget is structural. A forget invalidates every projection built before it and withholds forgotten content from later reads. A stale projection fails closed; it never resurrects.\n\n## Status\n\nVersion 1.2.0. The record, consent, forget, bounded recall, and in-process continuity rules are `implemented` as a tested reference library. A durable store, projection adapters, and service interfaces remain `specified` or `planned`.\n\n## Install\n\n```bash\nnpm install @vidoxlabs/myosotis\n```\n\nRequires Node >= 22.13. Zero runtime dependencies.\n\n## Modules\n\n| Module | What it holds | Label |\n| :--- | :--- | :--- |\n| `records.mjs` | Memory record shape and the closed set of memory classes: organizational, personal-consented, active-thread, unconfirmed. | `implemented` |\n| `consent.mjs` | Consent grants and revocations, ordered by an optional sequence so a later grant is re-consent, and the state that answers whether a scope currently has consent. | `implemented` |\n| `forget.mjs` | The memory store state machine: admission and supersede, the confirmed and keyed forget that tombstones a whole supersede chain, the epoch, and stamped projections of identifiers and digests that are refused once stale and rebuilt before they serve. | `implemented` |\n| `recall.mjs` | Bounded selection from caller-held records, with sensitivity checks and candidate, eligible, and selected counts. | `implemented` |\n| `continuity.mjs` | One active continuity per subject, held in the process. Lookup never opens one, attach refuses any id that is not this subject's active id without saying why, and isolate opens a new active id. | `implemented` |\n\n## Why the classes stay distinguishable\n\nThe four memory classes never collapse into one bucket:\n\n- **organizational**: knowledge that belongs to a scope, like a team's working notes. Kept without personal consent because it is not about a person.\n- **personal-consented** requires a live grant for its scope, an admissible sensitivity, and provenance of the principal's explicit confirmation.\n- **active-thread**: working context for the conversation happening now. Ephemeral by nature, never promoted to durable silently.\n- **unconfirmed**: an observation that has not been established. Stays marked. Never presented as known.\n\nConflating them is the failure mode this fabric exists to prevent.\n\n## Why forget is an epoch\n\nA forget that only deletes a row leaves every cached copy of that row alive. Myosotis models forget as an epoch bump: every projection (a cache, an index, a summary) carries the epoch it was built at, and any projection whose stamp no longer matches fails closed. Reading it is refused until it is rebuilt from the store. Bypass and rebuild, never resurrect.\n\n## The family\n\nThe family follows one design law: ordinary botanical words for public products, mirroring five flower-named personas.\n\n| Name | Province |\n| :--- | :--- |\n| [`seed`](https://github.com/Vidoxlabs/seed) | Harness foundation: runs, tools, providers |\n| [`capillary`](https://github.com/Vidoxlabs/capillary) | Context retrieval and relations, provenance-first |\n| `myosotis` (this repo) | Memory with consent and structural forget |\n| [`aestivation`](https://github.com/Vidoxlabs/aestivation) | Plans, verdicts, and the gate before assembly |\n| [`drosera`](https://github.com/Vidoxlabs/drosera) | Tool faces, skills, hooks, cookbooks |\n| [`trellis`](https://github.com/Vidoxlabs/trellis) | Multi-point testing with dated evidence |\n| [`bloom`](https://github.com/Vidoxlabs/bloom) | The team workspace harness |\n| [`docs`](https://github.com/Vidoxlabs/docs) | Family documentation, synced from every public repository |\n\n## Documentation\n\n- `AGENTS.md`: start here before editing. Stay in this repository's province.\n- `docs/charter.md`: mission, principles, non-goals.\n- `docs/architecture.md`: the parts and how they compose.\n- `docs/contracts/`: the record, consent, and forget contracts.\n- `docs/interop.md`: how bloom consumes memory, and where capillary ends and myosotis begins.\n\n## Development\n\n```bash\nnpm test\n```\n\nTests use the Node built-in runner. Adding a rule means adding the test that holds it.\n\n## License\n\nMIT\n\nThe Vidoxlabs name and mark are trademarks of Vidoxlabs LLC. They are not covered by this repository's MIT license.\n",
+    "sources/seed/README.md": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/assets/seed-banner-dark.svg\">\n  <img src=\".github/assets/seed-banner.svg\" alt=\"Seed banner: a seed with a vertical contract seam, and the tagline Contracts and schemas for the runtime.\" width=\"1280\">\n</picture>\n\nContracts and schemas for the runtime\n\n# Seed\n\nSeed is an open, local-first harness foundation for AI agents. It defines the contracts an\nagent runtime is built on: the run model, tool identity, and the provider adapter.\nAgent workspaces like [Bloom](https://github.com/Vidoxlabs/bloom) can orchestrate\nmodel-backed workers, tools, and shared artifacts without depending on any single hosted\nservice or third-party harness.\n\n**Status: `0.8.0`, specification and contract modules.** The contracts, grammar, and\nvalidators in this repository are implemented and covered by `npm test`. The runtime\nservices on the roadmap are specified or planned, not shipped. Nothing in this repository\nopens a network listener, calls a hosted model, or touches your files today.\n\n## Why\n\nBloom proved the model-agnostic part: a notebook-shaped team workspace that treats any\nchat-completions-compatible service as one provider binding of several. The layer below\nthe model is still rented: a third-party harness decides how tools are called, how runs\nare recovered, and how work proves itself. Seed takes that layer back as a small, open,\ninspectable foundation:\n\n- **One run model.** Work is an *objective* with *attempts*, recorded intents, and a\n  verification receipt, not a loose prompt history.\n- **Neutral tool identity.** Tools are addressed by grammar, never by vendor, host, or\n  product name, so adapters can be swapped without re-teaching agents.\n- **Provider-agnostic by contract.** Any inference service that can complete text can sit\n  behind the same `generate` contract Bloom already speaks.\n\n## What is here today (`implemented`)\n\n| Module | What it does |\n| --- | --- |\n| `src/tool-id.mjs` | Parse, format, and validate the neutral tool ID grammar; check registry entries, rollback postures, and cross-entry references |\n| `src/run-model.mjs` | Objective/attempt records, run statuses, legal transitions, and intent-time tool admission |\n| `src/resume.mjs` | Resume pending steps, report supplied failure classes, preview steps in a dry run, and manage in-process run leases |\n| `src/admission.mjs` | Fail-closed caller admission over a registry the caller holds |\n| `src/registry-documents.mjs` | Check agents and tools documents the caller already parsed: name a document not supplied, and report an agent that names an unknown tool |\n| `src/provider.mjs` | Validate provider adapters and normalize generation results |\n| `src/model-alias.mjs` | Resolve the alias a caller asks for to a backend model name from a table the caller holds, keeping the two names distinct and labeling deprecated aliases without swapping them |\n\n`npm install && npm test` verifies all of it. There are no runtime dependencies.\n\n## Contracts (`specified`, `implemented` where modules cover them)\n\n- [Run model](docs/contracts/run-model.md): objectives, attempts, intents, receipts\n- [Tool identity](docs/contracts/tool-id.md): the neutral ID grammar and registry fields\n- [Provider adapter](docs/contracts/provider.md): the `generate` contract, compatible with Bloom's team provider\n\n## How seed and Bloom fit (`specified`)\n\nBloom already isolates its model layer behind one provider interface. Seed lands in three\nstages, each one usable by Bloom as it ships:\n\n1. **Stage 1, library contracts.** Shared modules: tool IDs, run records, and provider\n   validation (this release).\n2. **Stage 2, inference endpoint.** A local service exposing an OpenAI-compatible\n   chat-completions surface over any configured backend, which Bloom can consume today via\n   its provider base URL.\n3. **Stage 3, run engine and tool registry.** Durable objectives and attempts, an\n   owner gate for effects that leave the run, and a tool registry adapters publish to.\n\nDetails and worked examples: [docs/bloom-interop.md](docs/bloom-interop.md).\n\n## Documentation\n\n- [AGENTS.md](AGENTS.md): start here before editing. Stay in this repository's province.\n- [Charter](docs/charter.md): mission, principles, non-goals\n- [Architecture](docs/architecture.md): planes, authority, and what seed refuses to own\n- [Lexicon](docs/lexicon.md): how public repositories stay in generalized terms\n- [Roadmap](docs/roadmap.md): staged, status-labeled\n\n## Design principles\n\n1. Local-first. A clean checkout runs; nothing phones home.\n2. One authority per fact. Runs own run state; memory owns memory; tools own effects.\n3. Receipts over vibes. A run completes with a verification receipt, not a self-report.\n4. Effects are gated. Side effects that leave a run pause for the owner.\n5. No vendor names in tool identity. Grammar first; connectors carry the brand.\n\n## License\n\n[MIT](LICENSE)\n\nThe Vidoxlabs name and mark are trademarks of Vidoxlabs LLC. They are not covered by this repository's MIT license.\n",
+    "sources/trellis/README.md": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/assets/trellis-banner-dark.svg\">\n  <img src=\".github/assets/trellis-banner.svg\" alt=\"Trellis banner: a lattice with five check-points, and the tagline Multi-point tests for the family.\" width=\"1280\">\n</picture>\n\nMulti-point tests for the family\n\n# trellis\n\nMulti-point testing for the agent family: shape, behavior, consistency, operational.\n\nTrellis is the testing member of the bloom agent family. Every member repository keeps its own tests; trellis checks the family from the outside, from four points each: **shape** (the public surface is what it claims), **behavior** (the load-bearing invariants hold under direct calls), **consistency** (the siblings agree where they claim to, one grammar, shared conventions), and **operational** (each test suite runs green when actually run). Verdicts are pass, fail, or unknown. A fail always outranks an unknown, an absent checkout is declared unknown, and health claims are dated runs kept as evidence, not standing truths.\n\n## The name\n\nA trellis is the lattice a garden grows against. Climbing plants grip a lattice at many points, not one, and the lattice holds because every point it promises to hold is checked. The family is a garden of contract modules, and its health is a multi-point question, never a single green badge.\n\n## Status\n\nVersion 0.8.0. The probe, grid, and verdict engine is `implemented` as a tested reference library. Family health statements live in `docs/evidence/` as dated observed runs. The engine covers the family's module repositories. The harness and design canon keep their own checks.\n\n## Install\n\n```bash\nnpm install @vidoxlabs/trellis\n```\n\nRequires Node >= 22.13. Zero runtime dependencies.\n\n## Modules\n\n| Module | What it holds | Label |\n| :--- | :--- | :--- |\n| `point.mjs` | The four test points and the probe record: deterministic checks, fail closed, dedicated to one point. | `implemented` |\n| `score.mjs` | Verdict math: pass, fail, unknown; fail outranks unknown, unknown outranks pass, and nothing is ever silently passed. | `implemented` |\n| `grid.mjs` | The multi-point grid: run probes against injected subjects and roll the results up per subject and per point. | `implemented` |\n| `probes.mjs` | The default probe lists for each family member and the cross-family consistency probes. A claim a member made after its first release is probed from the version that made it; an older checkout reads unknown. | `implemented` |\n\nThe bundle runner, `scripts/family.mjs` (`npm run family`), wires the grid to the canonical family workspace: it loads each sibling's modules, runs the default probes, runs each sibling's own test suite for the operational point, and prints the dated report the evidence docs record.\n\n## The family\n\nThe family follows one design law: ordinary botanical words for public products, mirroring five flower-named personas ([the law](https://github.com/Vidoxlabs/capillary/blob/main/docs/family.md)).\n\n| Name | Province |\n| :--- | :--- |\n| [`seed`](https://github.com/Vidoxlabs/seed) | Harness foundation: runs, tools, providers |\n| [`capillary`](https://github.com/Vidoxlabs/capillary) | Context retrieval and relations, provenance-first |\n| [`myosotis`](https://github.com/Vidoxlabs/myosotis) | Memory with consent and structural forget |\n| [`aestivation`](https://github.com/Vidoxlabs/aestivation) | Plans, verdicts, and the gate before assembly |\n| [`drosera`](https://github.com/Vidoxlabs/drosera) | Tool faces, skills, hooks, cookbooks |\n| `trellis` (this repo) | Multi-point testing with dated evidence |\n| [`bloom`](https://github.com/Vidoxlabs/bloom) | The team workspace harness |\n| [`docs`](https://github.com/Vidoxlabs/docs) | Family documentation, synced from every public repository |\n\nThe line grows against the trellis: the products are the plants; this is the lattice they are checked against.\n\n## Documentation\n\n- `AGENTS.md`: start here before editing. Stay in this repository's province.\n- `docs/charter.md`: mission, principles, non-goals.\n- `docs/architecture.md`: probes, grid, verdicts; engine and bundle runner.\n- `docs/contracts/`: the probe and grid contracts.\n- `docs/interop.md`: what each sibling is probed on, and the boundaries.\n- `docs/evidence/`: dated observed family runs, with their receipts.\n\n## Development\n\n```bash\nnpm test       # engine and probe mechanics, no siblings required\nnpm run family # the bundle runner over the canonical workspace layout\n```\n\nTests use the Node built-in runner. Adding a probe means adding the test that holds it.\n\n## License\n\nMIT\n\nThe Vidoxlabs name and mark are trademarks of Vidoxlabs LLC. They are not covered by this repository's MIT license.\n",
+    "sources/vivarium/README.md": "<picture>\n  <source media=\"(prefers-color-scheme: dark)\" srcset=\".github/assets/vivarium-banner-dark.svg\">\n  <img src=\".github/assets/vivarium-banner-light.svg\" alt=\"Vivarium banner: an arched glass case on a base with a young two-leaf sprout inside, and the tagline Seven systems, one agent platform.\" width=\"1280\">\n</picture>\n\n# Vivarium\n\nSeven systems, one agent platform.\n\nVivarium is a personal agent platform. A person raises an assistant with a character and a job, gives it memory they consent to keep, and works alongside it: it reads what they point it at, asks before it acts outside its bounds, and leaves a record of what it did. It runs on the person's own machine first, and every route it takes to a model, a file, or a service is one the person switched on.\n\nThis repository is the umbrella, not the product. It pins the seven systems at exact commits, records what each one owns, and gives a code agent the context it needs to work in the family without guessing. No product code lives here: the code lives in the seven repositories, and this tree is the one snapshot that says which code that is.\n\nbloom is Vivarium's user interface; the other six systems are the parts behind it.\n\n## The systems\n\n| System | Role | Layer |\n| --- | --- | --- |\n| [seed](https://github.com/Vidoxlabs/seed) | Harness floor: run records, tool identity, provider adapters, the shared contracts | floor |\n| [capillary](https://github.com/Vidoxlabs/capillary) | Context: bounded retrieval with sources attached, and relations | peer |\n| [myosotis](https://github.com/Vidoxlabs/myosotis) | Memory: consent to keep, structural forget | peer |\n| [drosera](https://github.com/Vidoxlabs/drosera) | Tools: tool faces, skills, hooks, cookbooks | peer |\n| [aestivation](https://github.com/Vidoxlabs/aestivation) | Review and delegation: plans, verdicts, questions to the person, the assembly gate | peer |\n| [bloom](https://github.com/Vidoxlabs/bloom) | User interface: the desktop and web app, first-run setup, the head agent; the only composer | composer |\n| [trellis](https://github.com/Vidoxlabs/trellis) | Testing from outside the call path: shape, behavior, consistency, operational probes | outside |\n\nThe floor holds the contracts. The four peers do not import each other; they meet at seed. bloom is the only composer: it is where a person raises an agent and where the parts are put together. trellis tests from outside the call path, so a failure in the tree is not a failure the tree can hide.\n\n## System map\n\n<!-- vivarium:map:start -->\n```mermaid\nflowchart BT\n    bloom[\"bloom · interface\"]\n    capillary[\"capillary · context\"]\n    myosotis[\"myosotis · memory\"]\n    drosera[\"drosera · tools\"]\n    aestivation[\"aestivation · review\"]\n    trellis[\"trellis · probes\"]:::outside\n    seed[\"seed · harness floor\"]:::floor\n\n    bloom -->|imports drosera 7a396c0| drosera\n    bloom -->|imports seed 0d158cd| seed\n    bloom -.->|contracts| seed\n    capillary -.->|contracts| seed\n    myosotis -.->|contracts| seed\n    drosera -.->|contracts| seed\n    aestivation -.->|contracts| seed\n    capillary -.->|\"context to memory, planned\"| myosotis\n    trellis -.->|probes| bloom\n    trellis -.->|probes| capillary\n    trellis -.->|probes| myosotis\n    trellis -.->|probes| drosera\n    trellis -.->|probes| aestivation\n    trellis -.->|probes| seed\n\n    linkStyle 2,3,4,5,6,7 stroke-dasharray: 6 4\n    linkStyle 8,9,10,11,12,13 stroke-dasharray: 2 4\n    classDef floor stroke-width:3px\n    classDef outside stroke-dasharray: 4 3\n```\n\nSolid is an import today, labelled with the pinned short SHA. Dashed is a contract. Dotted is a probe from outside the call path. Edges marked planned are not built yet.\n<!-- vivarium:map:end -->\n\n## Status\n\n<!-- vivarium:status:start -->\n| System | Pin | Version | CI |\n| --- | --- | --- | --- |\n| seed | [0d158cd](https://github.com/Vidoxlabs/seed/commit/0d158cd7e1fb5098162c98d303ddde8172001062) | 0.10.0 | [![seed tests](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml) |\n| capillary | [0caa855](https://github.com/Vidoxlabs/capillary/commit/0caa855cca2780f29d1d11167f4f352ba28ee9f5) | 1.3.0 | [![capillary tests](https://github.com/Vidoxlabs/capillary/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/capillary/actions/workflows/ci.yml) |\n| myosotis | [4c7a8b8](https://github.com/Vidoxlabs/myosotis/commit/4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9) | 1.2.0 | [![myosotis tests](https://github.com/Vidoxlabs/myosotis/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/myosotis/actions/workflows/ci.yml) |\n| drosera | [34c5c29](https://github.com/Vidoxlabs/drosera/commit/34c5c29c15f1d1f8baa6de6d5016f4809d68f098) | 2.4.0 | [![drosera tests](https://github.com/Vidoxlabs/drosera/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/drosera/actions/workflows/ci.yml) |\n| aestivation | [f506c9e](https://github.com/Vidoxlabs/aestivation/commit/f506c9e9a25017ea354e68861ce9112e90d73374) | 0.5.0 | [![aestivation tests](https://github.com/Vidoxlabs/aestivation/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/aestivation/actions/workflows/ci.yml) |\n| bloom | [4e61cca](https://github.com/Vidoxlabs/bloom/commit/4e61cca4ec1d158cd592afcd56a3280489aceedf) | 0.12.0 | [![bloom tests](https://github.com/Vidoxlabs/bloom/actions/workflows/check.yml/badge.svg)](https://github.com/Vidoxlabs/bloom/actions/workflows/check.yml) |\n| trellis | [76d59fb](https://github.com/Vidoxlabs/trellis/commit/76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1) | 0.8.0 | [![trellis tests](https://github.com/Vidoxlabs/trellis/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/trellis/actions/workflows/ci.yml) |\n<!-- vivarium:status:end -->\n\n## Quick start\n\n```bash\ngit clone --recurse-submodules https://github.com/Vidoxlabs/vivarium.git\ncd vivarium\nnpm run check\nnpm run sync   # move every system to the latest main and regenerate the manifest\n```\n\nAlready cloned it without the systems? Run `git submodule update --init --recursive`.\n\n`npm run check` is offline and deterministic. It fails when a generated file drifts from the pins, when a submodule is not at its gitlink, when a relative link or a `systems/` path does not resolve, or when a public-safety rule trips. `npm test` runs the unit tests for the tool itself.\n\n## How changes flow\n\n1. **Change a system in its own repository.** A pull request there, its own tests, its own review. Nothing in this repository edits a submodule.\n2. **The pin moves here.** Either the scheduled bump opens a pull request with the new pins and the regenerated manifest and map, or a person runs `npm run sync` and opens `chore(systems): bump <names>`. Either way the pin is a commit that is on that system's `main`.\n3. **Readers get the prose from the docs hub.** [docs](https://github.com/Vidoxlabs/docs) syncs every system's README and documentation, so this repository links to those pages instead of copying them.\n4. **`docs` is linked, not pinned.** It is product-neutral and may serve more than one product, so it is not part of the snapshot. Neither is [videsign](https://github.com/Vidoxlabs/videsign), the design canon this repository's banner follows.\n\n## Links\n\n| Where | What it is |\n| --- | --- |\n| [docs](https://github.com/Vidoxlabs/docs) | The documentation hub, with every system's documentation synced |\n| [videsign](https://github.com/Vidoxlabs/videsign) | The design canon, including the family banner system |\n| [docs/system-map.md](docs/system-map.md) | The generated map and the full pin table |\n| [AGENTS.md](AGENTS.md) | The context file a code agent reads before touching the tree |\n| [docs/product/](docs/product/) | The product specs: naming, first-run setup, model access, context access |\n| [templates/agent-setup/](templates/agent-setup/) | The agent schema, the setup script, and three generic example agents |\n| [docs/vision/design-brief.md](docs/vision/design-brief.md) | The living product brief: direction, not claims |\n| [docs/adr/](docs/adr/) | The decision records, from the umbrella layout to the web app's context routes |\n| [CONTRIBUTING.md](CONTRIBUTING.md) | How to work in the umbrella, and what belongs in a system instead |\n| [SECURITY.md](SECURITY.md) | Where to report a vulnerability, privately |\n| [TRADEMARKS.md](TRADEMARKS.md) | The name and mark note |\n\n## License\n\nThis software is licensed under the MIT License. See [LICENSE](LICENSE).\nThe Vidoxlabs name and mark are trademarks of Vidoxlabs LLC. They are not covered by this repository's MIT license.\n"
+  },
+  "manifest": {
+    "generatedAt": "2026-11-25T13:31:20.625Z",
+    "sources": {
+      "aestivation": {
+        "files": [
+          {
+            "bytes": 4724,
+            "path": "README.md",
+            "sha256": "aaf5a24202f667129d71c824be178004c1091ca059ae1ae77ab0f91eb2368a7c"
+          },
+          {
+            "bytes": 405,
+            "path": "docs/CHANGELOG.md",
+            "sha256": "2a81d870bb989cdac6e06f5e37fa2484e5d4fc68b500a6db94223002a7e6f31e"
+          },
+          {
+            "bytes": 642,
+            "path": "docs/adr/README.md",
+            "sha256": "ab4cec00fa12762fbe7be8c072a174148b2e44997bca33a22b91063ce438cdfe"
+          },
+          {
+            "bytes": 3851,
+            "path": "docs/architecture.md",
+            "sha256": "f39bcbc14b86695d30c998841348dc1d5ae467cd6e148b3e7f670dd351f0ae71"
+          },
+          {
+            "bytes": 8675,
+            "path": "docs/capabilities/CAP-07-plan-review-approval-loop.md",
+            "sha256": "0a07a2fd087728e9255ac91072782c9d1a91857c2be4bbb6718bfc83f7b93d78"
+          },
+          {
+            "bytes": 525,
+            "path": "docs/capabilities/README.md",
+            "sha256": "0ec841feee64e2e03d0f3f3fc78e5e18462c637bddbde151e104a4cf8e03c15d"
+          },
+          {
+            "bytes": 2896,
+            "path": "docs/capabilities/index.json",
+            "sha256": "ef5357839eb559f451af7d4181cd45504c0fac6260c96e8749eec96b5c56deb2"
+          },
+          {
+            "bytes": 2481,
+            "path": "docs/charter.md",
+            "sha256": "8a005146c501801b792eae13e8d7264ec8ea602339485a80619ab6ef85e0ac62"
+          },
+          {
+            "bytes": 4373,
+            "path": "docs/contracts/gate.md",
+            "sha256": "c0995e384a4d3090e43cf348685841d7fcbece7c614ab848724daaaab88cb7cb"
+          },
+          {
+            "bytes": 6541,
+            "path": "docs/contracts/plan.md",
+            "sha256": "10a7fbdcc843628651613f92cf5fb21b0fbc72e27cdfa082321b92304c643830"
+          },
+          {
+            "bytes": 2501,
+            "path": "docs/contracts/verdict.md",
+            "sha256": "4ef61548c2d6da8709631a84dc5cdf6855fd699ad574f1216e4d48607fdb1e81"
+          },
+          {
+            "bytes": 3845,
+            "path": "docs/interop.md",
+            "sha256": "1578983ced21dd6ef6ce35068e5619a115715b9088fe91db2bb56339432e86b6"
+          }
+        ],
+        "head": "f506c9e9a25017ea354e68861ce9112e90d73374",
+        "name": "aestivation",
+        "syncedAt": "2026-11-24T14:12:23.584Z"
+      },
+      "bloom": {
+        "files": [
+          {
+            "bytes": 10915,
+            "path": "README.md",
+            "sha256": "2b1ddef19d00ba8700a9cbaa191b93c6d88d8fe94f07ba7597d792f2f75078e6"
+          },
+          {
+            "bytes": 2891,
+            "path": "docs/CHANGELOG.md",
+            "sha256": "9c1360b8b1529588fa2773e4a147a89afa9c246148a175467b944f16ecc8d788"
+          },
+          {
+            "bytes": 790,
+            "path": "docs/adr/0002-family-peer-imports.md",
+            "sha256": "4669f617eac22ecdb8d307a5ce33171ef34c3d36b43167f7c265aa605a3ff2ae"
+          },
+          {
+            "bytes": 678,
+            "path": "docs/adr/README.md",
+            "sha256": "704b658475d265da6d53bc10b592ddb0c6716316d54b02d8101ad66fd91ad65c"
+          },
+          {
+            "bytes": 23719,
+            "path": "docs/architecture.md",
+            "sha256": "5040efd9124e4d87db1ed0015d4fe067b7fefa0c894315606a8753c64edc1bd7"
+          },
+          {
+            "bytes": 828,
+            "path": "docs/backend/README.md",
+            "sha256": "fe9c0a437a3aa59f961f72d7e6bba0bf1051f63e31ab8eb98bda0083243d35d4"
+          },
+          {
+            "bytes": 10743,
+            "path": "docs/backend/agent-runtime.md",
+            "sha256": "5266d623ab323d72a8fddbc9f681b2d649aafa0974d5347998f1fa44dcdac3a6"
+          },
+          {
+            "bytes": 28152,
+            "path": "docs/backend/research/agent-runtime-patterns.md",
+            "sha256": "e2f941b55bb5c83b0708e6cc1e0fad86525f90ea0ccae49186c719401746298c"
+          },
+          {
+            "bytes": 21225,
+            "path": "docs/backend/research/implementability-review.md",
+            "sha256": "2b3d454bbcc728e8f23f6ebb45c0c6daebe5673330701ce860d494f7eee75397"
+          },
+          {
+            "bytes": 16666,
+            "path": "docs/capabilities/CAP-04-workspace-tools-coding-loop.md",
+            "sha256": "63fc842680db6ac21350a39b69f4b93e5bb9cf830d0f55f2cd2ab61b5ae15be7"
+          },
+          {
+            "bytes": 6916,
+            "path": "docs/capabilities/CAP-08-seat-orchestration.md",
+            "sha256": "b3baa8b7a606e2eaba8c47ee6efcc04a3fddccc9397453e259903df93b10b28b"
+          },
+          {
+            "bytes": 6001,
+            "path": "docs/capabilities/CAP-10-trace-observability.md",
+            "sha256": "a530aef52d930a80db3d20a24b4c6c8d3b76c90a3f660706c27d171dde77912b"
+          },
+          {
+            "bytes": 6459,
+            "path": "docs/capabilities/CAP-14-eval-harness.md",
+            "sha256": "1d9bf5dba9ff36e9954d5f7af8cd7220b5182b9a32a6a51752f6dfc401373018"
+          },
+          {
+            "bytes": 6117,
+            "path": "docs/capabilities/CAP-15-research-flow.md",
+            "sha256": "cc6469111366f93f054bc5ab2323384bfe6d7cf6fb04ed14219682c8934233be"
+          },
+          {
+            "bytes": 655,
+            "path": "docs/capabilities/README.md",
+            "sha256": "731c3b328fd6a8fc2a7fa92483043170ea875eceb46d8bc4f8e0a9ea0d3e8d0d"
+          },
+          {
+            "bytes": 14858,
+            "path": "docs/capabilities/index.json",
+            "sha256": "ec084ac999c6cf6a0051e1d8dd33aa0710db02ef65057730500d11b8db55be0a"
+          },
+          {
+            "bytes": 9974,
+            "path": "docs/live-test.md",
+            "sha256": "c71f8c293a960e82884802fdfd9199e607ee4bd890e713fd0516cd815079a298"
+          },
+          {
+            "bytes": 1827,
+            "path": "docs/ui/README.md",
+            "sha256": "7ac90e9f0bb3cc229a9a2dde99628bc649296fa62c38bda5dbc4debb8569a92d"
+          },
+          {
+            "bytes": 20569,
+            "path": "docs/ui/interface-contract.md",
+            "sha256": "b3c3311eb4df470636f84e31f79ca0610b1998db1d92447d8767678904f1a09f"
+          },
+          {
+            "bytes": 41049,
+            "path": "docs/ui/research/familiar-harness-patterns.md",
+            "sha256": "225915606e5b624a68a20dba9d22b7d72429de52c43aaeaa7c65854a4842ac8b"
+          },
+          {
+            "bytes": 22568,
+            "path": "docs/ui/research/implementability-review.md",
+            "sha256": "5e4a8ac432c1cfe3202a642cf05d64994df00b5961882ffe54d92fd61fbdb758"
+          }
+        ],
+        "head": "4e61cca4ec1d158cd592afcd56a3280489aceedf",
+        "name": "bloom",
+        "syncedAt": "2026-11-24T14:42:22.807Z"
+      },
+      "capillary": {
+        "files": [
+          {
+            "bytes": 4381,
+            "path": "README.md",
+            "sha256": "630054158356f448018f816a7d86b06c2b76a01e0e4402c7033a368123989e98"
+          },
+          {
+            "bytes": 677,
+            "path": "docs/CHANGELOG.md",
+            "sha256": "06762b8a46b8c0f3aa6888ccbd4c069af319f72452e4d3bbf2524bbca272bf7a"
+          },
+          {
+            "bytes": 568,
+            "path": "docs/adr/README.md",
+            "sha256": "f97fec3fcf5c874706a3d8076920f997cdbabd9438145c9914b3393f82f1f27a"
+          },
+          {
+            "bytes": 3222,
+            "path": "docs/architecture.md",
+            "sha256": "d85159a48be74a75e6351ab5c6007e1faaedf979ab80920d834db134421017b0"
+          },
+          {
+            "bytes": 16557,
+            "path": "docs/capabilities/CAP-05-codebase-context-packer.md",
+            "sha256": "fa4e0750bc265132f0ea8ca167c271353e7dadb7489986594398da126f17b366"
+          },
+          {
+            "bytes": 6034,
+            "path": "docs/capabilities/CAP-18-symbol-outline-packed-context.md",
+            "sha256": "a79dcbee61148baf051593122eeb4b95db04b11109c5f4ad5e5c52153c34a7e7"
+          },
+          {
+            "bytes": 546,
+            "path": "docs/capabilities/README.md",
+            "sha256": "2243c1d27b24f659aa6e2917a12c403270b5c4644f8dbcba78fd13c052327681"
+          },
+          {
+            "bytes": 5536,
+            "path": "docs/capabilities/index.json",
+            "sha256": "64452f395d7e0204d8c73f079a8a1360ea9716a696a355244808065ea648e2d5"
+          },
+          {
+            "bytes": 2414,
+            "path": "docs/charter.md",
+            "sha256": "5ac9a732ab6d2be21dddc4929794e67e95e93842edab0804f63a69a577ceafe8"
+          },
+          {
+            "bytes": 2522,
+            "path": "docs/contracts/relations.md",
+            "sha256": "5db6e19cf4ccddc6d9bc08bf5da9ed0cfa2cf92bd3678a168a9791acc5615e6f"
+          },
+          {
+            "bytes": 12889,
+            "path": "docs/contracts/retrieval.md",
+            "sha256": "5e87f5065d51822d5afb11f770bcce281c5ffe40edca2a138afbd4f90b24160a"
+          },
+          {
+            "bytes": 4650,
+            "path": "docs/family.md",
+            "sha256": "e3008d977a994f14850c972dde475570c4fce5dba2bd7fdc922e5e5bfc5b434b"
+          },
+          {
+            "bytes": 2761,
+            "path": "docs/interop.md",
+            "sha256": "e807babdca58502eb393ec24c53dcaea88e2aff37e12225c3ab5e6417c0b0c7c"
+          }
+        ],
+        "head": "0caa855cca2780f29d1d11167f4f352ba28ee9f5",
+        "name": "capillary",
+        "syncedAt": "2026-11-24T14:42:22.567Z"
+      },
+      "drosera": {
+        "files": [
+          {
+            "bytes": 3979,
+            "path": "README.md",
+            "sha256": "7bb4acb1f0d979275113c15ea58b4c079de73f3c47c1fa9e540d4c860f5d04c5"
+          },
+          {
+            "bytes": 736,
+            "path": "docs/CHANGELOG.md",
+            "sha256": "7f707b7b7e79872b24c0556cbc4de1e681ac4ac7cd567d8f81ba379077c3d77f"
+          },
+          {
+            "bytes": 633,
+            "path": "docs/adr/README.md",
+            "sha256": "602537ab131655001aae511d4785bdb5cf2298b9608e514fac5084e7ddca6992"
+          },
+          {
+            "bytes": 5461,
+            "path": "docs/architecture.md",
+            "sha256": "9063b8f32607ba1a8401ac618597a91d7fe446666c1da14975599338c4f82bbe"
+          },
+          {
+            "bytes": 9659,
+            "path": "docs/capabilities/CAP-09-run-guards-hook-chain.md",
+            "sha256": "5dec4e41515cf0e5510b192b05f43bb75e43c86b7a39d7c55a6759f254924fdb"
+          },
+          {
+            "bytes": 8540,
+            "path": "docs/capabilities/CAP-19-skill-safety-scan.md",
+            "sha256": "7f624356dbdc82643a0d7b4e6b4421b436feae8b7173e31ad042484015457568"
+          },
+          {
+            "bytes": 434,
+            "path": "docs/capabilities/README.md",
+            "sha256": "73e77b72d9617de6dbe2500b6e128a6634a139cf5587df355df0cf663dce5409"
+          },
+          {
+            "bytes": 7384,
+            "path": "docs/capabilities/index.json",
+            "sha256": "ca54117a001f9645df2980b9e5de36e0800888c56210eb8111f990b94b0c69ce"
+          },
+          {
+            "bytes": 2933,
+            "path": "docs/charter.md",
+            "sha256": "5dd83fbc7ac55d1105b467a1e27da08c617b3144d1a768108870cf07ba060abe"
+          },
+          {
+            "bytes": 3301,
+            "path": "docs/contracts/cookbook.md",
+            "sha256": "1d020ff384d1139ed10f3e1684fe777978607811a989b96ecb559c56dd081ede"
+          },
+          {
+            "bytes": 4524,
+            "path": "docs/contracts/hooks.md",
+            "sha256": "b1ce41ca5bdbda7e8181f2aa9ee6664241a25648108ea7145b2412b1949efea4"
+          },
+          {
+            "bytes": 13716,
+            "path": "docs/contracts/skills.md",
+            "sha256": "8f8ecbd7b0c2072f9bfa1ac16b91728c40d3d8abc4f1dd8f46e842cefeabc141"
+          },
+          {
+            "bytes": 5303,
+            "path": "docs/contracts/tools.md",
+            "sha256": "7f526232011ef3880cd2a85185201bd941a6b61222de4c5aa1dd8f58d646249f"
+          },
+          {
+            "bytes": 4279,
+            "path": "docs/interop.md",
+            "sha256": "b0dbabf8782764b28d1b9ce9d09eb022f4e182d025bde988ed676b82fcf1c4bb"
+          }
+        ],
+        "head": "34c5c29c15f1d1f8baa6de6d5016f4809d68f098",
+        "name": "drosera",
+        "syncedAt": "2026-11-24T14:12:23.760Z"
+      },
+      "myosotis": {
+        "files": [
+          {
+            "bytes": 4897,
+            "path": "README.md",
+            "sha256": "cfe0383823803b79c0511834f4a01143b1399a18db7856632008b18ddc4a98a1"
+          },
+          {
+            "bytes": 410,
+            "path": "docs/CHANGELOG.md",
+            "sha256": "90e5424cd45f4cc7922b02d4f00ec758f649176966affff9c8b8000c81312701"
+          },
+          {
+            "bytes": 639,
+            "path": "docs/adr/README.md",
+            "sha256": "cee542fe49027cf2297b6cec5b184ca8ce4f693c979e0ac459712303b7461516"
+          },
+          {
+            "bytes": 4074,
+            "path": "docs/architecture.md",
+            "sha256": "fec7119a00df2428e232783d339e71453c7b92794c84b50d51e924201f7de74e"
+          },
+          {
+            "bytes": 7996,
+            "path": "docs/capabilities/CAP-11-memory-integration.md",
+            "sha256": "4eb7df94ea818b803d843616fa346391e9b829ffab0a81c51bb628e6582c354a"
+          },
+          {
+            "bytes": 522,
+            "path": "docs/capabilities/README.md",
+            "sha256": "faa50ae324d2bf5a9d773c7361f5c53c03f3efc163338b5ef079869f847c9859"
+          },
+          {
+            "bytes": 2364,
+            "path": "docs/capabilities/index.json",
+            "sha256": "6598c3466cd19c24d43191e9ab7269295a0bc13e8417b4c2a51087de977a75a6"
+          },
+          {
+            "bytes": 2225,
+            "path": "docs/charter.md",
+            "sha256": "cb1fd63154d2fef79221f491db891073823b3016be2220cbf5dd691a6415aa10"
+          },
+          {
+            "bytes": 2641,
+            "path": "docs/contracts/consent.md",
+            "sha256": "697954854792a0733bed5c92f57377a4e0bd24013b2007cf7c878c31f33aace4"
+          },
+          {
+            "bytes": 4631,
+            "path": "docs/contracts/continuity.md",
+            "sha256": "af3bf564bac95615b486d8a4efc8bc50c6bd04275ee1841330f943021defda79"
+          },
+          {
+            "bytes": 7276,
+            "path": "docs/contracts/forget.md",
+            "sha256": "d4ab6acd9c2f69276efb00885b96feff9cec3b29b2ffb0de39e6d026ad8324ed"
+          },
+          {
+            "bytes": 2642,
+            "path": "docs/contracts/records.md",
+            "sha256": "fb04493cee7ab79221b6ce77de0cdb73a41423a8d311d2b60697826e1936dd12"
+          },
+          {
+            "bytes": 3565,
+            "path": "docs/interop.md",
+            "sha256": "9334b53fb36dafa11e4e57b847e85f92519fd049f172f38825a45d3b7bad6b45"
+          }
+        ],
+        "head": "4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9",
+        "name": "myosotis",
+        "syncedAt": "2026-11-24T14:12:23.374Z"
+      },
+      "seed": {
+        "files": [
+          {
+            "bytes": 5037,
+            "path": "README.md",
+            "sha256": "5e9125abcfc0af87baa806ea8c3a608348b2b0adfff8310ae0a46f9e625d22a2"
+          },
+          {
+            "bytes": 1209,
+            "path": "docs/CHANGELOG.md",
+            "sha256": "d309216ef1f08dee36d52056ca3d4e22659ce28a09876a7dbd97bb084681544d"
+          },
+          {
+            "bytes": 547,
+            "path": "docs/adr/README.md",
+            "sha256": "7101692445b13a44366d502e111de144d117dc5178a6b595c094982601850474"
+          },
+          {
+            "bytes": 3852,
+            "path": "docs/architecture.md",
+            "sha256": "85db2514b54d9bcf223769d63f6cf4677c7b1897340e59cb72c09e91bc4006cc"
+          },
+          {
+            "bytes": 4557,
+            "path": "docs/bloom-interop.md",
+            "sha256": "073339d2179e36c816b7268d04888abbcf0e2e4c3b61d387fd33bd84873ab6bc"
+          },
+          {
+            "bytes": 8126,
+            "path": "docs/capabilities/CAP-03-typed-tool-input-output.md",
+            "sha256": "39de21251b5bd1296224f276b0ccf875bcc34bd422e81e9f3ca123fa83afff79"
+          },
+          {
+            "bytes": 9782,
+            "path": "docs/capabilities/CAP-06-tool-call-approval-decisions.md",
+            "sha256": "b607e52c0f0a34015be7c437fed21821d48dc1eb1e77b4876efeb21081aee948"
+          },
+          {
+            "bytes": 9051,
+            "path": "docs/capabilities/CAP-12-step-graph-checkpoints-interrupts.md",
+            "sha256": "95214c9043a583370bfd170ae3b3961db7d92057ba85e63996e08c90b3e26efe"
+          },
+          {
+            "bytes": 6758,
+            "path": "docs/capabilities/CAP-13-durable-run-store-conformance.md",
+            "sha256": "d9cc6398dd137b1887d8718fcf1616858e4faa569eebbf071b20d7681d020032"
+          },
+          {
+            "bytes": 9002,
+            "path": "docs/capabilities/CAP-16-provider-conformance-model-profiles.md",
+            "sha256": "6be6055ccd28db63651fc8eb5dd3a5ffba84a849629315476e580714f1bdd2d1"
+          },
+          {
+            "bytes": 6002,
+            "path": "docs/capabilities/CAP-17-sandbox-scopes.md",
+            "sha256": "06f8bfdf8f748364f2216860d0b07252811b88578513e4dd550c7e2341376173"
+          },
+          {
+            "bytes": 545,
+            "path": "docs/capabilities/README.md",
+            "sha256": "d4e20feff9c91ab0faa427fc179dca26b4de77450cb3cc0a1547ea8187017255"
+          },
+          {
+            "bytes": 10784,
+            "path": "docs/capabilities/index.json",
+            "sha256": "2d3bbe1bfcdd6972ad0a2a10bf600f3b6aeef4d70325a4340be7d422d37e27a9"
+          },
+          {
+            "bytes": 2636,
+            "path": "docs/charter.md",
+            "sha256": "b1dcd0954e1c86ea424d46cd0b2130587c490c49ebe00e059cd2cb7fee08cfba"
+          },
+          {
+            "bytes": 6955,
+            "path": "docs/contracts/provider.md",
+            "sha256": "6205634a004592c4ee7ac817979a4cea0c3e324b2f33bd4b452dc7c4964f4fcd"
+          },
+          {
+            "bytes": 8192,
+            "path": "docs/contracts/run-model.md",
+            "sha256": "171843fe742dd27d02718a343efebfd2b09ceb17076cf360b045c2dfdfb2ad69"
+          },
+          {
+            "bytes": 9508,
+            "path": "docs/contracts/tool-id.md",
+            "sha256": "6f9f733e1b0dacad4f2fa47519a4f7384ceba05cdea4bab6ff8a0f3cbf5cc9d3"
+          },
+          {
+            "bytes": 5309,
+            "path": "docs/lexicon.md",
+            "sha256": "9e8bfd15b8ed93e3a48a96e0cafeef22f3b77ed31af6a2e6f5bb5fc650dafa4d"
+          },
+          {
+            "bytes": 3562,
+            "path": "docs/roadmap.md",
+            "sha256": "bd793c871a7557412018a2e4c770a069a136f443a1c2387e79448bfa7fe1d4b5"
+          }
+        ],
+        "head": "0d158cd7e1fb5098162c98d303ddde8172001062",
+        "name": "seed",
+        "syncedAt": "2026-11-24T14:12:23.017Z"
+      },
+      "trellis": {
+        "files": [
+          {
+            "bytes": 4710,
+            "path": "README.md",
+            "sha256": "82ed3204e427207c70a204c2d9d3b8af2e2318de0d581e8445c22caea43c011e"
+          },
+          {
+            "bytes": 388,
+            "path": "docs/CHANGELOG.md",
+            "sha256": "c332d241ab4f2d05a802cba1069e91185a573ac5f687c82909cd0b8f6402b933"
+          },
+          {
+            "bytes": 638,
+            "path": "docs/adr/README.md",
+            "sha256": "ba581c2c653ebb9df6594f92a8db388d12eea4491f286e147beaacce245520e8"
+          },
+          {
+            "bytes": 3971,
+            "path": "docs/architecture.md",
+            "sha256": "5c9e0341504f1c5cc2ce0a38176e8c8a22c72d9ac43baa9ac0f0ae5a5d6b6e4d"
+          },
+          {
+            "bytes": 606,
+            "path": "docs/capabilities/README.md",
+            "sha256": "6074e83191305d54f9e39cf8057a2aac424483ae4d22cb9bcdf89015cada35b8"
+          },
+          {
+            "bytes": 4243,
+            "path": "docs/capabilities/index.json",
+            "sha256": "5da34043fc95a1a51cd2741a80acd2e08f9c6fc826bf06b156b5948e6825e3db"
+          },
+          {
+            "bytes": 3559,
+            "path": "docs/charter.md",
+            "sha256": "17fa387ab0fd9cd4ce3cd488ac8e00cc5c21189139137d56f3a1a77874aba199"
+          },
+          {
+            "bytes": 3032,
+            "path": "docs/contracts/grid.md",
+            "sha256": "1ea833717c4bbea74cf1ba50fd9256f87bc52dfaa8817055a6c38e1121a8314d"
+          },
+          {
+            "bytes": 9790,
+            "path": "docs/contracts/probes.md",
+            "sha256": "91b0822e1f9bccf845c879274f513749caf747a9710b994b79336d5a44d7a63e"
+          },
+          {
+            "bytes": 3359,
+            "path": "docs/evidence/family-grid-2026-11-22-after-predecessor-coverage.md",
+            "sha256": "7b75a7ce91053ed9d70ab74593516e1ed43c335598a3946e1504ff53295ae76e"
+          },
+          {
+            "bytes": 3291,
+            "path": "docs/evidence/family-grid-2026-11-22-trellis-0.2.0.md",
+            "sha256": "12302c7bb98176e222ec2b396e60493dc303cb5edb04f867a81850709e74967a"
+          },
+          {
+            "bytes": 2785,
+            "path": "docs/evidence/family-grid-2026-11-22-trellis-0.3.0.md",
+            "sha256": "8143bcb91e428fabb83e7bda6282c88f035473a39a9957338d3364884b6fafb2"
+          },
+          {
+            "bytes": 2626,
+            "path": "docs/evidence/family-grid-2026-11-22-trellis-0.4.0.md",
+            "sha256": "b25bc70e954b06814ea7accfcc244e1f81f7088188901ca62b9a288b6d5594db"
+          },
+          {
+            "bytes": 1359,
+            "path": "docs/evidence/family-grid-2026-11-22-trellis-0.5.0.md",
+            "sha256": "ffcc4eb6954de7fd12b1e5bb0585596d049cc8bf5dca1a94785e5647045fbe8b"
+          },
+          {
+            "bytes": 1360,
+            "path": "docs/evidence/family-grid-2026-11-22-trellis-0.6.0.md",
+            "sha256": "cdf0adf832bf94091d984d466f7bd77d1be5611dea33fb77fa200cf07dd70e3b"
+          },
+          {
+            "bytes": 1395,
+            "path": "docs/evidence/family-grid-2026-11-22-trellis-0.6.1.md",
+            "sha256": "854c5f301cdf5e7ee76c2dd9fe8642c5d0e7b42f7c12ec233b12f0c9bedd3609"
+          },
+          {
+            "bytes": 1272,
+            "path": "docs/evidence/family-grid-2026-11-22-trellis-0.6.2.md",
+            "sha256": "e0acb5ef21992a73f05403f9d76716965fee77848301bde1ab2c4652e9f034cf"
+          },
+          {
+            "bytes": 2361,
+            "path": "docs/evidence/family-grid-2026-11-22.md",
+            "sha256": "669e5c8b338e38079458c0249b55bec99195aa681edea258145f1636f75fc712"
+          },
+          {
+            "bytes": 1327,
+            "path": "docs/evidence/family-grid-2026-11-23-trellis-0.7.0.md",
+            "sha256": "99544d6cdcb6f7327788b63f6280fdaef551f3f6a20176b8a53955aacecbea68"
+          },
+          {
+            "bytes": 1434,
+            "path": "docs/evidence/family-grid-2026-11-23-trellis-0.8.0.md",
+            "sha256": "ca2aeab35c4e21fc8df01f2e1252951377997773d40e2bfcb8bcb5edfcb62038"
+          },
+          {
+            "bytes": 6878,
+            "path": "docs/interop.md",
+            "sha256": "03024539ddbbdef2b10a119b0cd8e86b04a7d866ae5daca416b302cac1e712c8"
+          }
+        ],
+        "head": "76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1",
+        "name": "trellis",
+        "syncedAt": "2026-11-24T14:12:23.932Z"
+      },
+      "videsign": {
+        "files": [
+          {
+            "bytes": 63354,
+            "path": "DESIGN.md",
+            "sha256": "a083f37d1f1a8d5eee60fe97a5cb585d89d042bc3a2e95942e409a7d1430df92"
+          },
+          {
+            "bytes": 9740,
+            "path": "README.md",
+            "sha256": "61c039cada39dfeb07eb316f85866b234f7dd2bc1b10449e9d96aad63128dec6"
+          },
+          {
+            "bytes": 8071,
+            "path": "docs/superpowers/plans/2026-11-18-memory-field.md",
+            "sha256": "e27bd95a3a0ec40cc139c34b0d2ac417719f5fb7b89047c21b44e8b561b8ea0f"
+          }
+        ],
+        "head": "08707d61780ab2c873ac51cbfd39f2b29abfce9a",
+        "name": "videsign",
+        "syncedAt": "2026-11-25T08:12:28.840Z"
+      },
+      "vivarium": {
+        "files": [
+          {
+            "bytes": 6151,
+            "path": "AGENTS.md",
+            "sha256": "c238b8dabe4e57b21a734e8c03109c8edc7eb0f2da57313e0270fd4f417bd354"
+          },
+          {
+            "bytes": 8609,
+            "path": "README.md",
+            "sha256": "1077816f7845ccba534cbfbee67d0e0fdd1dbbad72343ca58f85bc5a9168944f"
+          },
+          {
+            "bytes": 4758,
+            "path": "docs/adr/0001-umbrella-with-submodules.md",
+            "sha256": "d22c0cc11add315ab042fd1c902f7ab1a260ee4a05d825d365985995b00dc7cb"
+          },
+          {
+            "bytes": 2747,
+            "path": "docs/adr/0002-internal-agents-use-the-public-setup.md",
+            "sha256": "c6c001d2732c5f5e0d037dbf37253f6fb178b4671dec235f10a2d7aba819e8d3"
+          },
+          {
+            "bytes": 2919,
+            "path": "docs/adr/0003-first-run-setup-and-no-default-autonomy.md",
+            "sha256": "ccb361ce61accff6005ff9e02bb1dfb2c19c4466f9e2224eece4595f8c431178"
+          },
+          {
+            "bytes": 3682,
+            "path": "docs/adr/0004-model-access-routes.md",
+            "sha256": "95de5010a0f42455135d3d6ee99937009962d3d0fe3a5951f69caeb8f4d7b9d1"
+          },
+          {
+            "bytes": 3642,
+            "path": "docs/adr/0005-web-app-context-routes.md",
+            "sha256": "6a1cca7252c251c6d6271cbf4e97ed2e1ee531e619b84e757ae1b8f096e24354"
+          },
+          {
+            "bytes": 1682,
+            "path": "docs/adr/README.md",
+            "sha256": "66f3fd3461fac1ea5f09d2d9a4b78f135b718db96f73a68a79e63870866663c3"
+          },
+          {
+            "bytes": 954,
+            "path": "docs/adr/template.md",
+            "sha256": "f75cf7e8e2e13e8d7138dcd10caf8e026879db38f500a9aa0dfe3a75a6ff9d68"
+          },
+          {
+            "bytes": 3735,
+            "path": "docs/docs-timeline.md",
+            "sha256": "2ce455c7d70d7571a170980c4cce1fe1863dda25e584c7d6c98cbcbbcc8dbd7c"
+          },
+          {
+            "bytes": 4315,
+            "path": "docs/product/context-access.md",
+            "sha256": "1638e2f94262bf35532ff1c6207ce800537025032bc5232137e6eb8f6eb7c5ec"
+          },
+          {
+            "bytes": 8028,
+            "path": "docs/product/first-run-setup.md",
+            "sha256": "1e1e4a20d2cb925d5f8c6ed2498154ebe6d583518a47d381f3211615cc195784"
+          },
+          {
+            "bytes": 3887,
+            "path": "docs/product/model-access.md",
+            "sha256": "fe0d2b476d46a4ede1aed85fee57bc68c0349e0a1b4bfed837b90eab6788b9b7"
+          },
+          {
+            "bytes": 2696,
+            "path": "docs/product/naming.md",
+            "sha256": "4190288fc8e6f80464ec34ab26b2b9c846cdffb77d9451d973901e63c67caf44"
+          },
+          {
+            "bytes": 5796,
+            "path": "docs/roadmap/system-work.md",
+            "sha256": "96c5fde0d51578b4b8b35b9fe5990a851cd9c5028c225ad297cae0f33705fcfe"
+          },
+          {
+            "bytes": 3105,
+            "path": "docs/system-map.md",
+            "sha256": "84bf3648ebc21a0085933734a47cd03ec60ea5a20e0f02389442afdcc9365eb1"
+          },
+          {
+            "bytes": 39205,
+            "path": "docs/vision/design-brief.md",
+            "sha256": "38658e25db5dfa0e79154104d693a011d94f17b15b3f247620ee442dcfb7d62b"
+          }
+        ],
+        "head": "43aaf01c795f15f7850f3726c372a950ca0cd3bb",
+        "name": "vivarium",
+        "syncedAt": "2026-11-25T13:31:20.621Z"
+      }
+    },
+    "version": 1
+  },
+  "pinsPending": false,
+  "snapshot": {
+    "capturedAt": null,
+    "used": false
+  },
+  "sources": {
+    "manifest": "docs",
+    "status": "site",
+    "vivarium": "vivarium"
+  },
+  "status": {
+    "gatheredBy": "site",
+    "repositories": {
+      "aestivation": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "f506c9e9a25017ea354e68861ce9112e90d73374",
+          "syncedHead": "f506c9e9a25017ea354e68861ce9112e90d73374"
+        },
+        "head": "f506c9e9a25017ea354e68861ce9112e90d73374",
+        "lastPushAt": "2026-11-24T14:01:55Z",
+        "latestRelease": null,
+        "openPrCount": 0,
+        "packageVersion": "0.5.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      },
+      "bloom": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "4e61cca4ec1d158cd592afcd56a3280489aceedf",
+          "syncedHead": "4e61cca4ec1d158cd592afcd56a3280489aceedf"
+        },
+        "head": "4e61cca4ec1d158cd592afcd56a3280489aceedf",
+        "lastPushAt": "2026-11-25T14:31:59Z",
+        "latestRelease": "v0.5.0",
+        "openPrCount": 5,
+        "packageVersion": "0.12.0",
+        "testTotals": "not published",
+        "unknownFields": []
+      },
+      "capillary": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "0caa855cca2780f29d1d11167f4f352ba28ee9f5",
+          "syncedHead": "0caa855cca2780f29d1d11167f4f352ba28ee9f5"
+        },
+        "head": "0caa855cca2780f29d1d11167f4f352ba28ee9f5",
+        "lastPushAt": "2026-11-25T14:32:25Z",
+        "latestRelease": null,
+        "openPrCount": 1,
+        "packageVersion": "1.3.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      },
+      "drosera": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "34c5c29c15f1d1f8baa6de6d5016f4809d68f098",
+          "syncedHead": "34c5c29c15f1d1f8baa6de6d5016f4809d68f098"
+        },
+        "head": "34c5c29c15f1d1f8baa6de6d5016f4809d68f098",
+        "lastPushAt": "2026-11-25T14:32:34Z",
+        "latestRelease": null,
+        "openPrCount": 1,
+        "packageVersion": "2.4.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      },
+      "lattice": {
+        "ciConclusion": "no checks",
+        "docsFreshness": {
+          "fresh": null,
+          "repositoryHead": "64000d1d76f0740d502e241f66a2b611189620d1",
+          "syncedHead": null
+        },
+        "head": "64000d1d76f0740d502e241f66a2b611189620d1",
+        "lastPushAt": "2026-11-25T14:52:25Z",
+        "latestRelease": null,
+        "openPrCount": 4,
+        "packageVersion": null,
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease",
+          "packageVersion"
+        ]
+      },
+      "myosotis": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9",
+          "syncedHead": "4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9"
+        },
+        "head": "4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9",
+        "lastPushAt": "2026-11-25T14:32:38Z",
+        "latestRelease": null,
+        "openPrCount": 1,
+        "packageVersion": "1.2.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      },
+      "seed": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "0d158cd7e1fb5098162c98d303ddde8172001062",
+          "syncedHead": "0d158cd7e1fb5098162c98d303ddde8172001062"
+        },
+        "head": "0d158cd7e1fb5098162c98d303ddde8172001062",
+        "lastPushAt": "2026-11-25T14:32:43Z",
+        "latestRelease": null,
+        "openPrCount": 1,
+        "packageVersion": "0.10.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      },
+      "trellis": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1",
+          "syncedHead": "76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1"
+        },
+        "head": "76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1",
+        "lastPushAt": "2026-11-25T14:32:47Z",
+        "latestRelease": null,
+        "openPrCount": 1,
+        "packageVersion": "0.8.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      },
+      "videsign": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "08707d61780ab2c873ac51cbfd39f2b29abfce9a",
+          "syncedHead": "08707d61780ab2c873ac51cbfd39f2b29abfce9a"
+        },
+        "head": "08707d61780ab2c873ac51cbfd39f2b29abfce9a",
+        "lastPushAt": "2026-11-25T14:32:51Z",
+        "latestRelease": null,
+        "openPrCount": 1,
+        "packageVersion": "1.1.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      },
+      "vivarium": {
+        "ciConclusion": "success",
+        "docsFreshness": {
+          "fresh": true,
+          "repositoryHead": "43aaf01c795f15f7850f3726c372a950ca0cd3bb",
+          "syncedHead": "43aaf01c795f15f7850f3726c372a950ca0cd3bb"
+        },
+        "head": "43aaf01c795f15f7850f3726c372a950ca0cd3bb",
+        "lastPushAt": "2026-11-25T14:32:55Z",
+        "latestRelease": null,
+        "openPrCount": 1,
+        "packageVersion": "0.1.0",
+        "testTotals": "not published",
+        "unknownFields": [
+          "latestRelease"
+        ]
+      }
+    },
+    "version": 1,
+    "vivarium": {
+      "pinsPending": false,
+      "systems": {
+        "aestivation": {
+          "drift": false,
+          "pinnedCommit": "f506c9e9a25017ea354e68861ce9112e90d73374",
+          "repositoryHead": "f506c9e9a25017ea354e68861ce9112e90d73374"
+        },
+        "bloom": {
+          "drift": false,
+          "pinnedCommit": "4e61cca4ec1d158cd592afcd56a3280489aceedf",
+          "repositoryHead": "4e61cca4ec1d158cd592afcd56a3280489aceedf"
+        },
+        "capillary": {
+          "drift": false,
+          "pinnedCommit": "0caa855cca2780f29d1d11167f4f352ba28ee9f5",
+          "repositoryHead": "0caa855cca2780f29d1d11167f4f352ba28ee9f5"
+        },
+        "drosera": {
+          "drift": false,
+          "pinnedCommit": "34c5c29c15f1d1f8baa6de6d5016f4809d68f098",
+          "repositoryHead": "34c5c29c15f1d1f8baa6de6d5016f4809d68f098"
+        },
+        "myosotis": {
+          "drift": false,
+          "pinnedCommit": "4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9",
+          "repositoryHead": "4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9"
+        },
+        "seed": {
+          "drift": false,
+          "pinnedCommit": "0d158cd7e1fb5098162c98d303ddde8172001062",
+          "repositoryHead": "0d158cd7e1fb5098162c98d303ddde8172001062"
+        },
+        "trellis": {
+          "drift": false,
+          "pinnedCommit": "76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1",
+          "repositoryHead": "76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1"
+        }
+      }
+    }
+  },
+  "vivarium": {
+    "schema": 1,
+    "systems": [
+      {
+        "agentsFile": "systems/seed/AGENTS.md",
+        "branch": "main",
+        "commit": "0d158cd7e1fb5098162c98d303ddde8172001062",
+        "importsToday": [],
+        "layer": "floor",
+        "license": "MIT",
+        "name": "seed",
+        "owns": [
+          "run contracts and the records an agent leaves behind",
+          "tool identity and registry entries",
+          "provider adapters and the model ladder",
+          "budgets and the autonomy policy record",
+          "the shared contracts every other system builds against"
+        ],
+        "path": "systems/seed",
+        "role": "Harness floor: run records, tool identity, provider adapters, the shared contracts",
+        "url": "https://github.com/Vidoxlabs/seed",
+        "version": "0.10.0"
+      },
+      {
+        "agentsFile": "systems/capillary/AGENTS.md",
+        "branch": "main",
+        "commit": "0caa855cca2780f29d1d11167f4f352ba28ee9f5",
+        "importsToday": [],
+        "layer": "peer",
+        "license": "MIT",
+        "name": "capillary",
+        "owns": [
+          "context pulled in from every route the person turns on",
+          "bounded packets that keep their sources attached",
+          "relations between what the agent knows and where it came from",
+          "by-reference context instead of copies"
+        ],
+        "path": "systems/capillary",
+        "role": "Context: bounded retrieval with sources attached, and relations",
+        "url": "https://github.com/Vidoxlabs/capillary",
+        "version": "1.3.0"
+      },
+      {
+        "agentsFile": "systems/myosotis/AGENTS.md",
+        "branch": "main",
+        "commit": "4c7a8b8ef632c8b36a2f92d9be6d1cefdcf10db9",
+        "importsToday": [],
+        "layer": "peer",
+        "license": "MIT",
+        "name": "myosotis",
+        "owns": [
+          "consent to keep a memory, recorded before it is kept",
+          "structural forget that removes the memory, not just the view of it",
+          "per-agent memory scope",
+          "epoch-stamped projections so a forget cannot be undone by a stale read"
+        ],
+        "path": "systems/myosotis",
+        "role": "Memory: consent to keep, structural forget",
+        "url": "https://github.com/Vidoxlabs/myosotis",
+        "version": "1.2.0"
+      },
+      {
+        "agentsFile": "systems/drosera/AGENTS.md",
+        "branch": "main",
+        "commit": "34c5c29c15f1d1f8baa6de6d5016f4809d68f098",
+        "importsToday": [],
+        "layer": "peer",
+        "license": "MIT",
+        "name": "drosera",
+        "owns": [
+          "tool faces and how a tool is offered to an agent",
+          "skills, hooks, and cookbooks",
+          "the connector broker for opt-in context routes",
+          "the tool faces a paired companion exposes"
+        ],
+        "path": "systems/drosera",
+        "role": "Tools: tool faces, skills, hooks, cookbooks",
+        "url": "https://github.com/Vidoxlabs/drosera",
+        "version": "2.4.0"
+      },
+      {
+        "agentsFile": "systems/aestivation/AGENTS.md",
+        "branch": "main",
+        "commit": "f506c9e9a25017ea354e68861ce9112e90d73374",
+        "importsToday": [],
+        "layer": "peer",
+        "license": "MIT",
+        "name": "aestivation",
+        "owns": [
+          "plan validation before work starts",
+          "verdicts on finished work",
+          "questions to the person, each linked to the setting that caused it",
+          "the assembly gate that holds work back",
+          "holds on actions triggered by untrusted content"
+        ],
+        "path": "systems/aestivation",
+        "role": "Review and delegation: plans, verdicts, questions to the person, the assembly gate",
+        "url": "https://github.com/Vidoxlabs/aestivation",
+        "version": "0.5.0"
+      },
+      {
+        "agentsFile": "systems/bloom/AGENTS.md",
+        "branch": "main",
+        "commit": "4e61cca4ec1d158cd592afcd56a3280489aceedf",
+        "importsToday": [
+          {
+            "name": "drosera",
+            "pin": "7a396c0fa6aeee9eb20f9df0f88bd8992560407b"
+          },
+          {
+            "name": "seed",
+            "pin": "0d158cd7e1fb5098162c98d303ddde8172001062"
+          }
+        ],
+        "layer": "composer",
+        "license": "MIT",
+        "name": "bloom",
+        "owns": [
+          "the one place a person raises and runs an agent",
+          "first-run setup and the settings each step points to",
+          "the head agent and its character",
+          "the questions inbox and the pairing screen",
+          "the desktop app and the web app shells"
+        ],
+        "path": "systems/bloom",
+        "role": "User interface: the desktop and web app, first-run setup, the head agent; the only composer",
+        "url": "https://github.com/Vidoxlabs/bloom",
+        "version": "0.12.0"
+      },
+      {
+        "agentsFile": "systems/trellis/AGENTS.md",
+        "branch": "main",
+        "commit": "76d59fb1edb6b7093ae8a42ca29e4bfbd524f5e1",
+        "importsToday": [],
+        "layer": "outside",
+        "license": "MIT",
+        "name": "trellis",
+        "owns": [
+          "shape, behavior, consistency, and operational probes",
+          "a family grid runner that tests the pinned tree from outside",
+          "setup and pairing probes for the app"
+        ],
+        "path": "systems/trellis",
+        "role": "Testing from outside the call path: shape, behavior, consistency, operational probes",
+        "url": "https://github.com/Vidoxlabs/trellis",
+        "version": "0.8.0"
+      }
+    ],
+    "umbrella": "vivarium"
+  },
+  "warnings": [
+    "Documentation status is unavailable; the labelled fallback was used."
+  ],
+  "capturedAt": "2026-11-25T15:06:24.947Z"
+}

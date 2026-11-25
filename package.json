@@ -10,6 +10,9 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "content:build": "node scripts/build-content.mjs",
+    "snapshot:refresh": "node scripts/snapshot-refresh.mjs",
+    "prebuild": "node scripts/build-content.mjs",
     "build": "astro build && node scripts/postbuild.mjs",
     "preview": "astro preview",
     "videsign:sync": "node scripts/sync-videsign.mjs",
@@ -23,6 +26,7 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.9",
+    "ajv": "8.17.1",
     "astro": "7.4.13"
   },
   "devDependencies": {
