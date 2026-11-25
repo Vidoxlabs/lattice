@@ -34,4 +34,17 @@
     "ENRICH_ENABLED": "0",
     "ENRICH_MAX_USD": "0"
   }
+
+  // Chat rate limiting. Uncomment the block and replace the placeholder with the
+  // rate-limit namespace identifier from the account: it is account-scoped, so it
+  // is never committed. Until the binding exists the route keeps a best-effort
+  // per-isolate counter and chat still answers; SETUP.md section 6 carries the
+  // owner step and tests/unit/rate-limit.test.mjs covers both paths.
+  // "ratelimits": [
+  //   {
+  //     "name": "CHAT_RATE_LIMITER",
+  //     "namespace_id": "<namespace-id>",
+  //     "simple": { "limit": 10, "period": 60 }
+  //   }
+  // ],
 }

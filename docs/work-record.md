@@ -5,10 +5,10 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 5 of 10 (domains) done; starting step 6 (secrets and bindings). Branch `slice-10-finish`,
+Step 6 of 10 (secrets and bindings) done; starting step 7 (workflows). Branch `slice-10-finish`,
 pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
 
-Last pushed commit: `10a5a36` — build: make the browser stage install its own engines.
+Last pushed commit: `b7c6efd` — fix: keep the request path when redirecting to the canonical host.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -18,8 +18,8 @@ names the commit its work landed in rather than the commit that records it.
 - [x] 2. Transport security: drop `includeSubDomains` from the header and from its unit test — `5abe25e`
 - [x] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps — `9b64289`
 - [x] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2 — `10a5a36`
-- [x] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8 — this commit
-- [ ] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test
+- [x] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8 — `b7c6efd`
+- [x] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test — this commit
 - [ ] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test
 - [ ] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it
 - [ ] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed
@@ -27,9 +27,9 @@ names the commit its work landed in rather than the commit that records it.
 
 ## Next step
 
-Work step 6: write SETUP.md sections 5 and 6 with names only for every variable and secret,
-the commented rate-limit block with its placeholder, and a unit test that the Worker falls back
-when the binding is unbound. Then run `CI=1 npm run check`, commit and push.
+Work step 7: pin every action to a commit with a version comment and least-privilege
+permissions, add `snapshot-refresh.yml` and `live-smoke.yml`, and add a unit test that parses
+each workflow and asserts its triggers, permissions, timeouts and pinned actions.
 
 ## Owner steps ready
 
@@ -78,6 +78,23 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   a parameter attached to a foreign hostname does not become part of the canonical URL. Options
   were (a) keep the home-page redirect as specified, (b) keep the path and drop the query, or
   (c) keep both. Took (b).
+- Rate limiter (step 6): the limiter moved to `src/lib/agent/rate-limit.mjs` so both paths are
+  testable without the Workers runtime: a bound limiter decides, an unbound or broken one
+  falls back to the per-isolate counter, which is weaker but keeps chat answering. The
+  configuration carries the binding commented out with a `<namespace-id>` placeholder, because
+  the identifier is account-scoped. `tests/unit/rate-limit.test.mjs` covers the limit, the
+  reset, a bound answer, and the fallback; the route uses the same module, so the tested path
+  is the shipped path.
+- Secrets register (step 6): SETUP.md section 5 is now one table for every name, its home
+  (Worker variable, Worker secret, Actions secret, Actions variable, docs repository secret),
+  its default and the exact command or settings path. No value appears anywhere, and the
+  account identifier stays a variable rather than a committed value.
+- Team scrub scan (step 5): `node team/sync.mjs --scan` flags every URL in a file, including
+  this site's own canonical hostnames, and exits non-zero on them, so it cannot gate a public
+  repository that names its domains in prose and code. The repository's own scan
+  (`scripts/scrub-scan.mjs`, plain patterns plus the hashed needle list, over source, built
+  output and fetched content) is the enforced gate and passes; the team scan was run on every
+  diff and reported only public hostnames and reserved example names.
 - Dry runs (step 4): `npx wrangler deploy --dry-run` and `npx wrangler versions upload --dry-run`
   both resolved the redirected configuration at `dist/server/wrangler.json`, read 15 modules
   (2386.88 KiB) and 393 asset files, reported a 2388.10 KiB upload (696.01 KiB gzip) with the

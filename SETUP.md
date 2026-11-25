@@ -125,37 +125,87 @@ inspect in the dashboard, but that version has no public address.
       GitHub API window runs out during builds: the content build uses it when present and
       falls back to the committed snapshot when the window closes.
 
-## 5. Chat
+## 5. Secrets and variables
 
-The defaults keep cloud models off, so no provider key is needed for the site to run.
+Names only. No value belongs in this file, a commit, a log or a chat message. "Worker variable"
+is set in `wrangler.jsonc` under `vars`, or in the dashboard at **Settings → Variables &
+Secrets**; "Worker secret" is set with the command shown, or on the same dashboard page; an
+Actions secret or variable is set in this repository under **Settings → Secrets and variables
+→ Actions**.
 
-- [ ] `CHAT_PROVIDER` (`mock` by default). `mock` answers deterministically from the
-      documentation index and is what CI uses.
-- [ ] `CHAT_ASSISTANT_NAME` — the display name, `Vidoxlabs assistant` by default.
-- [ ] `CHAT_ALLOW_CLOUD` — `0`. A cloud provider answers only when this is `1` **and**
-      `CHAT_ENDPOINT`, `CHAT_MODEL` and the secret below are set.
-- [ ] `CHAT_ENDPOINT` and `CHAT_MODEL` — the endpoint and model name for the optional cloud
-      provider chosen with `CHAT_PROVIDER` (an OpenAI-compatible server or Gemini). Document
-      a local endpoint as `<your-endpoint>`.
-- [ ] `CHAT_API_KEY` — the provider key, as a **secret** (`npx wrangler secret put
-      CHAT_API_KEY`). Name only; never written down here.
-- [ ] `CHAT_ALLOWED_ORIGINS` — leave unset for a same-origin site. Set it to widen the
-      browser origins the chat accepts.
+| Name | Where | Default | How |
+| --- | --- | --- | --- |
+| `CHAT_PROVIDER` | Worker variable | `mock` | Committed in `wrangler.jsonc`. Set `openai-compatible` or `gemini` for a cloud provider. |
+| `CHAT_MODEL` | Worker variable | unset | Dashboard. Required by a cloud provider; the model name only. |
+| `CHAT_ENDPOINT` | Worker variable | unset | Dashboard. Required by a cloud provider; a local server is written `<your-endpoint>`. |
+| `CHAT_ASSISTANT_NAME` | Worker variable | `Vidoxlabs assistant` | Committed. The only place the display name is set. |
+| `CHAT_ALLOW_CLOUD` | Worker variable | `0` | Committed. A cloud provider answers only when this is `1` **and** `CHAT_ENDPOINT`, `CHAT_MODEL` and `CHAT_API_KEY` are set. |
+| `CHAT_ALLOWED_ORIGINS` | Worker variable | unset (same origin) | Dashboard. Comma-separated origins, for a widget served from somewhere else. |
+| `CHAT_API_KEY` | Worker secret | unset | `npx wrangler secret put CHAT_API_KEY` |
+| `CHAT_RATE_LIMITER` | Worker binding | unbound | Section 6; uncomment the block in `wrangler.jsonc` and replace the placeholder. |
+| `SITE_ORIGIN` | Worker variable | `https://vidoxlabs.com` | Committed. Drives canonical links, the sitemap, `robots.txt`, both language-model files and the social card URLs. |
+| `GITHUB_READ_TOKEN` | Build secret | unset | Section 4; a build secret in Workers Builds, or an Actions secret on the deploy path, or an environment variable for a local build. |
+| `ENRICH_ENABLED` | Worker variable | `0` | Committed. Leave at `0`; ADR-0004 records why. |
+| `ENRICH_MAX_USD` | Worker variable | `0` | Committed. A positive cap is required before an enabled run does anything. |
+| `CLOUDFLARE_API_TOKEN` | Actions secret | unset | Section 2, Path A. Deploy only. |
+| `CLOUDFLARE_ACCOUNT_ID` | Actions variable | unset | Section 2, Path A, only when the token reaches more than one account. |
+| `LATTICE_DEPLOY_HOOK_URL` | Docs repository secret | unset | Section 3 and section 9. It lives in `Vidoxlabs/docs`, never here. |
+
+The defaults keep cloud models off, so the site runs with no provider key at all: `mock`
+answers deterministically from the documentation index, and that is what every test and
+workflow uses. Turning a cloud provider on is a per-deployment decision: set
+`CHAT_ALLOW_CLOUD=1` with `CHAT_ENDPOINT`, `CHAT_MODEL` and the `CHAT_API_KEY` secret, then
+send one question and confirm the answer arrives with citations. Set `CHAT_ALLOW_CLOUD` back
+to `0` to turn it off; the mock is the fallback whenever a value is missing, and the route
+reports which one answered.
+
+`SITE_ORIGIN` is the one variable that changes what the build emits, so a build outside the
+committed default has to set it too; section 7 covers that case.
 
 ## 6. Rate-limit binding
 
-- [ ] Bind `CHAT_RATE_LIMITER`: a Workers rate-limit binding with a namespace identifier
-      and a limit of ten requests per minute per client key. The namespace identifier is an
-      account-scoped value, so it cannot live in this public configuration file.
-- [ ] Until the binding exists the Worker uses a documented best-effort per-isolate
-      counter. Chat still works; the limit is weaker.
+`POST /api/chat` allows ten requests per minute per client key. The binding counts across
+isolates and survives a restart; without it the route keeps a best-effort per-isolate counter,
+so chat still answers and the limit is weaker. The namespace identifier is account-scoped, so
+the public configuration carries the block commented out with a placeholder:
 
-## 7. `SITE_ORIGIN`
+```jsonc
+  // "ratelimits": [
+  //   {
+  //     "name": "CHAT_RATE_LIMITER",
+  //     "namespace_id": "<namespace-id>",
+  //     "simple": { "limit": 10, "period": 60 }
+  //   }
+  // ],
+```
 
-- [ ] `SITE_ORIGIN` is `https://vidoxlabs.com` in `wrangler.jsonc` and drives canonical
-      links, the sitemap, `robots.txt`, both language-model files and the social card URLs.
-      Change it in the Wrangler variables, and for a build outside Workers Builds set the
-      same value in the environment, or the built files will point at the default.
+- [ ] Uncomment the block, replace `<namespace-id>` with the identifier from the account, and
+      deploy. The binding can also be added in the dashboard under **Settings → Bindings**,
+      which keeps the identifier out of the repository entirely; either way it is not a value
+      that belongs in a commit.
+- [ ] Verify afterwards that the eleventh request in a minute from one client answers 429 with
+      a `Retry-After` header.
+- [ ] `tests/unit/rate-limit.test.mjs` covers both paths: the counter refuses the request after
+      the tenth, the window resets after sixty seconds, a bound limiter's answer is used as-is,
+      and a limiter that throws falls back to the counter instead of failing the request.
+
+## 7. A build outside the deploy path
+
+Neither path above is required to check the site by hand, but a hand build has to set what the
+deploy path provides.
+
+- [ ] Use the Node version in `.nvmrc` and `npm ci`, then `npm run check`. Without `CI=1` the
+      browser stage is skipped with a notice rather than failing; set `CI=1` to run it.
+- [ ] Set `SITE_ORIGIN` in the environment if the build should point anywhere other than
+      `https://vidoxlabs.com`, or the emitted canonical links, sitemap, `robots.txt`, both
+      language-model files and social card URLs keep the committed value.
+- [ ] Deploy from the repository root: `npx wrangler deploy` reads the configuration the build
+      generates at `dist/server/wrangler.json`, which carries the host entry. The same command
+      with `--dry-run` prints the upload summary without an account, and
+      `npx wrangler versions upload --dry-run` does the same for a preview version.
+- [ ] A preview version from a workstation claims no hostname: version uploads never attach
+      routes. It still produces an address unless `preview_urls` is `false`, which is the
+      committed setting (section 2).
 
 ## 8. Domains, DNS and search submission
 
