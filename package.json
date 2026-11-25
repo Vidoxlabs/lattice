@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit -p jsconfig.json",
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:routes": "node --test tests/routes/*.test.mjs",
-    "test:browser": "playwright install chromium webkit && node scripts/browser-check.mjs",
+    "test:browser": "node scripts/install-browsers.mjs && node scripts/browser-check.mjs",
     "scan": "node scripts/scrub-scan.mjs .",
     "check": "node scripts/check.mjs"
   },

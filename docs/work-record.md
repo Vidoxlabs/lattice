@@ -5,11 +5,11 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 3 of 10 (preview URLs) done; starting step 4 (Workers Builds readiness). Branch
+Step 4 of 10 (Workers Builds readiness) done; starting step 5 (domains). Branch
 `slice-10-finish`, pull request #10, currently a draft. Nothing is merged: `main` still holds
 the initial commit.
 
-Last pushed commit: `5abe25e` — fix: scope transport security to the canonical host.
+Last pushed commit: `9b64289` — fix: keep preview addresses off until Access protects them.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -17,8 +17,8 @@ names the commit its work landed in rather than the commit that records it.
 
 - [x] 1. Cleanup: delete the handoff file, rewrite this record, fail `npm run check` on merge-conflict markers in tracked text files — `500d2f5`
 - [x] 2. Transport security: drop `includeSubDomains` from the header and from its unit test — `5abe25e`
-- [x] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps — this commit
-- [ ] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2
+- [x] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps — `9b64289`
+- [x] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2 — this commit
 - [ ] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8
 - [ ] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test
 - [ ] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test
@@ -28,10 +28,9 @@ names the commit its work landed in rather than the commit that records it.
 
 ## Next step
 
-Work step 4: the Cloudflare Workers Builds image is documented without the system libraries
-Playwright's browsers need and without root access, so the deploy default is the prepared
-GitHub Actions workflow; finish the browser install script, pin Node through `.nvmrc`, write
-SETUP.md section 2 and record the dry-run summaries.
+Work step 5: decide whether the canonical-host redirect keeps the request path, then write
+SETUP.md section 8 as the domains runbook: both zones in one account, no conflicting records,
+what the first deploy attaches, and the four `curl -sI` checks that must answer 301.
 
 ## Owner steps ready
 
@@ -58,6 +57,26 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   Cloudflare Access protects it. The recommended path is to enable Access for previews,
   limited to the owner's email, and then flip the one line to `true`; leaving it off is the
   alternative, and production is unaffected either way.
+- Deploy path (step 4, posted in chat): the Cloudflare Workers Builds image documents an
+  Ubuntu 24.04 package list without the libraries Chromium and WebKit link against and
+  documents no root access, while Playwright installs those libraries through the system
+  package manager. The option that keeps the browser stage mandatory in every deploying build
+  is (a): build and deploy from a GitHub Actions workflow on a successful `check` on `main`,
+  using a Cloudflare API token secret. Taken, with `.github/workflows/deploy.yml` committed and
+  inert until the secret exists. (b) would have accepted a deploy path with no browser stage,
+  and (c) would have run one engine in one place and two in another; both were rejected
+  because the rule is that every deploying build runs both.
+- Browser install (step 4): `npm run test:browser` now installs the engines itself
+  (`scripts/install-browsers.mjs`), adding the system packages where root exists and never
+  asking for them where it does not, then launching Chromium and WebKit once so a missing
+  library fails the stage with the library named. The workflow's separate `playwright install`
+  step is gone, so every build takes the same path, and a failed install fails the build.
+- Node pin (step 4): `.nvmrc` already carried `24.13.1`, and Workers Builds reads that file
+  (the `NODE_VERSION` build variable overrides it), so no duplicate pin was added.
+- Dry runs (step 4): `npx wrangler deploy --dry-run` and `npx wrangler versions upload --dry-run`
+  both resolved the redirected configuration at `dist/server/wrangler.json`, read 15 modules
+  (2386.88 KiB) and 393 asset files, reported a 2388.10 KiB upload (696.01 KiB gzip) with the
+  `ASSETS` binding and six variables, and exited without account access.
 
 ## Open owner questions
 

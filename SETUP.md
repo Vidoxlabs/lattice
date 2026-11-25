@@ -21,19 +21,72 @@ DNS are owner actions.
       questions in the pull request. The site works without it: status is labelled
       "gathered by the site" or read from the committed snapshot until then.
 
-## 2. Cloudflare Workers Builds
+## 2. Workers Builds, and the deploy path this repository takes
+
+One question decides the path: can the build run Chromium and WebKit? They are part of
+`npm run check`, and a build that cannot run them must not deploy.
+
+What the Cloudflare Workers Builds documentation says, checked on 2026-11-25:
+
+- Builds run on Ubuntu 24.04 on x86_64 with a fixed package list. That list carries `libgbm1`
+  and the build toolchain, but not the libraries Chromium and WebKit link against: no
+  `libnss3`, no `libatk*`, no `libxkbcommon`, no `libwoff2`.
+- Playwright installs those libraries through the system package manager, which needs root.
+  The documentation publishes no root access and no way to install a package in the build.
+
+Both engines therefore cannot be guaranteed there, so the committed default builds and
+deploys from GitHub Actions, where the runner has root and the browser stage installs both
+engines with their dependencies. That workflow is `.github/workflows/deploy.yml`, and it is
+inert until one secret exists. The Workers Builds path stays below as Path B, and it is the
+right answer the moment a first build there proves the browser stage.
+
+### Path A: deploy from GitHub Actions (the committed default)
+
+- [ ] Add the repository secret `CLOUDFLARE_API_TOKEN`: a user API token with Workers Scripts
+      edit, Workers Routes edit for both zones, and Zone read for both zones.
+- [ ] Add the repository variable `CLOUDFLARE_ACCOUNT_ID` only if the token can reach more
+      than one account. It is an identifier, so it belongs in the variable and never in a file.
+- [ ] Merge the pull request first: a `workflow_run` trigger fires only for a workflow that
+      exists on the default branch.
+- [ ] Then every push to `main` runs `check` in full, uploads the built output, and `deploy`
+      publishes exactly that output with `npx wrangler deploy --config dist/server/wrangler.json`.
+      No build happens twice and no browser stage is skipped.
+- [ ] With no token, the deploy job prints a notice, exits green and publishes nothing. It
+      never deploys without a token and never fails `check` for a missing one.
+
+### Path B: Workers Builds
 
 - [ ] Create or connect the `lattice` Worker in Cloudflare Workers Builds to
       `Vidoxlabs/lattice`.
 - [ ] Production trigger: branch `main`, build command `npm ci && npm run check`, deploy
       command `npx wrangler deploy`.
-- [ ] Preview trigger: non-`main` branches, same build command, deploy command
+- [ ] Preview trigger: any other branch, same build command, deploy command
       `npx wrangler versions upload --preview-alias <branch-alias>`.
-- [ ] Confirm `WORKERS_CI` is set in the build image. It is what makes `npm run check` run
-      the browser stage; without it the stage is skipped and the build still passes.
-- [ ] Confirm Chromium and WebKit provision in the build image. `npx playwright install
-      --with-deps chromium webkit` runs inside `npm run test:browser`, and the build fails
-      if a browser is unavailable rather than skipping the stage.
+- [ ] Node version: Workers Builds reads `.nvmrc` at the repository root, and the
+      `NODE_VERSION` build variable overrides it. `.nvmrc` is committed with `24.13.1`, so no
+      variable is needed; a version the image does not preinstall is downloaded during the
+      build.
+- [ ] Variables: none are required to build. `CI` and `WORKERS_CI` are injected by the build
+      image, and `WORKERS_CI` is what makes `npm run check` run the browser stage. Add
+      `GITHUB_READ_TOKEN` only if the public API window runs out (section 4).
+- [ ] A successful first build log reads, in this order:
+
+      Detected the following tools from environment: nodejs@24.13.1, npm@...
+      Installing project dependencies: npm clean-install
+      Executing user build command: npm ci && npm run check
+      Lint passed.
+      ... one line per stage: content build, type check, unit tests, build
+      Public-safety scan passed for ... files.
+      ... the route test summary
+      Chromium and WebKit are installed ... and both start.
+      ... the browser summary: every test passing on both engines
+      Executing user deploy command: npx wrangler deploy
+      ... the upload summary and the deployed version
+
+- [ ] If the browser stage fails, do not delete it, skip it or weaken it. Switch to Path A,
+      which is already committed; the failed build is the evidence for the switch. The failure
+      names the missing library, and `scripts/install-browsers.mjs` refuses to continue without
+      both engines.
 - [ ] Note: `assets.run_worker_first` is `true`, so every request invokes the Worker and
       non-canonical hosts redirect on static pages too. The runtime rejects host-scoped
       pattern entries, so this is the only form that keeps the redirect working. If
