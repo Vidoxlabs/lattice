@@ -304,7 +304,10 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
     });
   }
 
-  const hubIndex = pages.find((page) => page.kind === 'hub' && page.slug === '');
+  // Exactly one entry may claim the root docs route: the fetched index, its
+  // placeholder when the index could not be fetched, or this synthetic notice
+  // when the hub offered no index at all.
+  const hubIndex = pages.find((page) => page.slug === '');
   if (!hubIndex) {
     pages.push({
       slug: '',
@@ -319,11 +322,12 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
   }
 
   // The published wording: the map runs once, here, after every text above has
-  // verified against its manifest digest. Placeholders are this site's own
-  // text and carry nothing to map.
+  // verified against its manifest digest. A placeholder's body is this site's
+  // own text, but its title comes from the unmapped source, so titles run
+  // through the map for every page.
   for (const page of pages) {
-    if (page.kind === 'placeholder') continue;
     page.title = neutralize(page.title);
+    if (page.kind === 'placeholder') continue;
     page.headings = page.headings.map(neutralize);
     page.body = neutralize(page.body);
   }

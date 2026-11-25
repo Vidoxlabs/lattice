@@ -182,11 +182,45 @@ test('a hub tree that cannot be fetched fails the build when no snapshot pages e
   await assert.rejects(collectDocsCorpus(fetchImpl, { sources: {} }, '', []), /documentation hub tree could not be fetched/);
 });
 
-test("a hub tree failure falls back to the snapshot's hub pages when they exist", async () => {
+test('a hub tree failure falls back to the snapshot\'s hub pages when they exist', async () => {
   const snapshotHub = /** @type {import('../../src/lib/content/docs-corpus.mjs').DocsPage} */ ({ slug: 'kept', title: 'Kept', repo: 'docs', head: 'd'.repeat(40), sourcePath: 'docs/kept.md', kind: 'hub', body: '# Kept\n\nkept text', headings: [] });
   const fetchImpl = async () => ({ ok: false, status: 403, headers: { get: () => null }, text: async () => '', json: async () => ({}) });
   const pages = await collectDocsCorpus(fetchImpl, { sources: {} }, '', [snapshotHub]);
   const page = pages.find((entry) => entry.slug === 'kept');
   assert.equal(page.kind, 'hub', 'the snapshot keeps the hub alive when the tree is unreachable');
   assert.equal(page.head, 'd'.repeat(40));
+});
+
+test('a failed docs index keeps exactly one root entry', async () => {
+  const fetchImpl = async (url) => {
+    if (url.includes('/git/trees/')) {
+      return {
+        ok: true,
+        status: 200,
+        headers: { get: () => null },
+        text: async () => '',
+        json: async () => ({ sha: 'c'.repeat(40), tree: [{ type: 'blob', path: 'docs/index.md' }, { type: 'blob', path: 'docs/kept.md' }] })
+      };
+    }
+    if (url.includes('/docs/kept.md')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => '# Kept\n\nkept text', json: async () => ({}) };
+    return { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  };
+  const pages = await collectDocsCorpus(fetchImpl, { sources: {} }, '', []);
+  const roots = pages.filter((page) => page.slug === '');
+  assert.equal(roots.length, 1, 'exactly one entry claims the root docs route');
+  assert.equal(roots[0].kind, 'placeholder', 'the root is the index placeholder, not a second synthetic one');
+});
+
+test('a placeholder title runs through the map too', async () => {
+  const raw = '# Sibling sync\n\nThe queue drains sibling jobs.\n';
+  const manifest = { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256: 'f'.repeat(64) }] } } };
+  const fetchImpl = async (url) => {
+    if (url.includes('sources/seed/README.md')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) };
+    if (url.includes('/git/trees/')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => '', json: async () => ({ sha: 'b'.repeat(40), tree: [] }) };
+    return { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+  };
+  const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
+  const page = pages.find((entry) => entry.slug === 'seed');
+  assert.equal(page.kind, 'placeholder');
+  assert.equal(page.title, 'Peer sync', 'the title is mapped even though the body is not published');
 });
