@@ -31,7 +31,12 @@
             "properties": {
               "path": { "type": "string", "minLength": 1 },
               "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-              "bytes": { "type": "integer", "minimum": 0 }
+              "bytes": { "type": "integer", "minimum": 0 },
+              "storedSha256": {
+                "description": "Digest of the text a committed snapshot stores for this record, which carries the site's neutral-vocabulary mapping. Absent in the live manifest, where sha256 is the upstream digest.",
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              }
             }
           }
         }

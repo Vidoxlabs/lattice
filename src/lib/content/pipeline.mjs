@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { isPublicContentSafe } from '../content-safety.mjs';
 import { ciSummary } from '../live-status.mjs';
-import { collectDocsCorpus } from './docs-corpus.mjs';
+import { collectDocsCorpus, verifiedAgainstRecord } from './docs-corpus.mjs';
 import { neutralize } from './neutral-vocabulary.mjs';
 import { stable, validateManifest, validateStatus } from './schema.mjs';
 
@@ -133,27 +133,42 @@ export async function gatherSiteStatus(/** @type {FetchLike} */ fetchImpl, manif
   }));
 }
 
-async function collectDocuments(/** @type {FetchLike} */ fetchImpl, manifest, snapshotDocuments = {}) {
+async function collectDocuments(/** @type {FetchLike} */ fetchImpl, manifest, snapshotDocuments = {}, snapshotManifest = null) {
   const entries = [];
+  const storedRecords = new Map();
+  for (const [name, source] of Object.entries(snapshotManifest?.sources ?? {})) {
+    for (const record of source.files ?? []) storedRecords.set(`${source.name ?? name}\u0000${record.path}`, record);
+  }
   for (const [name, source] of Object.entries(manifest.sources ?? {})) {
     const record = source.files?.find((file) => file.path === 'README.md');
     if (!record?.sha256) continue;
     const path = `sources/${name}/README.md`;
     let text = null;
+    let fromSnapshot = false;
     try {
       text = await (await request(fetchImpl, `${DOCS_RAW}/${path}`)).text();
     } catch {
       text = snapshotDocuments[path] ?? null;
+      fromSnapshot = true;
     }
     if (typeof text !== 'string') continue;
-    const digest = createHash('sha256').update(text).digest('hex');
-    // The digest verifies the upstream bytes; the published text is the mapped
-    // one. A snapshot text is already mapped, and the mapping is idempotent.
-    if (digest === record.sha256 && isPublicContentSafe(text)) entries.push([path, neutralize(text)]);
+    // The fetched text verifies against the upstream digest; a snapshot text
+    // carries the site's mapping and verifies against the stored digest the
+    // snapshot recorded, only while its upstream digest still matches.
+    const storedRecord = fromSnapshot ? storedRecords.get(`${name}\u0000${record.path}`) : undefined;
+    const verified = verifiedAgainstRecord(text, record, storedRecord);
+    if (verified && isPublicContentSafe(text)) entries.push([path, neutralize(text)]);
   }
   return Object.fromEntries(entries);
 }
 
+/**
+ * Collect everything the site renders from: the documentation manifest, the
+ * corpus, the public repository status and the Vivarium pins. The fetch
+ * implementation is the standard one; tests stub it with the FetchLike shape.
+ *
+ * @param {{ fetchImpl?: FetchLike, token?: string, snapshot?: any, allowSnapshot?: boolean }} [options]
+ */
 export async function collectPipeline({ fetchImpl = fetch, token = '', snapshot = null, allowSnapshot = true } = {}) {
   const fallback = allowSnapshot ? snapshot : null;
   let manifest;
@@ -183,8 +198,8 @@ export async function collectPipeline({ fetchImpl = fetch, token = '', snapshot 
   // needs one API call (the hub tree) while the status gather consumes most of
   // an unauthenticated rate window, so this order keeps the corpus complete
   // even when the status degrades to the snapshot.
-  const documents = await collectDocuments(fetchImpl, manifest, fallback?.documents);
-  const docsPages = await collectDocsCorpus(fetchImpl, manifest, token, fallback?.docsPages ?? []);
+  const documents = await collectDocuments(fetchImpl, manifest, fallback?.documents, fallback?.manifest ?? null);
+  const docsPages = await collectDocsCorpus(fetchImpl, manifest, token, fallback?.docsPages ?? [], fallback?.manifest ?? null);
 
   let status;
   let statusError = null;
