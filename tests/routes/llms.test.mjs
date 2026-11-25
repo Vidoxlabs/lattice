@@ -47,3 +47,10 @@ test('both generated files pass the public-safety scan', () => {
   assert.equal(scanned, 2);
   assert.deepEqual(failures, []);
 });
+
+test('neither generated file carries the mapped vocabulary or the persona clause', () => {
+  for (const [name, text] of [['llms.txt', index], ['llms-full.txt', full]]) {
+    assert.doesNotMatch(text, /\bsiblings?\b/i, `${name} carries the word the pipeline maps`);
+    assert.ok(!text.includes('mirroring five flower-named personas'), `${name} carries the clause the pipeline drops`);
+  }
+});

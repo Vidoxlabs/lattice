@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { isPublicContentSafe } from '../content-safety.mjs';
+import { neutralize } from './neutral-vocabulary.mjs';
 
 const DOCS_RAW = 'https://raw.githubusercontent.com/Vidoxlabs/docs/main';
 const DOCS_API = 'https://api.github.com/repos/Vidoxlabs/docs';
@@ -198,15 +199,19 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
         });
         continue;
       }
+      // The digest and the scan verify the upstream bytes; the page publishes
+      // the mapped text. A snapshot text is already mapped, and mapping is
+      // idempotent, so the fallback passes through unchanged.
+      const neutral = neutralize(text);
       pages.push({
         slug,
-        title: titleFor(text, record.path),
+        title: titleFor(neutral, record.path),
         repo,
         head: source.head ?? null,
         sourcePath: record.path,
         kind: 'source',
-        body: text,
-        headings: headingsFor(text)
+        body: neutral,
+        headings: headingsFor(neutral)
       });
     }
   }

@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { isPublicContentSafe } from '../content-safety.mjs';
 import { ciSummary } from '../live-status.mjs';
 import { collectDocsCorpus } from './docs-corpus.mjs';
+import { neutralize } from './neutral-vocabulary.mjs';
 import { stable, validateManifest, validateStatus } from './schema.mjs';
 
 const API = 'https://api.github.com/repos/Vidoxlabs';
@@ -146,7 +147,9 @@ async function collectDocuments(/** @type {FetchLike} */ fetchImpl, manifest, sn
     }
     if (typeof text !== 'string') continue;
     const digest = createHash('sha256').update(text).digest('hex');
-    if (digest === record.sha256 && isPublicContentSafe(text)) entries.push([path, text]);
+    // The digest verifies the upstream bytes; the published text is the mapped
+    // one. A snapshot text is already mapped, and the mapping is idempotent.
+    if (digest === record.sha256 && isPublicContentSafe(text)) entries.push([path, neutralize(text)]);
   }
   return Object.fromEntries(entries);
 }

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildResolver, headingsFor, prepare, slugFor, titleFor } from '../../src/lib/content/docs-corpus.mjs';
+import { createHash } from 'node:crypto';
+import { buildResolver, collectDocsCorpus, headingsFor, prepare, slugFor, titleFor } from '../../src/lib/content/docs-corpus.mjs';
 import { badgeClaimLines, sanitizeRenderedHtml } from '../../src/lib/content/render-docs.mjs';
 import { enrichDocsCorpus } from '../../src/lib/content/enrich.mjs';
 
@@ -100,4 +101,31 @@ test('enrichment is a no-op while disabled and while unbudgeted', () => {
   assert.equal(enrichDocsCorpus(pages), pages);
   assert.equal(enrichDocsCorpus(pages, { enabled: true }), pages);
   assert.equal(enrichDocsCorpus(pages, { enabled: true, maxUsd: 0 }), pages);
+});
+
+test('a verified page is published with the neutral mapping, title and headings included', async () => {
+  const raw = '# Sibling sync\n\nThe queue drains sibling jobs, mirroring five flower-named personas.\n\n## Sibling queues\n';
+  const sha256 = createHash('sha256').update(raw).digest('hex');
+  const manifest = { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256 }] } } };
+  const fetchImpl = async (url) => url.includes('sources/seed/README.md')
+    ? { ok: true, status: 200, text: async () => raw }
+    : { ok: false, status: 404, text: async () => '' };
+  const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
+  const page = pages.find((entry) => entry.slug === 'seed');
+  assert.equal(page.kind, 'source');
+  assert.equal(page.title, 'Peer sync');
+  assert.match(page.body, /# Peer sync/);
+  assert.match(page.body, /drains peer jobs\./);
+  assert.doesNotMatch(page.body, /sibling|personas/);
+  assert.deepEqual(page.headings, ['Peer queues']);
+});
+
+test('the mapping runs after verification: a digest mismatch still renders a placeholder', async () => {
+  const raw = '# Peer sync\n\nsibling\n';
+  const manifest = { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256: 'f'.repeat(64) }] } } };
+  const fetchImpl = async (url) => url.includes('sources/seed/README.md')
+    ? { ok: true, status: 200, text: async () => raw }
+    : { ok: false, status: 404, text: async () => '' };
+  const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
+  assert.equal(pages.find((entry) => entry.slug === 'seed').kind, 'placeholder');
 });

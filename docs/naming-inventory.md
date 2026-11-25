@@ -116,6 +116,35 @@ The one exception: the internal marker in the chat route read `TODO(family)`. It
 `TODO(upstream)` and lives beside the rate limiter it describes, in
 `src/lib/agent/rate-limit.mjs`. Nothing else changed.
 
+**Update, 2026-11-25, second run.** The owner chose option (a) for the three visible strings
+this repository owns, with these words: the home diagram title is "The Vidoxlabs stack", its
+group heading is "Around the stack", and the about list line is "Multi-point testing". The
+component name, the element id, the data attributes, the design-system files and the corpus
+prose keep the current vocabulary until their owners move, so the counts above predate this
+change. The docs prose now goes through the mapping below, which is where the corpus side of
+this inventory is handled in the meantime.
+
+## Lattice-side vocabulary mapping
+
+The documentation corpus arrives from the other repositories, and some of its prose uses a
+group word this site does not publish. The pipeline maps it in one place,
+`src/lib/content/neutral-vocabulary.mjs`, applied to a text only after that text has verified
+against its manifest digest — so verification still refers to the upstream bytes, and the
+published output carries the mapped wording:
+
+| Upstream | Published |
+| --- | --- |
+| "sibling" | "peer" |
+| "siblings" | "peers" |
+| "…, mirroring five flower-named personas." | the clause is dropped from the sentence |
+
+The word maps whole only: an identifier inside a code sample that contains it keeps its
+letters. The mapping is lattice-side until the owning repositories change their own text;
+when they do, the map, its tests and this row are retired with it. The committed offline
+snapshot stores the mapped text, and its manifest records the digest of each stored text
+(`scripts/snapshot-digests.mjs`) so the no-network fallback still verifies; the upstream
+digests stay in the manifest a connected build fetches.
+
 ## Related
 
 - `Team and personas` does not appear on the site at all; this inventory is about the word
