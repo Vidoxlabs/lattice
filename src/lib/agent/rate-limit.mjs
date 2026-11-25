@@ -7,6 +7,9 @@
  * public configuration file cannot carry, so the binding is optional and the
  * route falls back to a best-effort per-isolate counter while it is unbound.
  * Both paths return the same shape, so the endpoint cannot tell them apart.
+ *
+ * TODO(upstream): bind the limiter once the account namespace identifier is
+ * supplied. SETUP.md section 6 carries the owner step and the placeholder.
  */
 
 export const RATE_LIMIT = 10;

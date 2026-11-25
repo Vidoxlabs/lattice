@@ -5,11 +5,10 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 8 of 10 (self-update path) done; starting step 9 (naming inventory). Branch
-`slice-10-finish`, pull request #10, currently a draft. Nothing is merged: `main` still holds
-the initial commit.
+Step 9 of 10 (naming inventory) done; starting step 10 (finish). Branch `slice-10-finish`,
+pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
 
-Last pushed commit: `f109d20` — ci: add the snapshot refresh and the live smoke.
+Last pushed commit: `b9ce248` — ci: prepare a daily rebuild until the docs repository can notify the site.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -22,15 +21,15 @@ names the commit its work landed in rather than the commit that records it.
 - [x] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8 — `b7c6efd`
 - [x] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test — `83c2628`
 - [x] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test — `f109d20`
-- [x] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it — this commit
-- [ ] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed
+- [x] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it — `b9ce248`
+- [x] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed — this commit
 - [ ] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body
 
 ## Next step
 
-Work step 9: write `docs/naming-inventory.md` as a proposal with a count, a visibility and an
-owner for every group of occurrences, propose the neutral vocabulary and the change order, and
-rename only the lattice-internal `TODO(family)` marker to `TODO(upstream)`.
+Work step 10: update the README deployment section, finish SETUP.md section 1 as the owner's
+merge and publish order, update the ADRs where the decisions changed, add the timeline entries,
+rewrite the pull request body, mark #10 ready and post the final report.
 
 ## Owner steps ready
 
@@ -113,6 +112,12 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   from this repository, inert with a notice while `LATTICE_DEPLOY_HOOK_URL` is unset here.
   SETUP.md section 3 records that this deliberately keeps the hook in a second repository and
   that the workflow and its secret go away once docs#6 notifies the site.
+- Naming inventory (step 9, posted in chat): `docs/naming-inventory.md` separates the ordinary
+  vocabulary (`font-family`, the typography tokens, "page family") from the internal group name,
+  counts both over every tracked file and over the built output, names an owner per group, and
+  sets the change order: videsign names, then docs prose, then lattice copy. No visible copy
+  changed. The one internal marker now reads `TODO(upstream)` and sits beside the rate limiter
+  it describes.
 - Dry runs (step 4): `npx wrangler deploy --dry-run` and `npx wrangler versions upload --dry-run`
   both resolved the redirected configuration at `dist/server/wrangler.json`, read 15 modules
   (2386.88 KiB) and 393 asset files, reported a 2388.10 KiB upload (696.01 KiB gzip) with the
