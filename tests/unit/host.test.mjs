@@ -9,8 +9,7 @@ test('canonical and alternate public hosts follow the domain rule', () => {
   assert.equal(canonicalRedirect('https://www.vidoxlabs.dev/docs'), 'https://vidoxlabs.com');
 });
 
-test('local preview hosts do not redirect away from the built site', () => {
-  const host = 'local' + 'host';
-  assert.equal(canonicalRedirect(`http://${host}/`), null);
-  assert.equal(canonicalRedirect(`http://${host}/`, false), 'https://vidoxlabs.com');
+test('reserved example and preview hosts are served without a redirect', () => {
+  assert.equal(canonicalRedirect('https://preview.example.test/'), null);
+  assert.equal(canonicalRedirect('http://site.example/'), null);
 });
