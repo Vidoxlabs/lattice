@@ -1,25 +1,64 @@
 # Owner setup
 
-This checklist records only actions that need the owner, hosting access or a decision this
-repository cannot make for itself. Items are in the order that unblocks work: the merge
-plan first, then the build pipeline, then the runtime configuration, then the decisions.
+This checklist records only the actions that need the owner: merging, hosting access, a
+secret, or a decision this repository cannot make for itself. Every item is a checkbox, in the
+order that unblocks the next one, and nothing here is done by an agent.
 
-Nothing here is done by an agent. Merging, deploying, sending a deploy hook and changing
-DNS are owner actions.
+`docs/work-record.md` carries the running record, the defaults taken where a question was
+answered provisionally, and the verification receipt for each step.
 
-## 1. Merge plan (start here)
+**The order to read and to act in**
 
-- [ ] Squash-merge **#4 only**. It carries slices 1 to 4 in one commit and satisfies the
-      required `check` on its own head. Then close #1, #2 and #3 unmerged: their heads are
-      contained in #4's stack and #1 predates the workflow the required check needs.
-  - Alternative: add the `check` workflow to #1 first, then merge #1 to #4 in order.
-- [ ] Then merge #5, #6, #7, #8, #9 and #10 in that order, one at a time. Each later pull
-      request is retargeted to `main` by the host when the one before it lands, and each
-      needs a plain merge of `main` into its head to satisfy the strict status check. No
-      rebase, no force push.
-- [ ] Merge order for docs: docs#6 is a proposal and stays open until you answer its three
-      questions in the pull request. The site works without it: status is labelled
-      "gathered by the site" or read from the committed snapshot until then.
+1. Section 1 — merge the pull requests, then publish.
+2. Section 2 — the build and deploy path, and Access for preview addresses.
+3. Section 8 — the four hostnames and the sitemap.
+4. Section 5 and section 6 — the variables, the one chat secret and the rate-limit binding.
+5. Section 12 — run the live smoke once by hand, then switch it on.
+6. Section 3 — the deploy hook, and today's fallback for a rebuild after a docs sync.
+7. Section 13 — the documentation pull request that would replace that fallback.
+
+## 1. Merge plan and the publish sequence
+
+Two squash merges, in two rounds. Nothing else merges.
+
+### Round 1: slices 1 to 4
+
+- [ ] Reviews on head `e25d117` of #4: a ViGuard SAFE in ViGuard's own report file, a ViReview
+      APPROVE, and, because this is interface work, a ViDesign ALIGNED.
+- [ ] Squash-merge #4 with a clean title and body: sentence case, what changed, no branch
+      names, no co-author trailers.
+- [ ] Close #1, #2 and #3 unmerged with "Carried by #4" and nothing else. GitHub retargets #5 to
+      `main` by itself; leave that alone.
+  - Alternative, if #4 cannot be reviewed as one change: add the `check` workflow to #1 first,
+    then merge #1 to #4 in order. Slower, same end state.
+
+### Round 2: slices 5 to 10, plus this run
+
+- [ ] Retarget #10 to `main`, then bring its head up to date with a plain local merge:
+      `git fetch origin && git merge origin/main -m "merge: bring main up to date"`, and push.
+      Never use the host's "Update branch" button: its commit message names branches, and a
+      commit message in this repository never does.
+- [ ] Confirm the merge changed nothing except what `main` legitimately carried:
+      `git diff <head before the merge> HEAD` should be empty. Post that result with the
+      review request.
+- [ ] `check` and CodeQL green on the new head.
+- [ ] Reviews on that exact head — ViGuard SAFE, ViReview APPROVE, ViDesign ALIGNED, scope
+      `e25d117..<head>`. Any later push voids them, so push nothing after the reviews.
+- [ ] Squash-merge #10 with a clean title and body.
+- [ ] Close #5 to #9 unmerged with "Carried by #10" and nothing else.
+
+### Then publish, in this order
+
+- [ ] Enable Cloudflare Access for preview addresses, or leave previews off (section 2).
+- [ ] Turn on the deploy path: the account token for the committed GitHub Actions workflow
+      (section 2, Path A), or Workers Builds if its first build proves the browser stage
+      (section 2, Path B).
+- [ ] Confirm the DNS records and attach the four hostnames (section 8).
+- [ ] Set the variables, the one chat secret and the rate-limit binding (sections 5 and 6).
+- [ ] Watch the first production build finish, and open the site.
+- [ ] Run the live smoke once by hand, then set `LIVE_SMOKE_ENABLED` to `true` (section 12).
+- [ ] Answer docs#6's three questions, or leave it a proposal and accept the daily rebuild
+      fallback in section 3.
 
 ## 2. Workers Builds, and the deploy path this repository takes
 
@@ -163,7 +202,7 @@ Actions secret or variable is set in this repository under **Settings → Secret
 | `ENRICH_MAX_USD` | Worker variable | `0` | Committed. A positive cap is required before an enabled run does anything. |
 | `CLOUDFLARE_API_TOKEN` | Actions secret | unset | Section 2, Path A. Deploy only. |
 | `CLOUDFLARE_ACCOUNT_ID` | Actions variable | unset | Section 2, Path A, only when the token reaches more than one account. |
-| `LATTICE_DEPLOY_HOOK_URL` | Docs repository secret | unset | Section 3 and section 9. It lives in `Vidoxlabs/docs`, never here. |
+| `LATTICE_DEPLOY_HOOK_URL` | Docs repository secret, and an Actions secret here only for the fallback | unset | Section 3 and section 13. The docs repository holds it; this repository holds a copy only while the daily fallback runs. |
 
 The defaults keep cloud models off, so the site runs with no provider key at all: `mock`
 answers deterministically from the documentation index, and that is what every test and
@@ -319,5 +358,8 @@ Each one is a decision in another repository; this repository works around all t
 - [ ] Design-system token naming: the aliases in `scripts/sync-videsign.mjs` exist because
       of the naming upstream. Neutral names there remove the mapping.
 - [ ] docs#6: answer its three questions in the pull request. On a yes to all three, the
-      site's status schema is reconciled with the published one and the deploy hook in
-      section 3 starts rebuilding the site after each sync.
+      site's status schema is reconciled with the published one, the deploy hook in section 3
+      starts rebuilding the site after each sync, and the daily fallback can be deleted.
+- [ ] The word "family": `docs/naming-inventory.md` lists every group, an owner for each, a
+      neutral vocabulary and the order to change in — videsign names, then docs prose, then the
+      site's own copy. No visible copy changed in this run.

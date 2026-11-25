@@ -5,10 +5,10 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 9 of 10 (naming inventory) done; starting step 10 (finish). Branch `slice-10-finish`,
-pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
+All ten steps done. Branch `slice-10-finish`, pull request #10, ready for review. Nothing is
+merged: `main` still holds the initial commit.
 
-Last pushed commit: `b9ce248` — ci: prepare a daily rebuild until the docs repository can notify the site.
+Last pushed commit: `79f7f62` — docs: inventory the group name and propose a neutral vocabulary.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -22,26 +22,38 @@ names the commit its work landed in rather than the commit that records it.
 - [x] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test — `83c2628`
 - [x] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test — `f109d20`
 - [x] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it — `b9ce248`
-- [x] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed — this commit
-- [ ] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body
+- [x] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed — `79f7f62`
+- [x] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body — this commit
 
 ## Next step
 
-Work step 10: update the README deployment section, finish SETUP.md section 1 as the owner's
-merge and publish order, update the ADRs where the decisions changed, add the timeline entries,
-rewrite the pull request body, mark #10 ready and post the final report.
+Nothing is left in this backlog. A fresh agent starts at SETUP.md section 1: the owner merges
+#4 (round 1), then #10 is retargeted to `main` and brought up to date with a plain local merge
+before round 2. Do not push to any other branch and do not merge anything.
 
 ## Owner steps ready
 
 Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 
-- [ ] §2 Workers Builds: connect the repository, the two triggers, the variables, the Node setting
-- [ ] §3 Preview URLs: enable Cloudflare Access for this Worker's previews, then turn previews back on
-- [ ] §4 Secrets and bindings: the chat variables, the `CHAT_API_KEY` secret, the rate-limit binding
-- [ ] §5 Repository settings: allow Actions to create pull requests, `LIVE_SMOKE_ENABLED`, the optional read token
-- [ ] §6 Domains and search: confirm both zones, remove conflicting records, verify with `curl -sI`, submit the sitemap
-- [ ] §7 Scheduled rebuild: add the deploy-hook secret until the documentation repository notifies the site
-- [ ] §8 Merge and publish order: round 1, round 2, then the publish sequence
+- [ ] Section 1: squash-merge #4, close #1 to #3, then review and squash-merge #10 and close #5
+      to #9. Every merge is the owner's.
+- [ ] Section 2, the deploy token: `CLOUDFLARE_API_TOKEN` as an Actions secret (and
+      `CLOUDFLARE_ACCOUNT_ID` only if the token reaches more than one account). Until then the
+      deploy job is inert.
+- [ ] Section 2, previews: enable Cloudflare Access for the Worker's preview addresses, limited to
+      the owner's email, then set `preview_urls` back to `true`.
+- [ ] Section 2, alternative: connect Workers Builds with the production and preview commands if
+      a first build there proves the browser stage.
+- [ ] Section 3: create the deploy hook and decide whether the daily fallback runs here until
+      docs#6 notifies the site itself.
+- [ ] Section 5 and section 6: the chat and site variables, the `CHAT_API_KEY` secret, and the
+      rate-limit binding with its account-scoped identifier.
+- [ ] Section 8: both zones in one account, conflicting records cleared, the four `curl -sI`
+      checks, then the sitemap submission.
+- [ ] Section 11: allow Actions to create pull requests, add the `LIVE_SMOKE_ENABLED` variable,
+      and confirm the maintainers team.
+- [ ] Section 12: run the live smoke by hand once, then switch it on.
+- [ ] Section 13: answer docs#6's three questions, and the upstream page and token-naming items.
 
 ## Defaults taken in this run
 
@@ -89,6 +101,13 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   (Worker variable, Worker secret, Actions secret, Actions variable, docs repository secret),
   its default and the exact command or settings path. No value appears anywhere, and the
   account identifier stays a variable rather than a committed value.
+- Setup section numbers (step 10): the numbers the instructions pinned stay pinned — section 2 is
+  the build and deploy path, section 5 the secrets register, section 6 the binding, section 8 the
+  domains. The publish order the owner follows is written at the top and again in section 1, so no
+  numbering carries an instruction on its own.
+- Decision record (step 10): the deploy, preview and transport decisions are recorded in a new
+  ADR-0005 rather than by rewriting ADR-0001, because this repository's own rule is that a later
+  change adds a record and ADR-0001 is accepted. ADR-0001 and ADR-0002 point at what changed.
 - Team scrub scan (step 5): `node team/sync.mjs --scan` flags every URL in a file, including
   this site's own canonical hostnames, and exits non-zero on them, so it cannot gate a public
   repository that names its domains in prose and code. The repository's own scan
@@ -125,11 +144,33 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 
 ## Open owner questions
 
-- Redirect path handling (step 5): the rule now keeps the request path and drops the query
-  string, which is option (b) below and the default taken. Options were (a) keep the
-  home-page redirect the previous spec described, (b) keep the request path and drop the query
-  string, or (c) keep both path and query. Recommendation: (b). Reverting to (a) is a one-line
-  change in `src/lib/host.mjs` plus its two tests.
+Each one has a default already taken, so nothing waits on an answer. A different answer is a
+small follow-up change, named with each entry.
+
+- Transport security (step 2): the header is `max-age=31536000` with `includeSubDomains` dropped
+  and `preload` out. Options: (a) as taken, (b) keep `includeSubDomains` once every subdomain of
+  the production domain is HTTPS by policy, (c) add `preload` as well. Recommendation: (a).
+  Reverting is one line in `src/lib/security-headers.mjs` and its assertion.
+- Preview addresses (step 3): `preview_urls` is `false`. Options: (a) as taken, until Cloudflare
+  Access protects previews, then flip the one line; (b) enable Access and flip it now; (c) leave
+  previews off permanently and review from the build log. Recommendation: (b) once Access is
+  configured, because a reviewer being able to open a branch build is worth one policy.
+- Browser path (step 4): deploy from GitHub Actions after `check` on `main`, with Workers Builds
+  documented as the alternative. Options: (a) as taken; (b) Workers Builds without the browser
+  stage, accepting that a deploy can come from a build that never ran it; (c) Chromium on
+  Cloudflare and both engines in Actions. Recommendation: (a), because it is the only one where
+  every deploying build runs both engines on the bytes that ship.
+- Redirect path handling (step 5): the rule keeps the request path and drops the query string.
+  Options: (a) keep the home-page redirect the previous spec described, (b) as taken, (c) keep
+  the path and the query. Recommendation: (b). Reverting to (a) is one line in
+  `src/lib/host.mjs` plus its two tests.
+- Scheduled rebuild (step 8): with docs#6 unanswered, a daily job posts to the deploy hook from
+  this repository. Options: (a) as taken; (b) no scheduled rebuild, so the site updates on the
+  next build of any kind; (c) wait for docs#6. Recommendation: (a) while docs#6 stays open,
+  because a stale site is otherwise invisible.
+- The word "family" (step 9): no visible copy changed. Options: (a) rename the site's own copy
+  now, (b) one org-wide pass in the order the inventory sets, (c) keep the word. Recommendation:
+  (b), with the inventory as the plan.
 
 ## Earlier decisions (slices 1 to 10)
 

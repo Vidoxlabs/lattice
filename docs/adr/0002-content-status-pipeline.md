@@ -18,7 +18,7 @@ One generated build bundle feeds static pages and `/api/status`. The API refresh
 
 A committed, dated snapshot contains the last successfully refreshed manifest, pins, status and verified README documents. Offline builds use it and display its capture date. `npm run snapshot:refresh` is the only command that updates this snapshot.
 
-After the docs proposal is ratified and implemented, a docs sync that changes the manifest or status will make one optional deploy-hook request through `LATTICE_DEPLOY_HOOK_URL`, which is held in the docs repository and never here. No system repository will trigger or push content to lattice.
+After the docs proposal is ratified and implemented, a docs sync that changes the manifest or status will make one optional deploy-hook request through `LATTICE_DEPLOY_HOOK_URL`, which is held in the docs repository and never here. No system repository will trigger or push content to lattice. Until that exists, `scheduled-rebuild.yml` posts to the same hook once a day from this repository, inert while the secret that holds it here is absent; it puts a copy of the hook in a second repository on purpose and goes away when the docs repository notifies the site itself.
 
 The same bundle also feeds what the site publishes about itself: the sitemap is derived from the routes the build emitted, `llms.txt` and `llms-full.txt` are generated from the verified corpus and the repository catalog, and the social cards are rendered from the committed brand SVGs. None of them is hand-maintained, so a sync that adds a page adds it everywhere at once.
 

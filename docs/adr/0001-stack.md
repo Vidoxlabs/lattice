@@ -74,6 +74,11 @@ Browser tests spawn `wrangler dev` on that generated configuration, in its own p
 group, parse the printed origin from its startup output, and terminate the group before
 exiting with the test exit code.
 
+Where the build runs is decided in ADR-0005: a GitHub Actions run deploys the output that
+`check` verified, and Workers Builds remains the alternative path with its commands documented.
+The browser stage installs Chromium and WebKit itself and fails the build when either cannot
+start, because a build that cannot run them must not deploy.
+
 The content layer caches a rendered page by its entry digest, so a change to the renderer
 alone would reuse the cached page. The digest carries `RENDER_REVISION` from
 `src/lib/content/render-docs.mjs`, which is bumped whenever rendered markup changes.
