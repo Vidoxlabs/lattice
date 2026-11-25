@@ -84,6 +84,8 @@ test('check runs on every push, pull request, the daily schedule and a docs disp
   assert.deepEqual(on.repository_dispatch, { types: ['docs-sync'] }, 'the docs sync arrives as a dispatch');
   assert.deepEqual(workflow.permissions, { contents: 'read' });
   const steps = workflow.jobs.check.steps;
+  const build = steps.find((step) => step.run === 'npm run check');
+  assert.deepEqual(build?.env, { CI: '1', GITHUB_READ_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }, 'the build gets the browser switch and the read-only workflow token, and nothing else');
   // The browser stage installs its own engines: a separate install step would
   // let two builds take different paths to the same stage.
   assert.equal(steps.some((step) => String(step.run ?? '').includes('playwright install')), false);

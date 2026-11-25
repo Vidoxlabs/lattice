@@ -35,6 +35,11 @@ jobs:
       - run: npm run check
         env:
           CI: '1'
+          # Read-only GitHub API access for the content build: the hub tree and
+          # the repository status come from authenticated requests, so a busy
+          # unauthenticated rate window cannot silently thin the corpus. The
+          # token never reaches the checkout or any artifact.
+          GITHUB_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # The exact output this run verified is what the deploy job publishes. A
       # scheduled run, a manual run and a docs dispatch all check out the
       # default branch, so its ref is the whole condition.
