@@ -2,6 +2,7 @@ node_modules/
 dist/
 .output/
 .astro/
+src/data/generated/
 .wrangler/
 coverage/
 playwright-report/

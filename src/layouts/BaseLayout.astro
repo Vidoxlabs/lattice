@@ -2,6 +2,7 @@
 import LayoutPublicSite from '../components/videsign/layout-public-site.astro';
 import '../styles/global.css';
 import '../styles/pages.css';
+import pipeline from '../data/generated/build-pipeline.json' with { type: 'json' };
 const { title, description = 'Vivarium, its systems, live status and docs.', currentPath = Astro.url.pathname } = Astro.props;
 ---
 <html lang="en" data-theme="dark">
@@ -14,8 +15,10 @@ const { title, description = 'Vivarium, its systems, live status and docs.', cur
   </head>
   <body>
     <LayoutPublicSite currentPath={currentPath}>
+      {pipeline.snapshot.used && <aside aria-label="Offline content notice">Showing committed snapshot data captured at {pipeline.snapshot.capturedAt ?? 'an unknown time'}.</aside>}
       <slot />
     </LayoutPublicSite>
     <script src="../scripts/theme.mjs"></script>
+    <script src="../scripts/status-refresh.mjs"></script>
   </body>
 </html>
