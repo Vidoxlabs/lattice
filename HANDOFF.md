@@ -9,10 +9,10 @@ the commit that carries this file is the next one on the branch.
 ## Status
 
 <<<<<<< HEAD
-Step 8 of the slice 9 and 10 backlog. Branch `slice-10-finish`, last pushed commit
-`99fb64b` (test: hold every page type inside its performance budget) on `slice-09-seo`,
-which is stacked on the frozen `slice-08-chat` head. Slice 9 pull request #9 is ready for
-review; slice 10 is a draft against it.
+Backlog complete. Branch `slice-10-finish`, last pushed commit `a223a83` (docs: bring the
+budget measurement fix onto the finish branch), stacked on `slice-09-seo` at `e1cb6ee`,
+which is stacked on the frozen `slice-08-chat` head. Pull requests #9 and #10 are ready for
+review and their `check` runs pass; nothing is left to do but the owner's merges.
 =======
 Step 7 of the slice 9 and 10 backlog, plus its first cloud-run fix. Branch `slice-09-seo`,
 last pushed commit `99fb64b` (test: hold every page type inside its performance budget),
@@ -31,7 +31,7 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is ready for revi
 <<<<<<< HEAD
 <<<<<<< HEAD
 - [x] Step 7: budget checks, then the slice 9 pull request goes ready for review — `99fb64b`
-- [x] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items — this commit
+- [x] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items — `1e81396`
 - [ ] Step 9: docs#6 — skipped: the owner has not answered its three questions (checked in the pull request, no replies), so no docs commit was made
 - [ ] Step 10: optional extras — the snapshot refresh was attempted and could not complete; CSP-safe highlighting and the unported components were not started
 =======
@@ -46,17 +46,18 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is ready for revi
 
 ## Next step
 
-The backlog is done except for what section 6 and the owner block: docs#6 stays a proposal,
-the status snapshot still carries its original capture, and syntax highlighting and the
-decorative documentation-portal components remain unported. The next action is the owner's:
-merge in the order SETUP.md records. Nothing else is pending on this branch.
+The next action is the owner's: squash-merge #4, close #1 to #3, then merge #5 to #10 in
+order, bringing each head up to date with a plain merge of `main` as it retargets. Nothing is
+pending on this branch. If work resumes, the two open items are docs#6 (blocked on the
+owner's three answers) and the optional pair this run did not start: class-emitting syntax
+highlighting and the decorative documentation-portal components.
 
 ## Open pull requests
 
 | PR | Head | Base | CI |
 | -- | ---- | ---- | -- |
-| #9 | `slice-09-seo` `99fb64b` | `slice-08-chat` | ready for review |
-| #10 | `slice-10-finish` (this branch) | `slice-09-seo` | draft |
+| #9 | `slice-09-seo` `e1cb6ee` | `slice-08-chat` | ready for review, check and CodeQL pass |
+| #10 | `slice-10-finish` `a223a83` | `slice-09-seo` | ready for review, check and CodeQL pass |
 | #8 | `slice-08-chat` `b2ca236` | `slice-07-docs` | check and CodeQL green, frozen |
 | #7 | `slice-07-docs` `4d35926` | `slice-06-diagrams` | green, frozen |
 | #6 | `slice-06-diagrams` `7a87b97` | `slice-05-pipeline` | green, frozen |
@@ -76,7 +77,7 @@ merge in the order SETUP.md records. Nothing else is pending on this branch.
   window was closed, so the previous snapshot was kept rather than replaced with empty
   values. Syntax highlighting that emits classes and the decorative documentation-portal
   components were not started.
-- `slice-09-recovered` (`4c9d59f`) holds the unfinished edits a previous session left
+- `slice-09-recovered` (`4c9d59f`) still holds the unfinished edits a previous session left
   uncommitted on `slice-08-chat`: a first pass at `_headers`, canonical and Open Graph
   tags, sitemap, robots, the two llms files and custom-domain routes. It is a salvage
   branch, never a merge candidate; take from it deliberately and re-verify anything taken.
