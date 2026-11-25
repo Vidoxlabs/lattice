@@ -1,23 +1,57 @@
 # Work record
 
-Public-safe running record for the agent continuing this backlog. Update it in the same commit as any pushed work.
+Public-safe running record for the first public deploy. A fresh agent resumes from this file,
+never from recall. Update it in the same commit as the work it describes.
 
-## Current slice and branch
+## Status
 
-Slice 9 (hardening, discoverability and domains) on `slice-09-seo`, branched from the
-frozen `slice-08-chat` head; slice 8's pull request is #8 and is frozen for review.
+Step 1 of 10 (cleanup) done; starting step 2 (transport security). Branch `slice-10-finish`,
+pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
 
-## Last pushed commit
+Last pushed commit: `4dd0456` — docs: record the finished backlog in the handoff. The commit
+that carries this file is the next one on the branch, so a step's checklist entry names the
+commit its work landed in rather than the commit that records it.
 
-`b2ca236` — docs: record the slice 8 chat state (the frozen base of this branch).
+## Checklist
+
+- [ ] 1. Cleanup: delete the handoff file, rewrite this record, fail `npm run check` on merge-conflict markers in tracked text files
+- [ ] 2. Transport security: drop `includeSubDomains` from the header and from its unit test
+- [ ] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps
+- [ ] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2
+- [ ] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8
+- [ ] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test
+- [ ] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test
+- [ ] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it
+- [ ] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed
+- [ ] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body
 
 ## Next step
 
-Work the backlog in `HANDOFF.md` in order, starting at step 1: the Worker bundle path
-cleanup. Everything before it is recorded there. Do not push to `slice-01` to
-`slice-08`; fix any defect they carry forward on the current branch instead.
+Work step 2: set `HSTS_HEADER` in `src/lib/security-headers.mjs` to `max-age=31536000`, keep
+`preload` out, update `tests/routes/security-headers.test.mjs`, then run `CI=1 npm run check`,
+commit, push and move to step 3.
 
-## Defaults taken and open owner questions
+## Owner steps ready
+
+Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
+
+- [ ] §2 Workers Builds: connect the repository, the two triggers, the variables, the Node setting
+- [ ] §3 Preview URLs: enable Cloudflare Access for this Worker's previews, then turn previews back on
+- [ ] §4 Secrets and bindings: the chat variables, the `CHAT_API_KEY` secret, the rate-limit binding
+- [ ] §5 Repository settings: allow Actions to create pull requests, `LIVE_SMOKE_ENABLED`, the optional read token
+- [ ] §6 Domains and search: confirm both zones, remove conflicting records, verify with `curl -sI`, submit the sitemap
+- [ ] §7 Scheduled rebuild: add the deploy-hook secret until the documentation repository notifies the site
+- [ ] §8 Merge and publish order: round 1, round 2, then the publish sequence
+
+## Defaults taken in this run
+
+Initially empty; each entry names the question, the options, the default taken and why.
+
+## Open owner questions
+
+Initially empty; each entry names the options and the recommendation.
+
+## Earlier decisions (slices 1 to 10)
 
 - Status snapshot refresh (attempted, not committed): `npm run snapshot:refresh` ran at 2026-11-25T18:03:21Z and produced no repository data — the unauthenticated public API window was closed (zero of sixty requests remaining), so every head came back empty and every CI conclusion came back unknown. The previous capture was kept, because replacing real data with empty values would degrade every status island. A refresh needs either a spare API window or `GITHUB_READ_TOKEN`; SETUP.md records the token.
 - Syntax highlighting and the decorative documentation-portal components stay unported. The highlighter is off because the default one emits inline styles the policy forbids, and a class-emitting replacement is a self-contained change worth its own review rather than the tail of this run.
@@ -26,7 +60,7 @@ cleanup. Everything before it is recorded there. Do not push to `slice-01` to
 - Performance budgets live in `tests/browser/budgets.json` and are enforced by the browser stage, which `npm run check` runs under CI. They cover nine representative routes across both engines rather than all 144 built pages, because a full sweep would add minutes to every run while the CSP sweep already loads every page; the file carries a `defaults` block that applies to any route added later. Measured before setting them: the home page 140 KB, 10 requests, 17 ms longest main-thread block; the other measured pages 100 to 118 KB, 7 to 8 requests, 17 to 18 ms. Budgets are those numbers plus roughly 15 to 20 percent, with three spare requests to spare. The first cloud runs showed the longest-block number is not usable as a budget: on the shared two-core runner the home page reported a 1.9 second first-frame gap, then 2.6 seconds on the next run, and 108 ms on another page — the runner's startup, not this site. Payload, request count and the count of tasks over 50 ms are enforced; the longest block is measured and printed in the failure message so it stays visible without failing a build for the runner's own scheduling.
 - Social cards: one 1200x630 PNG per page family, rendered at build time from the committed brand SVGs with `sharp` pinned as a development dependency. A `-social` SVG already has the card aspect; a 4:1 dark banner is centred on a card canvas filled with the colour that banner paints itself, so no new palette is introduced. The alternative (serving the social SVGs as-is) was rejected because most crawlers do not render SVG previews, and the alternative of a bespoke new card artwork was rejected because brand art is synced and digest-checked.
 - The brand inventory the layout needs is generated into `src/data/generated/` during the content build rather than read from `public/` at render time: the prerender step runs inside the Worker bundle, where the project directory is not readable.
-- Custom-domain routes and the preview path: `wrangler versions upload` takes no route input and, per the current Cloudflare Workers documentation, routes and custom domains are changed by `wrangler deploy` only, so a preview version is served on its own preview URL and never claims the hostnames. Verified locally with `wrangler versions upload --config dist/server/wrangler.json --dry-run`, which compiles and exits without a route warning, and by reading the authorization table that lists route changes against `deploy`. `workers_dev` stays `false` and `preview_urls` stays `true`.
+- Custom-domain routes and the preview path: `wrangler versions upload` takes no route input and, per the current Cloudflare Workers documentation, routes and custom domains are changed by `wrangler deploy` only, so a preview version is served on its own preview URL and never claims the hostnames. Verified locally with `wrangler versions upload --config dist/server/wrangler.json --dry-run`, which compiles and exits without a route warning, and by reading the authorization table that lists route changes against `deploy`.
 - The local runtime serves a configured custom domain itself and rewrites the request host, so with routes present the canonical-host redirect never ran in `wrangler dev` (verified: the alternate host answered 200 instead of 301). The build writes a second configuration without routes for the browser stage, the deploy configuration keeps them, and a route test asserts both shapes.
 - `llms.txt` and `llms-full.txt` are generated in the build from the same pipeline bundle and repository catalog the pages render, so a sync updates both. A page that failed verification appears with its title, route and source only and contributes no body text. Both files are scanned by the public-safety check as part of the built output. The full text keeps the corpus markup minus banner and diagram wrappers rather than stripping all HTML, because stripping would also remove inline code and table sense from the prose.
 - Sitemap source: the sitemap is derived from the HTML files the build actually published rather than from a hand-kept route list or a second traversal of the corpus, so a documentation sync appears in it with no edit. The robots file is generated from the same origin value; it excludes `/api/` and therefore the chat endpoint, while `/chat` stays published and listed.
