@@ -5,10 +5,10 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-Step 6 of 10 (secrets and bindings) done; starting step 7 (workflows). Branch `slice-10-finish`,
+Step 7 of 10 (workflows) done; starting step 8 (self-update path). Branch `slice-10-finish`,
 pull request #10, currently a draft. Nothing is merged: `main` still holds the initial commit.
 
-Last pushed commit: `b7c6efd` — fix: keep the request path when redirecting to the canonical host.
+Last pushed commit: `83c2628` — docs: name every variable and secret the deployment needs.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -19,17 +19,17 @@ names the commit its work landed in rather than the commit that records it.
 - [x] 3. Preview URLs: `preview_urls` off until Access is on, a route test that pins the committed value, the owner's Access steps — `9b64289`
 - [x] 4. Workers Builds readiness: browser install that works there, Node pin, dry runs, SETUP.md §2 — `10a5a36`
 - [x] 5. Domains: the four hosts answer 301 to the canonical host, the redirect keeps nothing it should not, SETUP.md §8 — `b7c6efd`
-- [x] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test — this commit
-- [ ] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test
+- [x] 6. Secrets and bindings: names only, where each goes, the commented rate-limit block, the unbound fallback test — `83c2628`
+- [x] 7. Workflows: pinned actions, least privilege, `snapshot-refresh.yml`, `live-smoke.yml`, a workflow test — this commit
 - [ ] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it
 - [ ] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed
 - [ ] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body
 
 ## Next step
 
-Work step 7: pin every action to a commit with a version comment and least-privilege
-permissions, add `snapshot-refresh.yml` and `live-smoke.yml`, and add a unit test that parses
-each workflow and asserts its triggers, permissions, timeouts and pinned actions.
+Work step 8: docs#6 has no answers in the pull request, so leave docs untouched, prepare
+`scheduled-rebuild.yml` inert against `LATTICE_DEPLOY_HOOK_URL`, and record in SETUP.md that the
+hook lives in a second repository until docs#6 notifies the site.
 
 ## Owner steps ready
 
@@ -95,6 +95,17 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
   (`scripts/scrub-scan.mjs`, plain patterns plus the hashed needle list, over source, built
   output and fetched content) is the enforced gate and passes; the team scan was run on every
   diff and reported only public hostnames and reserved example names.
+- Workflows (step 7): `snapshot-refresh.yml` and `live-smoke.yml` join `check.yml`,
+  `codeql.yml` and the new `deploy.yml`. Every action is pinned to a commit with its version
+  beside it, every job states a timeout and its own permissions, and
+  `tests/unit/workflows.test.mjs` parses all five with `yaml` (now a direct development
+  dependency rather than a transitive one) and asserts the triggers, the permissions ceiling,
+  the timeouts, the pinned actions, the live-smoke switch, the refresh's draft-pull-request
+  path and the absence of a push to the default branch.
+- Live smoke (step 7): the job is gated on the repository variable `LIVE_SMOKE_ENABLED`, checks
+  the eight published surfaces, the policy and transport headers, the three redirecting hosts
+  and one refused foreign-origin chat request with an empty message list, so no provider is
+  ever prompted. A push to `main` waits for the deploy before checking.
 - Dry runs (step 4): `npx wrangler deploy --dry-run` and `npx wrangler versions upload --dry-run`
   both resolved the redirected configuration at `dist/server/wrangler.json`, read 15 modules
   (2386.88 KiB) and 393 asset files, reported a 2388.10 KiB upload (696.01 KiB gzip) with the

@@ -257,12 +257,39 @@ in `wrangler.jsonc`, so a deploy attaches them and nothing else does.
       scan enforces it with no exemptions. If the design system renames them upstream, the
       alias map in `scripts/sync-videsign.mjs` can be retired in the same change.
 
-## 11. Repository access
+## 11. Repository settings
 
-- [ ] Create an organization team named `lattice-maintainers`, grant it write access to
-      this repository, and uncomment the rule in `CODEOWNERS`.
+- [ ] Create an organization team named `lattice-maintainers`, grant it write access to this
+      repository, and uncomment the rule in `CODEOWNERS`.
+- [ ] Settings → Actions → General → Workflow permissions: allow GitHub Actions to create and
+      approve pull requests. Without it the weekly snapshot refresh can push its branch but the
+      pull request it opens is refused.
+- [ ] A pull request opened with the workflow token does not start other workflows, so `check`
+      will not run on the refresh branch by itself. Re-run it from the Actions tab, or close and
+      reopen the pull request, before treating that pull request as reviewed.
+- [ ] Add the repository variable `LIVE_SMOKE_ENABLED` with the value `true` after the first
+      production deploy. Section 12 covers what it turns on.
+- [ ] No bypass is needed for the refresh: its pull request goes through the same rules and the
+      same required check as any other.
 
-## 12. Upstream items for you
+## 12. Live smoke
+
+`.github/workflows/live-smoke.yml` checks the deployed site from outside. On the canonical host
+it expects the eight published surfaces to answer 200, the policy and transport headers to be
+present, and transport security to carry no subdomain pin. It expects the three alternate
+hostnames to answer 301 to the canonical home, and a chat request from a foreign origin to be
+refused. It sends no question to any provider: the request is an empty message list from a
+foreign origin, which the origin rule rejects first.
+
+- [ ] After the first production deploy, run it once by hand: Actions → live-smoke → Run
+      workflow, and expect every check to pass.
+- [ ] Then set the repository variable `LIVE_SMOKE_ENABLED` to `true`. Until then its only job
+      is skipped, which keeps a repository without a deployment quiet.
+- [ ] It then runs every six hours, on demand, and after each push to `main`. The push run waits
+      for the deploy to answer before it checks anything, so a deploy that is still uploading
+      does not report a failure.
+
+## 13. Upstream items for you
 
 Each one is a decision in another repository; this repository works around all three.
 

@@ -1,0 +1,87 @@
+name: live-smoke
+
+# Checks the live canonical site and the three redirecting hostnames. It does
+# nothing until the repository variable LIVE_SMOKE_ENABLED is true, which is an
+# owner step after the first production deploy. It never sends a question to the
+# chat provider: the only chat request carries an empty message list from a
+# foreign origin, which the origin rule refuses before retrieval runs.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: smoke
+    if: vars.LIVE_SMOKE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check the live site
+        env:
+          ORIGIN: https://vidoxlabs.com
+        run: |
+          set -uo pipefail
+          failures=0
+          fail() { echo "::error title=live smoke::$1"; failures=$((failures + 1)); }
+
+          # A push to main deploys after this run starts, so wait for the site to
+          # answer before checking it. Other triggers check immediately.
+          ready=0
+          for attempt in $(seq 1 12); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$ORIGIN/api/status" || true)
+            if [ "$code" = "200" ]; then ready=1; break; fi
+            echo "Waiting for the deploy to answer (attempt $attempt of 12, status ${code:-none})."
+            sleep 20
+          done
+          if [ "$ready" != "1" ]; then
+            echo "::error title=live smoke::The canonical host did not answer 200 within the wait window."
+            exit 1
+          fi
+
+          for path in / /vivarium /docs /repositories /robots.txt /sitemap.xml /llms.txt /api/status; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$ORIGIN$path" || true)
+            [ "$code" = "200" ] || fail "$path answered $code instead of 200"
+          done
+
+          headers=$(curl -sI --max-time 20 "$ORIGIN/" || true)
+          echo "$headers" | grep -qi '^content-security-policy: ' || fail "the canonical host answered without a content security policy"
+          echo "$headers" | grep -qi "default-src 'self'" || fail "the policy is missing default-src 'self'"
+          echo "$headers" | grep -qi "frame-ancestors 'none'" || fail "the policy is missing frame-ancestors 'none'"
+          hsts=$(echo "$headers" | grep -i '^strict-transport-security: ' || true)
+          if [ -z "$hsts" ]; then
+            fail "the canonical host answered without transport security"
+          else
+            echo "$hsts" | grep -qi 'max-age=31536000' || fail "transport security is missing its max-age"
+            echo "$hsts" | grep -qi 'includeSubDomains' && fail "transport security covers subdomains, which the owner dropped on purpose"
+          fi
+
+          for host in www.vidoxlabs.com vidoxlabs.dev www.vidoxlabs.dev; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://$host/" || true)
+            location=$(curl -sI --max-time 20 "https://$host/" | awk 'tolower($1) == "location:" { print $2 }' | tr -d '\r' || true)
+            [ "$code" = "301" ] || fail "$host answered $code instead of 301"
+            [ "$location" = "https://vidoxlabs.com/" ] || fail "$host redirected to ${location:-nothing} instead of the canonical home"
+          done
+
+          # The origin rule runs before anything reaches a provider, and the body
+          # is empty, so this never becomes a prompt.
+          chat=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 -X POST "$ORIGIN/api/chat" \
+            -H 'content-type: application/json' -H 'origin: https://example.invalid' \
+            --data '{"messages":[]}' || true)
+          [ "$chat" = "403" ] || fail "a chat request from a foreign origin answered $chat instead of 403"
+
+          if [ "$failures" -gt 0 ]; then
+            echo "::error title=live smoke::$failures check(s) failed"
+            exit 1
+          fi
+          echo "Live smoke passed for $ORIGIN and the three redirecting hostnames."
