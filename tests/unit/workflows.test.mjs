@@ -117,7 +117,8 @@ test('deploy follows a successful default-branch check from any trigger, in the 
   assert.equal(download.with.name, 'lattice-dist', 'the artifact is the one the check run uploaded');
   // upload-artifact stores the contents of a single directory at the artifact
   // root, so the download path is what decides whether dist/server exists.
-  assert.equal(download.with.path, artifact.with.path, 'the artifact lands where the upload directory put it');
+  const upload = loaded.get('check.yml').workflow.jobs.check.steps.find((step) => String(step.uses ?? '').startsWith('actions/upload-artifact'));
+  assert.equal(download.with.path, upload.with.path, 'the artifact lands where the upload directory put it');
   const guard = deploy.steps.map((step) => String(step.run ?? '')).join('\n');
   assert.match(guard, /test -f dist\/server\/wrangler\.json/, 'the deploy configuration is checked for before deploying');
   assert.match(guard, /test -d dist\/client/, 'the static assets are checked for before deploying');
