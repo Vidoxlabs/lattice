@@ -6,6 +6,7 @@ import { builtRoutes, robotsTxt, sitemapXml } from '../src/lib/discoverability.m
 import { siteOrigin } from '../src/lib/site.mjs';
 import { llmsFull, llmsIndex } from '../src/lib/llms.mjs';
 import { getCatalog } from '../src/lib/repository-data.mjs';
+import { writeSocialCards } from './social-cards.mjs';
 
 // The Cloudflare build emits one of two deploy configurations:
 // - a full Worker deploy (dist/server/wrangler.json, main entry) when at least
@@ -122,3 +123,8 @@ const llmsInput = { pages: pipeline.docsPages, repositories, origin, status: pip
 writeFileSync('dist/client/llms.txt', llmsIndex(llmsInput));
 writeFileSync('dist/client/llms-full.txt', llmsFull({ ...llmsInput }));
 console.log(`Wrote llms.txt and llms-full.txt for ${pipeline.docsPages.length} documentation pages.`);
+
+// One social card per family, rendered from the brand SVG family that is
+// already committed, so a crawler fetches a raster image.
+const cards = await writeSocialCards('dist/client');
+console.log(`Wrote ${cards.length} social cards from the brand SVGs.`);

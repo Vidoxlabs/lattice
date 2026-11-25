@@ -36,6 +36,7 @@
     "@playwright/test": "1.65.1",
     "@types/node": "24.10.1",
     "@vidoxlabs/videsign": "github:Vidoxlabs/videsign#08707d61780ab2c873ac51cbfd39f2b29abfce9a",
+    "sharp": "0.35.5",
     "tailwindcss": "3.4.19",
     "typescript": "7.0.2",
     "wrangler": "4.168.0"

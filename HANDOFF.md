@@ -8,8 +8,8 @@ the commit that carries this file is the next one on the branch.
 
 ## Status
 
-Step 5 of the slice 9 and 10 backlog. Branch `slice-09-seo`, last pushed commit
-`bc2e15a` (feat: generate the language-model index and full text from the verified corpus),
+Step 6 of the slice 9 and 10 backlog. Branch `slice-09-seo`, last pushed commit
+`fe30ad4` (feat: route the production domains and keep them out of the preview path),
 branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 
 ## Checklist
@@ -19,8 +19,8 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 - [x] Step 2: security headers and strict CSP on static and Worker responses — `34f6838`
 - [x] Step 3: canonical links, generated sitemap and robots — `8aa33cf`
 - [x] Step 4: generated `llms.txt` and `llms-full.txt` — `bc2e15a`
-- [x] Step 5: production-only custom-domain routes — this commit
-- [ ] Step 6: Open Graph images and tags
+- [x] Step 5: production-only custom-domain routes — `fe30ad4`
+- [x] Step 6: Open Graph images and tags — this commit
 - [ ] Step 7: budget checks, then the slice 9 pull request goes ready for review
 - [ ] Step 8: slice 10 — SETUP.md, ADRs, README, timeline, upstream items
 - [ ] Step 9: docs#6 (blocked: the owner has not answered its three questions)
@@ -28,10 +28,10 @@ branched from the frozen `slice-08-chat` head. Pull request #9 is a draft.
 
 ## Next step
 
-Step 6: build one Open Graph and Twitter image per page type from the brand SVGs in
-`public/brand/`, add the `og:` and `twitter:` tags to every page, and test that each page
-carries the tags and that every referenced image exists. Then `CI=1 npm run check`,
-commit and push.
+Step 7: add the Playwright budget stage — per-page transfer size, request count and
+main-thread long-task count, with the budgets in one configuration file, set from what the
+site does today plus a small margin — and make it part of `npm run check`. Then mark the
+slice 9 pull request ready for review with its verification, and start slice 10.
 
 ## Open pull requests
 

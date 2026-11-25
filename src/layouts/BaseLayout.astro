@@ -7,9 +7,19 @@ import '../styles/diagrams.css';
 import '../styles/docs.css';
 import '../styles/chat.css';
 import pipeline from '../data/generated/build-pipeline.json' with { type: 'json' };
-import { canonicalUrl } from '../lib/site.mjs';
-const { title, description = 'Vivarium, its systems, live status and docs.', currentPath = Astro.url.pathname, chatPage = false } = Astro.props;
+import { canonicalUrl, siteOrigin } from '../lib/site.mjs';
+import { SOCIAL_CARD_SIZE, socialCard } from '../lib/brand-images.mjs';
+const {
+  title,
+  description = 'Vivarium, its systems, live status and docs.',
+  currentPath = Astro.url.pathname,
+  chatPage = false,
+  family
+} = Astro.props;
 const canonical = canonicalUrl(currentPath);
+const card = socialCard(family);
+const cardUrl = `${siteOrigin()}/social/${card}.png`;
+const cardAlt = `${title} — Vidoxlabs`;
 ---
 <html lang="en" data-theme="dark">
   <head>
@@ -17,6 +27,21 @@ const canonical = canonicalUrl(currentPath);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Vidoxlabs" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={cardUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(SOCIAL_CARD_SIZE.width)} />
+    <meta property="og:image:height" content={String(SOCIAL_CARD_SIZE.height)} />
+    <meta property="og:image:alt" content={cardAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={cardUrl} />
+    <meta name="twitter:image:alt" content={cardAlt} />
     <link rel="icon" href="/brand/brand_mark_header_v008.svg" type="image/svg+xml" />
     <title>{title}</title>
   </head>

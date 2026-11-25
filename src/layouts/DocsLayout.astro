@@ -1,6 +1,6 @@
 ---
 import BaseLayout from './BaseLayout.astro';
-const { title, description, entries = [], currentSlug = '' } = Astro.props;
+const { title, description, entries = [], currentSlug = '', family } = Astro.props;
 
 const sections = [
   {
@@ -27,7 +27,7 @@ const sections = [
   }
 ].filter((section) => section.pages.length > 0);
 ---
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} family={family}>
   <div class="lattice-docs-shell" data-videsign="layout-docs-portal">
     <aside class="lattice-docs-nav" aria-label="Documentation sections">
       <nav data-videsign="docs-sidebar-nav">

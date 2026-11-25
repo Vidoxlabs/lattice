@@ -14,7 +14,7 @@ const repository = await getRepository(Astro.params.repo);
 if (!repository) return Astro.redirect('/404');
 const { sources } = await getCatalog();
 ---
-<BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`}>
+<BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`} family={repository.name}>
   <HeroBillboard title={repository.name} lede={repository.summary || 'Documentation has not synced yet.'}>
     <p><a href={`https://github.com/Vidoxlabs/${repository.name}`}>Repository</a> · <a href={sourceUrl(repository.name, repository.head)}>Source README at {repository.head?.slice(0, 7) ?? 'main'}</a></p>
   </HeroBillboard>

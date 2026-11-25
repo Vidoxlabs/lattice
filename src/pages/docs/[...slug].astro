@@ -18,7 +18,7 @@ const editLink = `https://github.com/Vidoxlabs/${sourceRepo}/blob/main/${sourceP
 const { Content } = await render(entry);
 const bodyOpensWithHeading = kind !== 'placeholder' && /^#\s+/m.test(entry.body ?? '');
 ---
-<DocsLayout title={`${title} | Vidoxlabs docs`} description={`${sourceRepo} documentation, rendered from the verified sync.`} entries={entries} currentSlug={entry.data.slug}>
+<DocsLayout title={`${title} | Vidoxlabs docs`} description={`${sourceRepo} documentation, rendered from the verified sync.`} entries={entries} currentSlug={entry.data.slug} family="docs">
   <article class="lattice-docs-article" data-videsign="markdown-prose-renderer">
     {!bodyOpensWithHeading && <h1>{title}</h1>}
     {kind === 'placeholder' && <p class="lattice-docs-placeholder" role="note">Not rendered from memory: this page failed verification at build time. Follow the source link to read the upstream file.</p>}
