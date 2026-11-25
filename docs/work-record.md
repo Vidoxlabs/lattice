@@ -5,12 +5,13 @@ never from recall. Update it in the same commit as the work it describes.
 
 ## Status
 
-All ten steps done, plus one follow-up that replaced the deploy hook with a repository dispatch, a
-daily schedule on `check`, an environment-scoped deploy and a live smoke that follows the deploy.
-Branch `slice-10-finish`, pull request #10, ready for review. Nothing is merged: `main` still
-holds the initial commit.
+All ten steps done, plus two follow-ups: one replaced the deploy hook with a repository dispatch, a
+daily schedule on `check`, an environment-scoped deploy and a live smoke that follows the deploy;
+the other audited the account read-only and wrote the findings into SETUP.md. Branch
+`slice-10-finish`, pull request #10, ready for review. Nothing is merged: `main` still holds the
+initial commit.
 
-Last pushed commit: `1fed691` — docs: finish the owner setup and the deployment record.
+Last pushed commit: `cf6e5c5` — ci: rebuild from a schedule and a docs dispatch, not a deploy hook.
 The commit that carries this file is the next one on the branch, so a step's checklist entry
 names the commit its work landed in rather than the commit that records it.
 
@@ -30,7 +31,8 @@ wrangler dry runs exit 0 without account access; their summary is in the deploy-
 - [x] 8. Self-update path: docs#6 stays a proposal, `scheduled-rebuild.yml` prepared inert, SETUP.md records it — `b9ce248`
 - [x] 9. Naming inventory: `docs/naming-inventory.md` as a proposal, the internal marker renamed — `79f7f62`
 - [x] 10. Finish: README and SETUP.md in deploy order, ADRs updated, timeline entries, #10 ready with a new body — `1fed691`, `286be25`
-- [x] follow-up: the deploy hook removed for a `docs-sync` dispatch and a daily `check`; both account values are secrets in a `production` environment limited to `main`; the live smoke follows the deploy; no checkout keeps a credential — this commit
+- [x] follow-up: the deploy hook removed for a `docs-sync` dispatch and a daily `check`; both account values are secrets in a `production` environment limited to `main`; the live smoke follows the deploy; no checkout keeps a credential — `cf6e5c5`
+- [x] follow-up: a read-only launch audit of the account, and SETUP.md sections 2 and 8 now carry the filled-in findings and the prepared, unrun owner commands — this commit
 
 ## Next step
 
@@ -44,9 +46,10 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
 
 - [ ] Section 1: squash-merge #4, close #1 to #3, then review and squash-merge #10 and close #5
       to #9. Every merge is the owner's.
-- [ ] Section 2, the deploy secrets: a `production` environment whose deployment branch rule
-      allows `main` alone, holding `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, both
-      required and both secrets. Until they exist the deploy job is inert.
+- [ ] Section 2, the deploy token and secrets: create the scoped token, then the `production`
+      environment whose deployment branch rule allows `main` alone, holding
+      `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, both required and both secrets. Until
+      they exist the deploy job is inert.
 - [ ] Section 2, previews: enable Cloudflare Access for the Worker's preview addresses, limited to
       the owner's email, then set `preview_urls` back to `true`.
 - [ ] Section 2, alternative: connect Workers Builds with the production and preview commands if
@@ -55,8 +58,9 @@ Each one is prepared in SETUP.md and waits for the owner; no agent takes it.
       the docs repository sends a `docs-sync` dispatch, and its token lives there.
 - [ ] Section 5 and section 6: the chat and site variables, the `CHAT_API_KEY` secret, and the
       rate-limit binding with its account-scoped identifier.
-- [ ] Section 8: both zones in one account, conflicting records cleared, the four `curl -sI`
-      checks, then the sitemap submission.
+- [ ] Section 8: the audit found both zones active in one account, three of the four hostnames
+      clear and one conflicting record on the preview host to delete first; then the four
+      `curl -sI` checks and the sitemap submission.
 - [ ] Section 11: allow Actions to create pull requests, add the `LIVE_SMOKE_ENABLED` variable,
       and confirm the maintainers team.
 - [ ] Section 12: run the live smoke by hand once, then switch it on.

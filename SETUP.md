@@ -79,14 +79,27 @@ engines with their dependencies. That workflow is `.github/workflows/deploy.yml`
 inert until one secret exists. The Workers Builds path stays below as Path B, and it is the
 right answer the moment a first build there proves the browser stage.
 
+### What the launch audit found, 2026-11-25
+
+Checked read-only through the account's own API surface. Nothing was changed.
+
+- [x] One account, and the credential in use is scoped to it. The plan carries Workers Paid.
+- [x] No Worker named `lattice` exists, and no custom domain is attached to anything, so the
+      first deploy creates the Worker and attaches the four routes in `wrangler.jsonc`.
+- [x] Size does not constrain anything. The dry run reports 2388.80 KiB uncompressed and
+      696.20 KiB gzipped. Since September 2026 only the uncompressed size is limited, at 64 MiB
+      on every plan, so this bundle sits at about 3.6 percent of the limit.
+- [x] Both paths publish the same built output. What differs is only where the browser stage
+      runs, which is why Path A is committed and Path B is worth a try.
+
 ### Path A: deploy from GitHub Actions (the committed default)
 
 The deploy job runs in a GitHub environment named `production`, and both account values are
 secrets inside it. An environment secret is only visible to a job that names the environment, so
 a workflow added later cannot read them by accident.
 
-- [ ] Settings → Environments → New environment, named `production`, with a deployment branch
-      rule that allows `main` and nothing else.
+- [ ] Create an environment named `production` with a deployment branch rule that allows
+      `main` and nothing else. The exact commands are under Prepared, not run, below.
 - [ ] Add two environment secrets to it, both required:
       `CLOUDFLARE_API_TOKEN`, a user API token with Workers Scripts edit, Workers Routes edit for
       both zones and Zone read for both zones; and `CLOUDFLARE_ACCOUNT_ID`, the account
@@ -159,6 +172,29 @@ inspect in the dashboard, but that version has no public address.
 - [ ] A route test (`tests/routes/deploy-config.test.mjs`) pins whichever value is committed
       and fails if the source file and the built configuration disagree, so the switch can
       only be flipped deliberately.
+
+### Prepared, not run
+
+Nothing in this block has been executed. Each line is an owner action.
+
+- [ ] Create the deploy token: dashboard, My Profile, API Tokens, Create Custom Token, named
+      `lattice-deploy`, with Workers Scripts: Edit, Workers Routes: Edit, and Zone: Read scoped
+      to both zones. Through the API the same token is `POST /accounts/<account>/tokens` with
+      those three permission groups and the two zone resources. The identifiers are exactly
+      the values this repository cannot hold, so the dashboard is the shorter route.
+- [ ] Create the environment and add its two secrets. Both commands prompt for the value and
+      neither accepts it on the command line:
+
+      gh api -X PUT repos/:owner/:repo/environments/production
+      gh secret set CLOUDFLARE_API_TOKEN --env production
+      gh secret set CLOUDFLARE_ACCOUNT_ID --env production
+
+- [ ] Then restrict that environment's deployment branch rule to `main`. The call above
+      creates the environment without branches; the rule is one edit under Settings,
+      Environments, and it is what keeps a future workflow from reading the secrets.
+- [ ] First production publish: run `check` on `main` and let the `deploy` job it triggers do
+      it. By hand the equivalent pair is `npm ci && CI=1 npm run check`, then
+      `npx wrangler deploy --config dist/server/wrangler.json`.
 
 ## 3. How the site learns that the documentation changed
 
@@ -276,13 +312,20 @@ deploy path provides.
 Worker's host check, which runs before any asset is served. All four are custom-domain routes
 in `wrangler.jsonc`, so a deploy attaches them and nothing else does.
 
-- [ ] Both zones, `vidoxlabs.com` and `vidoxlabs.dev`, must be in the same Cloudflare account
-      as the Worker. A custom domain in a different account cannot be attached by this deploy,
-      and the failure looks like a permissions error rather than a missing zone.
-- [ ] Before the first production deploy, remove or confirm absent any existing DNS record for
-      the four hostnames: check DNS → Records in each zone for `@`, `www`, and the corresponding
-      `.dev` names. A custom domain creates its own records, and an existing A, AAAA or CNAME
-      record on the same name makes the attach fail instead of being overwritten.
+### What the launch audit found, 2026-11-25
+
+Read-only, through the account's own API surface. Nothing was changed.
+
+- [x] Both zones are in the account that will hold the Worker, both active, neither paused.
+- [x] Each apex carries mail records only: no A, AAAA or CNAME at the root of either zone.
+- [x] `vidoxlabs.com`, `www.vidoxlabs.com` and the `vidoxlabs.dev` apex are clear. Three of the
+      four hostnames need nothing removed before the attach.
+- [ ] `www.vidoxlabs.dev` carries an existing proxied A record. The documented refusal is for
+      an existing CNAME, and a host record on the same name is not a clean state either:
+      remove it before the first deploy, then confirm the name has no record at all.
+- [x] No Worker exists, so no custom domain is attached yet, and the first deploy performs all
+      four attaches itself.
+
 - [ ] The first production deploy then attaches four custom domains and provisions their
       certificates. Until a certificate is issued the host answers a TLS error, not a redirect,
       so give it a few minutes before treating a failure as a defect.
@@ -305,6 +348,24 @@ in `wrangler.jsonc`, so a deploy attaches them and nothing else does.
 - [ ] After the first production deploy, submit `https://vidoxlabs.com/sitemap.xml` in the
       search consoles you use. The sitemap is generated from the published routes, so it needs
       no maintenance and a documentation sync appears in it with no edit.
+
+### Prepared, not run
+
+Nothing in this block has been executed.
+
+- [ ] Delete the one conflicting record. Dashboard: DNS, Records, zone `vidoxlabs.dev`, delete
+      the proxied A record on `www`. Through the API, resolve it by name and delete by the
+      identifier the lookup returns, so no identifier has to be written down anywhere:
+
+      GET    /zones/<zone>/dns_records?name=www.vidoxlabs.dev
+      DELETE /zones/<zone>/dns_records/<record>
+
+      Then repeat the GET and expect an empty list.
+- [ ] Attach the four custom domains. This needs no command of its own: `npx wrangler deploy`
+      reads the four `custom_domain` routes and creates them. One at a time, the dashboard
+      path is Settings, Domains & Routes, Add, Custom Domain.
+- [ ] Confirm the attaches with the header checks above, allowing a few minutes for the
+      certificates. Expect four domains and four certificates, and no preview address.
 
 ## 9. Enrichment
 
