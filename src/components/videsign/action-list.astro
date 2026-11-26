@@ -1,0 +1,19 @@
+---
+// A list of destinations where every row is one target, title and reason.
+const { items = [], columns = 2, label = 'Links on this page' } = Astro.props;
+const grid = columns === 1 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2';
+---
+<ul aria-label={label} class={`grid list-none gap-rhythm-4-base ${grid}`}>
+  {items.map((item) => (
+    <li class="min-w-0">
+      <a href={item.href} class="flex h-full flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-medium-base transition-colors duration-transition-duration-fast-base ease-transition-easing-standard-base hover:border-text-content-secondary-base hover:bg-surface-background-tertiary-base">
+        <span class="font-typography-family-sans-base text-typography-size-md-base font-typography-weight-semibold-base leading-typography-leading-tight-base text-balance text-text-content-primary-base">{item.title}</span>
+        {item.body && <span class="font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-pretty text-text-content-secondary-base">{item.body}</span>}
+        <span class="mt-auto inline-flex items-center justify-between gap-gap-compact-default pt-rhythm-2-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base">
+          <span>{item.label ?? 'Open'}</span>
+          <span aria-hidden="true">→</span>
+        </span>
+      </a>
+    </li>
+  ))}
+</ul>

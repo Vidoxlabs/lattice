@@ -1,6 +1,27 @@
 ---
+import { monoLabelClasses } from '../../lib/ui-classes.mjs';
 const { items = [] } = Astro.props;
 ---
-<dl data-videsign="statement-proof-row" class="lattice-proof-row">
-  {items.map((item) => <div><dt>{item.label}</dt><dd><a href={item.href}>{item.value}</a></dd></div>)}
-</dl>
+<section data-videsign="statement-proof-row" aria-labelledby="proof-row-title" class="flex flex-col gap-rhythm-5-base border-t border-border-separator-primary-base pt-rhythm-8-base">
+  <div class="flex flex-wrap items-end justify-between gap-gap-compact-default">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>Evidence on this build</p>
+      <h2 id="proof-row-title" class="font-typography-family-sans-base text-typography-size-2xl-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base text-balance text-text-content-primary-base">Every claim links to its public record</h2>
+    </div>
+    <p class={`${monoLabelClasses} tabular-nums`}>{items.length} records</p>
+  </div>
+  <ul class="grid list-none grid-cols-1 gap-rhythm-4-base sm:grid-cols-2 lg:grid-cols-4">
+    {items.map((item) => (
+      <li class="min-w-0">
+        <a href={item.href} class="flex h-full flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-medium-base transition-colors duration-transition-duration-fast-base ease-transition-easing-standard-base hover:border-text-content-secondary-base hover:bg-surface-background-tertiary-base">
+          <span class={monoLabelClasses}>{item.label}</span>
+          <span class="break-words font-typography-family-sans-base text-typography-size-xl-base font-typography-weight-medium-base leading-typography-leading-tight-base text-text-content-primary-base text-pretty">{item.value}</span>
+          <span class="mt-auto inline-flex items-center justify-between gap-gap-compact-default pt-rhythm-2-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base">
+            <span>Open record</span>
+            <span aria-hidden="true">→</span>
+          </span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

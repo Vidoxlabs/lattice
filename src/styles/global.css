@@ -40,6 +40,7 @@
 html {
   background: var(--vi-colors-surface-background-primary-base);
   scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -48,7 +49,10 @@ body {
   background: var(--vi-colors-surface-background-primary-base);
   color: var(--vi-colors-text-content-primary-base);
   font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-md-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 
 html[data-navigation='open'] body {
@@ -63,6 +67,7 @@ a {
 :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
   outline: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-surface-accent-brand-base);
   outline-offset: var(--vi-space-rhythm-1-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
 }
 
 button,
@@ -91,12 +96,17 @@ svg {
   max-inline-size: 100%;
 }
 
-.lattice-prose {
-  max-inline-size: 65ch;
-  color: var(--vi-colors-text-content-secondary-base);
-  font-size: var(--vi-typography-typography-size-lg-base);
-  line-height: var(--vi-typography-typography-leading-normal-base);
-  text-wrap: pretty;
+/* One visible focus ring on a filled call to action: the brand outline would
+   vanish against the brand fill, so the ring turns to the page ink. */
+a.bg-surface-accent-brand-base:focus-visible,
+button.bg-surface-accent-brand-base:focus-visible {
+  outline-color: var(--vi-colors-text-content-primary-base);
+}
+
+/* The attribute has to beat a display utility on the same element: several
+   surfaces are hidden by an attribute and shown by a class. */
+[hidden] {
+  display: none !important;
 }
 
 .lattice-visually-hidden {

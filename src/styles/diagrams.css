@@ -96,19 +96,11 @@
   color: var(--vi-colors-status-indicator-error-base);
 }
 
-/* Orbital hero surface pairing. */
-.lattice-orbital-copy {
-  display: grid;
-  gap: var(--vi-space-gap-comfortable-default);
-  padding: var(--vi-space-rhythm-8-base);
-  text-align: center;
-  justify-items: center;
-}
-
-.lattice-orbital-heading {
+.lattice-diagram__caption {
   margin: 0;
-  color: var(--vi-colors-text-content-primary-base);
-  font-size: var(--vi-typography-typography-fluid-h2-base);
-  line-height: var(--vi-typography-typography-leading-tight-base);
-  text-wrap: balance;
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  line-height: var(--vi-typography-typography-leading-normal-base, 1.6);
+  text-wrap: pretty;
 }
