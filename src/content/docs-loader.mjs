@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { buildResolver, prepare } from '../lib/content/docs-corpus.mjs';
 import { enrichDocsCorpus } from '../lib/content/enrich.mjs';
-import { RENDER_REVISION, badgeClaimLines, sanitizeRenderedHtml } from '../lib/content/render-docs.mjs';
+import { RENDER_REVISION, badgeClaimLines, collectHeadings, sanitizeRenderedHtml, wrapTables } from '../lib/content/render-docs.mjs';
 
 /**
  * Content-layer loader for the documentation corpus. The prebuild step has
@@ -27,7 +27,8 @@ export function docsLoader() {
           ? page.body
           : prepare(page.body, { repo: page.repo, head: page.head, sourcePath: inRepoPath, resolve });
         const rendered = await renderMarkdown(body);
-        rendered.html = badgeClaimLines(sanitizeRenderedHtml(rendered.html));
+        const collected = collectHeadings(badgeClaimLines(wrapTables(sanitizeRenderedHtml(rendered.html))));
+        rendered.html = collected.html;
         store.set({
           id: page.slug || 'index',
           data: {
@@ -37,7 +38,8 @@ export function docsLoader() {
             head: page.head,
             sourcePath: page.sourcePath,
             kind: page.kind,
-            headings: page.headings
+            headings: page.headings,
+            toc: collected.toc
           },
           body,
           rendered,

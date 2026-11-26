@@ -11,30 +11,56 @@ export async function getStaticPaths() {
 }
 
 const { entry, entries } = Astro.props;
-const { repo, head, sourcePath, kind, title, headings } = entry.data;
+const { repo, head, sourcePath, kind, title, toc = [] } = entry.data;
 const sourceRepo = kind === 'hub' ? 'docs' : repo;
 const sourceLink = `https://github.com/Vidoxlabs/${sourceRepo}/blob/${head ?? 'main'}/${sourcePath}`;
 const editLink = `https://github.com/Vidoxlabs/${sourceRepo}/blob/main/${sourcePath}`;
 const { Content } = await render(entry);
 const bodyOpensWithHeading = kind !== 'placeholder' && /^#\s+/m.test(entry.body ?? '');
+const ordered = [...entries].sort((a, b) => a.data.slug.localeCompare(b.data.slug));
+const position = ordered.findIndex((candidate) => candidate.data.slug === entry.data.slug);
+const previous = position > 0 ? ordered[position - 1] : null;
+const next = position >= 0 && position < ordered.length - 1 ? ordered[position + 1] : null;
+const revision = head?.slice(0, 7) ?? 'main';
 ---
 <DocsLayout title={`${title} | Vidoxlabs docs`} description={`${sourceRepo} documentation, rendered from the verified sync.`} entries={entries} currentSlug={entry.data.slug} family="docs">
-  <article class="lattice-docs-article" data-videsign="markdown-prose-renderer">
-    {!bodyOpensWithHeading && <h1>{title}</h1>}
-    {kind === 'placeholder' && <p class="lattice-docs-placeholder" role="note">Not rendered from memory: this page failed verification at build time. Follow the source link to read the upstream file.</p>}
-    <aside class="lattice-docs-meta" aria-label="Source and edit links" data-videsign="article-toc-and-meta">
-      <p>Source: <a href={sourceLink} data-docs-source-link>{sourceRepo} at {head?.slice(0, 7) ?? 'main'}</a> · <a href={editLink} data-docs-edit-link>Edit upstream</a></p>
-      {headings.length > 0 && (
-        <nav aria-label="Table of contents">
-          <p>On this page</p>
-          <ol>
-            {headings.slice(0, 12).map((heading) => <li>{heading}</li>)}
-          </ol>
+  <div class="vi-docs-article-wrap">
+    <article class="vi-docs-article lattice-docs-article lattice-prose" data-videsign="markdown-prose-renderer" data-docs-article>
+      <header class="lattice-docs-heading-block">
+        <nav aria-label="Document path" class="lattice-docs-crumbs">
+          <a href="/docs">Docs</a>
+          <span aria-hidden="true">/</span>
+          {repo !== 'docs' && <><a href={`/repositories/${repo}`}>{repo}</a><span aria-hidden="true">/</span></>}
+          <span aria-current="page">{title}</span>
         </nav>
-      )}
-    </aside>
-    <div class="lattice-docs-prose">
+        {!bodyOpensWithHeading && <h1>{title}</h1>}
+        <p class="lattice-docs-meta-line"><span class="lattice-claim-badge" data-claim={kind === 'placeholder' ? 'planned' : 'observed'}>{kind === 'placeholder' ? 'planned' : 'observed'}</span><span>rev {revision}</span><span>{sourcePath}</span></p>
+      </header>
+      {kind === 'placeholder' && <p class="lattice-docs-placeholder" role="note">Not rendered from memory: this page failed verification at build time. Follow the source link to read the upstream file.</p>}
       <Content />
+    </article>
+    {(previous || next) && <nav class="vi-docs-pager" aria-label="Previous and next pages">
+      {previous ? <a href={`/docs/${previous.data.slug}`} class="vi-docs-pager-card"><span class="vi-docs-pager-dir">Previous</span><span class="vi-docs-pager-title">{previous.data.title}</span></a> : <span />}
+      {next ? <a href={`/docs/${next.data.slug}`} class="vi-docs-pager-card vi-docs-pager-card--next"><span class="vi-docs-pager-dir">Next</span><span class="vi-docs-pager-title">{next.data.title}</span></a> : <span />}
+    </nav>}
+  </div>
+
+  <Fragment slot="rail">
+    {toc.length > 0 && <nav class="vi-docs-rail-card" aria-label="On this page">
+      <p class="lattice-docs-rail-label">On this page</p>
+      <ul class="vi-docs-toc-list">
+        {toc.map((heading) => <li><a href={`#${heading.id}`} class={`vi-docs-toc-link ${heading.level === 3 ? 'vi-docs-toc-link--nested' : ''}`}>{heading.text}</a></li>)}
+      </ul>
+    </nav>}
+    <div class="vi-docs-page-actions" data-videsign="docs-page-actions" data-docs-actions>
+      <p class="lattice-docs-rail-label">This page</p>
+      <button type="button" class="vi-docs-btn" data-docs-copy-page>Copy page text</button>
+      <button type="button" class="vi-docs-btn" data-docs-copy-link>Copy link</button>
+      <a href={sourceLink} class="vi-docs-btn" data-docs-source-link>View source<span aria-hidden="true">↗</span></a>
+      <a href={editLink} class="vi-docs-btn">Edit upstream<span aria-hidden="true">↗</span></a>
+      <a href={`/chat?q=${encodeURIComponent(`Explain ${title}`)}`} class="vi-docs-btn vi-docs-btn--primary">Ask about this page<span aria-hidden="true">→</span></a>
+      <p class="lattice-docs-rail-meta" role="status" aria-live="polite" data-docs-copy-status></p>
     </div>
-  </article>
+  </Fragment>
 </DocsLayout>
+<script src="../../scripts/docs-actions.mjs"></script>

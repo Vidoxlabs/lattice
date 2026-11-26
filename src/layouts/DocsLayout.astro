@@ -27,25 +27,51 @@ const sections = [
     pages: entries.filter((entry) => entry.data.kind === 'hub' && (entry.data.slug.startsWith('adr/') || entry.data.slug.startsWith('timeline/')))
   }
 ].filter((section) => section.pages.length > 0);
+
+const hasRail = Astro.slots.has('rail');
+const isOpen = (section) => section.pages.some((page) => page.data.slug === currentSlug);
 ---
-<BaseLayout title={title} description={description} family={family}>
-  <div class="lattice-docs-shell" data-videsign="layout-docs-portal">
-    <aside class="lattice-docs-nav" aria-label="Documentation sections">
-      <nav data-videsign="docs-sidebar-nav">
-        {sections.map((section) => (
-          <details class="lattice-docs-nav-group" open={section.pages.some((page) => page.data.slug === currentSlug)}>
-            <summary>{section.name} <span class="lattice-docs-count">{section.pages.length}</span></summary>
-            <ul>
-              {section.pages.map((page) => (
-                <li><a href={page.data.slug ? `/docs/${page.data.slug}` : '/docs'} aria-current={page.data.slug === currentSlug ? 'page' : undefined}>{page.data.title}</a></li>
-              ))}
-            </ul>
-          </details>
-        ))}
-      </nav>
-    </aside>
-    <div class="lattice-docs-main">
-      <slot />
+<BaseLayout title={title} description={description} family={family} variant="flush">
+  <div class="vi-docs-scope vi-docs-portal" data-videsign="layout-docs-portal">
+    <div class="vi-docs-shell">
+      <aside class="vi-docs-sidebar-rail" aria-label="Documentation navigation">
+        <nav class="vi-docs-sidebar" data-videsign="docs-sidebar-nav" aria-label="Documentation tree">
+          {sections.map((section) => (
+            <details class="vi-docs-nav-group" open={isOpen(section)}>
+              <summary class="vi-docs-nav-summary">
+                <span>{section.name}</span>
+                <span class="vi-docs-nav-chevron" aria-hidden="true">›</span>
+              </summary>
+              <ul class="vi-docs-nav-list">
+                {section.pages.map((page) => (
+                  <li>
+                    <a href={page.data.slug ? `/docs/${page.data.slug}` : '/docs'} aria-current={page.data.slug === currentSlug ? 'page' : undefined} class="vi-docs-nav-link">{page.data.title}</a>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))}
+        </nav>
+      </aside>
+      <main id="docs-main-content" class="vi-docs-main">
+        <details class="docs-mobile-nav">
+          <summary class="vi-docs-nav-summary">Browse the documentation<span aria-hidden="true">›</span></summary>
+          <nav aria-label="Documentation tree, compact">
+            {sections.map((section) => (
+              <div class="docs-mobile-nav-group">
+                <p class="vi-docs-nav-summary">{section.name}</p>
+                <ul class="vi-docs-nav-list">
+                  {section.pages.map((page) => (
+                    <li><a href={page.data.slug ? `/docs/${page.data.slug}` : '/docs'} aria-current={page.data.slug === currentSlug ? 'page' : undefined} class="vi-docs-nav-link">{page.data.title}</a></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </details>
+        <slot />
+      </main>
+      {hasRail && <aside class="vi-docs-toc-rail" aria-label="Page contents and actions"><slot name="rail" /></aside>}
     </div>
   </div>
 </BaseLayout>

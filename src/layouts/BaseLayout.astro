@@ -3,6 +3,7 @@ import LayoutPublicSite from '../components/videsign/layout-public-site.astro';
 import AlertBanner from '../components/videsign/alert-banner.astro';
 import ChatDock from '../components/videsign/chat-dock.astro';
 import '../styles/global.css';
+import '../styles/prose.css';
 import '../styles/pages.css';
 import '../styles/diagrams.css';
 import '../styles/docs.css';
@@ -15,7 +16,8 @@ const {
   description = 'Vivarium, its systems, live status and docs.',
   currentPath = Astro.url.pathname,
   chatPage = false,
-  family
+  family,
+  variant = 'default'
 } = Astro.props;
 const canonical = canonicalUrl(currentPath);
 const card = socialCard(family);
@@ -48,12 +50,13 @@ const cardAlt = `${title} | Vidoxlabs`;
     <script src="../scripts/theme.mjs"></script>
   </head>
   <body>
-    <LayoutPublicSite currentPath={currentPath}>
+    <LayoutPublicSite currentPath={currentPath} variant={variant}>
       {pipeline.snapshot.used && <AlertBanner title="Committed content snapshot">Showing verified content captured at {pipeline.snapshot.capturedAt ?? 'an unknown time'}. Live source reads were unavailable for this build.</AlertBanner>}
       <slot />
     </LayoutPublicSite>
     {!chatPage && <ChatDock />}
     <script src="../scripts/status-refresh.mjs"></script>
     <script src="../scripts/chat.mjs"></script>
+    <script src="../scripts/code-copy.mjs"></script>
   </body>
 </html>
