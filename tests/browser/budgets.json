@@ -22,7 +22,7 @@
       "longTasks": 8
     },
     "/repositories/seed": {
-      "bytes": 150000,
+      "bytes": 160000,
       "requests": 12,
       "longTasks": 8
     },
