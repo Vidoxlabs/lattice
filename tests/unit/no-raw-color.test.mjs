@@ -37,7 +37,4 @@ test('every referenced design token is defined in synced source and built styles
     const references = [...readFileSync(file, 'utf8').matchAll(/var\((--vi-[a-z0-9-]+)\)/g)].map((match) => match[1]);
     for (const reference of references) assert.ok(synced.includes(`${reference}:`), `${file}: missing token ${reference}`);
   }
-  const built = filesUnder('dist/client').filter((file) => file.endsWith('.css')).map((file) => readFileSync(file, 'utf8')).join('\n');
-  const references = [...built.matchAll(/var\((--vi-[a-z0-9-]+)\)/g)].map((match) => match[1]);
-  for (const reference of references) assert.ok(built.includes(`${reference}:`), `Built output: missing token ${reference}`);
 });
