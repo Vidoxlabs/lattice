@@ -53,7 +53,7 @@ const isOpen = (section) => section.pages.some((page) => page.data.slug === curr
           ))}
         </nav>
       </aside>
-      <main id="docs-main-content" class="vi-docs-main">
+      <div id="docs-main-content" class="vi-docs-main">
         <details class="docs-mobile-nav">
           <summary class="vi-docs-nav-summary">Browse the documentation<span aria-hidden="true">›</span></summary>
           <nav aria-label="Documentation tree, compact">
@@ -70,7 +70,7 @@ const isOpen = (section) => section.pages.some((page) => page.data.slug === curr
           </nav>
         </details>
         <slot />
-      </main>
+      </div>
       {hasRail && <aside class="vi-docs-toc-rail" aria-label="Page contents and actions"><slot name="rail" /></aside>}
     </div>
   </div>
