@@ -3,7 +3,7 @@
  * keys its store by the entry digest, so without the revision a cached page
  * would survive a renderer change and the build would publish the old markup.
  */
-export const RENDER_REVISION = 5;
+export const RENDER_REVISION = 6;
 
 /**
  * Strip interactive and form markup from rendered documentation HTML before it
@@ -105,7 +105,7 @@ export function collectHeadings(html) {
   const withIds = html.replace(/<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi, (whole, level, attributes, inner) => {
     const text = decodeEntities(stripTags(inner)).trim();
     if (!text) return whole;
-    const base = text.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') || 'section';
+    const base = text.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s/g, '-') || 'section';
     const seen = used.get(base) ?? 0;
     used.set(base, seen + 1);
     const id = seen === 0 ? base : `${base}-${seen}`;
@@ -136,7 +136,8 @@ function stripTags(html) {
 
 /**
  * Decode the entities the corpus actually uses, so a heading's id and its
- * visible text agree.
+ * visible text agree. Named entities decode first, then numeric ones; `&amp;`
+ * stays last so a doubly escaped `&amp;lt;` becomes `&lt;` and not `<`.
  *
  * @param {string} text
  * @returns {string}
@@ -146,5 +147,23 @@ function decodeEntities(text) {
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#x([0-9a-f]+);/gi, (whole, code) => numericEntity(whole, Number.parseInt(code, 16)))
+    .replace(/&#(\d+);/g, (whole, code) => numericEntity(whole, Number(code)))
     .replace(/&amp;/g, '&');
+}
+
+/**
+ * The character a numeric entity names, or the whole match when the code point
+ * is not one a heading should carry: control characters, surrogates and codes
+ * beyond the Unicode range stay escaped.
+ *
+ * @param {string} whole the whole entity match
+ * @param {number} code the code point the entity names
+ * @returns {string}
+ */
+function numericEntity(whole, code) {
+  if (!Number.isInteger(code) || code < 0x20 || code > 0x10ffff) return whole;
+  if (code >= 0xd800 && code <= 0xdfff) return whole;
+  return String.fromCodePoint(code);
 }
