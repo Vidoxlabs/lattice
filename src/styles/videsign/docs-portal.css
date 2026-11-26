@@ -533,7 +533,7 @@
   gap: 0.625rem;
 }
 
-/* Faceted Quickstart Card Grid (Mistral pattern) */
+/* Faceted Quickstart Card Grid */
 .vi-docs-qs-section {
   container-type: inline-size;
   container-name: docs-qs;
@@ -772,7 +772,7 @@
   display: none;
 }
 
-/* 4-Stage Developer Lifecycle Strip (Claude pattern) */
+/* 4-Stage Developer Lifecycle Strip */
 .vi-docs-lifecycle-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

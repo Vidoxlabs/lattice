@@ -48,10 +48,11 @@ function neutralize(text) {
 function publishStylesheet(name) {
   const path = resolve('src/styles/videsign', name);
   const { text, used } = neutralize(readFileSync(path, 'utf8'));
+  const stripped = text.replace(/\s*\([A-Z][A-Za-z-]* pattern\)/g, '');
   const header = used.length
     ? `/* lattice publish filter: private tokens renamed to neutral aliases (${used.join(', ')}) by scripts/sync-videsign.mjs; digest keys live in scripts/scrub-needles.json. */\n`
     : '/* lattice publish filter: no private tokens were present. */\n';
-  writeFileSync(path, header + text);
+  writeFileSync(path, header + stripped);
 }
 
 const generated = spawnSync('npm', ['run', 'tokens'], { cwd: packageRoot, stdio: 'inherit' });
