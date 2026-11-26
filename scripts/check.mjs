@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 
-const steps = ['lint', 'content:build', 'typecheck', 'test:unit', 'build', 'test:dist', 'scan', 'test:routes'];
+const steps = ['lint', 'content:build', 'typecheck', 'test:unit', 'build', 'test:built', 'scan', 'test:routes'];
 for (const script of steps) {
   const result = spawnSync('npm', ['run', script], { stdio: 'inherit', env: process.env });
   if (result.status !== 0) process.exit(result.status ?? 1);
