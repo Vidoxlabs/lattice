@@ -103,7 +103,7 @@ export function collectHeadings(html) {
   const used = new Map();
   const toc = [];
   const withIds = html.replace(/<h([23])([^>]*)>([\s\S]*?)<\/h\1>/gi, (whole, level, attributes, inner) => {
-    const text = decodeEntities(inner.replace(/<[^>]*>/g, '')).trim();
+    const text = decodeEntities(stripTags(inner)).trim();
     if (!text) return whole;
     const base = text.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-') || 'section';
     const seen = used.get(base) ?? 0;
@@ -113,6 +113,25 @@ export function collectHeadings(html) {
     return `<h${level}${attributes.replace(/\sid="[^"]*"/, '')} id="${id}">${inner}</h${level}>`;
   });
   return { html: withIds, toc };
+}
+
+/**
+ * Strip inline markup from a heading so only its words remain. Nested angle
+ * brackets would survive a single pass, so repeat until the text stops
+ * changing. The result only ever becomes a heading id, which is already
+ * restricted to letters, digits, spaces and hyphens.
+ *
+ * @param {string} html
+ * @returns {string}
+ */
+function stripTags(html) {
+  let text = html;
+  let previous;
+  do {
+    previous = text;
+    text = text.replace(/<[^>]*>/g, '');
+  } while (text !== previous);
+  return text;
 }
 
 /**
@@ -127,6 +146,5 @@ function decodeEntities(text) {
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
-    .replace(/'/g, "'")
     .replace(/&amp;/g, '&');
 }
