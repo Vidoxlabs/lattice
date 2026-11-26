@@ -5,9 +5,9 @@ import HeroBillboard from '../components/videsign/hero-billboard.astro';
 import BentoFeatureGrid from '../components/videsign/bento-feature-grid.astro';
 import StatementProofRow from '../components/videsign/statement-proof-row.astro';
 import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
-import ViOrbitalField from '../components/videsign/vi-orbital-field.astro';
 import FamilyStackDiagram from '../components/videsign/family-stack-diagram.astro';
 import PipelineFlow from '../components/diagrams/pipeline-flow.astro';
+import { monoLabelClasses, sectionHeadingClasses } from '../lib/ui-classes.mjs';
 import { getCatalog, sourceUrl } from '../lib/repository-data.mjs';
 const { repositories, manifest, vivarium, pinsPending, status, sources, snapshot } = await getCatalog();
 const product = repositories.find((repository) => repository.name === 'vivarium');
@@ -15,34 +15,91 @@ const systems = repositories.filter((repository) => repository.kind === 'system'
 const successful = systems.filter((repository) => repository.status.ciConclusion === 'success').length;
 const fresh = systems.filter((repository) => repository.status.docsFreshness.fresh === true).length;
 const title = 'Vidoxlabs builds Vivarium';
+const facts = [
+  { label: 'System docs current', value: `${fresh} of ${systems.length}` },
+  { label: 'Pinned systems', value: pinsPending ? 'Pending' : String(vivarium.systems?.length ?? systems.length) },
+  { label: 'Checks passing', value: `${successful} of ${systems.length}` },
+  { label: 'Manifest built', value: manifest.generatedAt ? String(manifest.generatedAt).slice(0, 10) : 'Snapshot' }
+];
 const evidence = [
   { label: 'Documentation sync', value: `${fresh}/${systems.length} system docs current`, href: 'https://github.com/Vidoxlabs/docs/blob/main/manifest.json' },
-  { label: 'System pins', value: pinsPending ? 'pins pending' : `${vivarium.systems.length} pinned systems`, href: 'https://github.com/Vidoxlabs/vivarium/blob/main/vivarium.json' },
+  { label: 'System pins', value: pinsPending ? 'pins pending' : `${vivarium.systems?.length ?? 0} pinned systems`, href: 'https://github.com/Vidoxlabs/vivarium/blob/main/vivarium.json' },
   { label: 'CI evidence', value: `${successful}/${systems.length} successful`, href: '/repositories' },
   { label: 'Last umbrella push', value: status.repositories.vivarium?.lastPushAt ?? 'Unknown', href: 'https://github.com/Vidoxlabs/vivarium/commits/main' }
 ];
 const pipelineInput = { manifest, status, sources, snapshot };
+const provenance = [
+  {
+    title: 'A system changes its own documentation',
+    body: 'Each system writes its own docs and records the commit that produced them.',
+    href: 'https://github.com/Vidoxlabs/docs/blob/main/sources.json',
+    label: 'Read the source list'
+  },
+  {
+    title: 'The documentation hub syncs and digests',
+    body: 'The hub fetches each source, verifies its digest and publishes a manifest.',
+    href: 'https://github.com/Vidoxlabs/docs/actions/workflows/sync-sources.yml',
+    label: 'Open the sync workflow'
+  },
+  {
+    title: 'This site verifies, then renders',
+    body: 'lattice verifies the manifest again at build time. Missing evidence stays blank rather than guessed.',
+    href: 'https://github.com/Vidoxlabs/docs/blob/main/docs/site-integration.md',
+    label: 'Read the integration contract'
+  }
+];
 ---
-<BaseLayout title={title}>
-  <ViOrbitalField eyebrow="Vivarium" heading={title}>
-    <p><a href="/vivarium">Understand Vivarium</a> · <a href="/repositories">Inspect the evidence</a></p>
-  </ViOrbitalField>
+<BaseLayout title={title} description="Vivarium, the seven public systems behind it, and the build evidence for every number on this page.">
+  <HeroBillboard
+    title={title}
+    eyebrow="Vivarium, the public product"
+    lede="Seven public systems make one local-first agent platform. Every number on this page links to the public record that produced it."
+    facts={facts}
+    factsHref="/repositories"
+    factsLabel="Inspect the repository status"
+  >
+    <p class="max-w-prose border-t border-border-separator-primary-base pt-rhythm-4-base font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-text-content-secondary-base">
+      Status is {sources.status === 'site' ? 'gathered by this site at build time' : sources.status === 'docs' ? 'published by the documentation hub' : 'read from a labelled committed snapshot'}, then refreshed in the browser every five minutes.
+    </p>
+  </HeroBillboard>
+
   <StatementProofRow items={evidence} />
-  <p>Build-time status: {sources.status === 'site' ? 'gathered by the site' : sources.status === 'docs' ? 'published by docs' : 'committed snapshot'}. Documentation manifest: {manifest.generatedAt}.</p>
-  <section aria-labelledby="systems-title">
-    <div class="lattice-card__meta"><h2 id="systems-title">Seven systems, one product</h2><ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} /></div>
-    <p class="lattice-prose">bloom is the interface layer. The manifest supplies every role, version and pin below.</p>
+
+  <BentoFeatureGrid items={systems} />
+
+  <section aria-labelledby="stack-title" class="flex flex-col gap-rhythm-4-base">
+    <div class="flex flex-wrap items-center justify-between gap-gap-compact-default">
+      <div class="flex flex-col gap-gap-dense-default">
+        <p class={monoLabelClasses}>Architecture</p>
+        <h2 id="stack-title" class={sectionHeadingClasses}>How the stack fits together</h2>
+      </div>
+      <ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} />
+    </div>
+    <p class="max-w-prose font-typography-family-sans-base text-typography-size-md-base leading-typography-leading-normal-base text-pretty text-text-content-secondary-base">
+      bloom is the interface layer and seed is the floor. The four peers never import each other; they agree on contracts. Every node below links to its own repository page.
+    </p>
     <FamilyStackDiagram repositories={repositories} />
   </section>
-  <BentoFeatureGrid items={systems} />
+
   <PipelineFlow pipeline={pipelineInput} freshness={{ freshCount: fresh, systemCount: systems.length }} />
-  <section aria-labelledby="pipeline-title">
-    <h2 id="pipeline-title">Where the numbers come from</h2>
-    <ol>
-      <li><a href="https://github.com/Vidoxlabs/docs/blob/main/sources.json">A system changes its own documentation.</a></li>
-      <li><a href="https://github.com/Vidoxlabs/docs/actions/workflows/sync-sources.yml">The documentation hub syncs and records digests.</a></li>
-      <li><a href="https://github.com/Vidoxlabs/docs/blob/main/docs/site-integration.md">lattice verifies the source and renders it. Missing evidence stays blank.</a></li>
+
+  <section aria-labelledby="provenance-title" class="flex flex-col gap-rhythm-5-base">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>Evidence chain</p>
+      <h2 id="provenance-title" class={sectionHeadingClasses}>Where the numbers come from</h2>
+    </div>
+    <ol class="grid list-none grid-cols-1 gap-rhythm-4-base md:grid-cols-3">
+      {provenance.map((step) => (
+        <li class="flex flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-large-base">
+          <h3 class="font-typography-family-sans-base text-typography-size-lg-base font-typography-weight-semibold-base leading-typography-leading-tight-base text-balance text-text-content-primary-base">{step.title}</h3>
+          <p class="font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-pretty text-text-content-secondary-base">{step.body}</p>
+          <a href={step.href} class="mt-auto inline-flex min-h-action-min-default items-center justify-between gap-gap-compact-default border-t border-border-separator-primary-base pt-rhythm-2-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base transition-colors duration-transition-duration-fast-base ease-transition-easing-standard-base hover:text-text-content-primary-base"><span>{step.label}</span><span aria-hidden="true">→</span></a>
+        </li>
+      ))}
     </ol>
-    <p><a href={sourceUrl('vivarium', vivarium.systems?.[0]?.commit)}>Read the pinned product source</a></p>
+    <p class="flex flex-wrap items-center gap-gap-comfortable-default border-t border-border-separator-primary-base pt-rhythm-4-base">
+      <a href={sourceUrl('vivarium', vivarium.systems?.[0]?.commit)} class="inline-flex min-h-action-min-default items-center gap-gap-compact-default font-typography-family-sans-base text-typography-size-sm-base text-text-content-primary-base underline">Read the pinned product source<span aria-hidden="true">→</span></a>
+      <span class={monoLabelClasses}>{product?.summary ?? 'Product summary pending the next sync.'}</span>
+    </p>
   </section>
 </BaseLayout>

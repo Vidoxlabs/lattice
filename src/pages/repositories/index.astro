@@ -3,12 +3,27 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import HeroBillboard from '../../components/videsign/hero-billboard.astro';
 import FilterableCatalogGrid from '../../components/videsign/filterable-catalog-grid.astro';
+import KpiMetricStrip from '../../components/videsign/kpi-metric-strip.astro';
 import DocsFreshness from '../../components/diagrams/docs-freshness.astro';
 import { getCatalog } from '../../lib/repository-data.mjs';
-const { repositories } = await getCatalog();
+const { repositories, manifest } = await getCatalog();
+const systems = repositories.filter((repository) => repository.kind === 'system');
+const passing = systems.filter((repository) => repository.status.ciConclusion === 'success').length;
+const current = systems.filter((repository) => repository.status.docsFreshness.fresh === true).length;
+const metrics = [
+  { label: 'Repositories', value: String(repositories.length), note: 'public catalog' },
+  { label: 'Systems', value: String(systems.length), note: 'pinned by the product' },
+  { label: 'Checks passing', value: `${passing} of ${systems.length}`, note: 'latest recorded run' },
+  { label: 'Docs current', value: `${current} of ${systems.length}`, note: 'synced at the head' }
+];
 ---
 <BaseLayout title="Repositories | Vidoxlabs" description="Public Vidoxlabs repositories and their sourced status.">
-  <HeroBillboard title="Repositories" lede="Every repository in the public catalog, with documentation provenance and a stable shape for live CI, activity and freshness data." />
+  <HeroBillboard
+    title="Repositories"
+    eyebrow="Public catalog"
+    lede="Every public repository, with the documentation provenance and the recorded CI, activity and freshness behind it. Nothing here is typed by hand."
+  />
+  <KpiMetricStrip items={metrics} title="Catalog summary" updated={manifest.generatedAt ? `Manifest ${String(manifest.generatedAt).slice(0, 10)}` : ''} />
   <FilterableCatalogGrid repositories={repositories} />
   <DocsFreshness catalog={{ repositories }} />
 </BaseLayout>
