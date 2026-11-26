@@ -142,21 +142,39 @@ for (const surface of surfaces) {
 }
 
 const launcher = /** @type {HTMLButtonElement} */ (document.querySelector('[data-chat-launcher]'));
-if (launcher) {
+const dock = /** @type {HTMLElement} */ (document.querySelector('#chat-dock[data-chat-surface="dock"]'));
+
+/** Close the dialog and hand focus back to the control that opened it. */
+function closeDock() {
+  if (!dock || dock.hidden) return;
+  dock.hidden = true;
+  launcher?.setAttribute('aria-expanded', 'false');
+  launcher?.focus();
+}
+
+if (launcher && dock) {
   launcher.addEventListener('click', () => {
-    const dock = /** @type {HTMLElement} */ (document.querySelector('#chat-dock[data-chat-surface="dock"]'));
-    if (!dock) return;
     const open = !dock.hidden;
     dock.hidden = open;
     launcher.setAttribute('aria-expanded', String(!open));
     if (!open) /** @type {HTMLInputElement} */ (dock.querySelector('[data-chat-input]'))?.focus();
   });
   for (const close of document.querySelectorAll('[data-chat-close]')) {
-    close.addEventListener('click', () => {
-      const dock = /** @type {HTMLElement} */ (close.closest('[data-chat-surface]'));
-      if (dock) dock.hidden = true;
-      launcher.setAttribute('aria-expanded', 'false');
-      launcher.focus();
-    });
+    close.addEventListener('click', closeDock);
   }
+  dock.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    closeDock();
+  });
+}
+
+// A link may prefill a question, for example from a documentation page.
+const asked = new URLSearchParams(window.location.search).get('q');
+if (asked) {
+  for (const input of document.querySelectorAll('[data-chat-input]')) {
+    if (input instanceof HTMLInputElement) input.value = asked;
+  }
+  const dockInput = dock && !dock.hidden ? /** @type {HTMLInputElement} */ (dock.querySelector('[data-chat-input]')) : null;
+  if (dockInput) dockInput.focus();
 }
