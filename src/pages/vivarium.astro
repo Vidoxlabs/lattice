@@ -81,7 +81,7 @@ const direction = [
           {systems.map((system) => {
             const drift = status.vivarium.systems?.[system.name]?.drift;
             return (
-              <tr>
+              <tr data-status-repository={system.name}>
                 <th scope="row" class="font-typography-weight-medium-base text-text-content-primary-base"><a href={`/repositories/${system.name}`} class="underline underline-offset-4">{system.name}</a></th>
                 <td data-label="Layer">{system.layer === 'composer' ? 'interface' : system.layer === 'floor' ? 'foundation' : system.layer === 'outside' ? 'alongside' : 'peer'}</td>
                 <td data-label="Version" class="font-typography-family-mono-base tabular-nums">{system.version ?? 'unreleased'}</td>
@@ -89,7 +89,7 @@ const direction = [
                 <td data-label="State">
                   <span class="inline-flex items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base">
                     <span aria-hidden="true" class={`h-indicator-dot-base w-indicator-dot-base rounded-layout-radius-full-base ${drift === null || drift === undefined ? 'bg-status-indicator-warning-base' : drift ? 'bg-status-indicator-warning-base' : 'bg-status-indicator-success-base'}`}></span>
-                    {drift === null || drift === undefined ? 'unknown' : drift ? 'head differs' : 'current'}
+                    <span data-status-field="ci" data-ci={drift === true ? 'drifted' : drift === false ? 'success' : 'unknown'}>{drift === null || drift === undefined ? 'unknown' : drift ? 'head differs' : 'current'}</span>
                   </span>
                 </td>
                 <td data-label="Role" class="text-text-content-secondary-base">{system.role}</td>

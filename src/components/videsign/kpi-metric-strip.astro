@@ -10,7 +10,7 @@ const { items = [], title = 'Repository metrics', updated = '' } = Astro.props;
   <dl class="grid grid-cols-1 gap-rhythm-4-base sm:grid-cols-2 lg:grid-cols-4">
     {items.map((item) => <div class="flex flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-large-base">
       <dt class={monoLabelClasses}>{item.label}</dt>
-      <dd class="break-words font-typography-family-sans-base text-typography-size-3xl-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base tabular-nums text-text-content-primary-base">{item.value}</dd>
+      <dd data-status-field={item.field || undefined} class="break-words font-typography-family-sans-base text-typography-size-3xl-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base tabular-nums text-text-content-primary-base">{item.value}</dd>
       {item.note && <dd class="inline-flex items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base"><span aria-hidden="true" class="h-indicator-dot-base w-indicator-dot-base shrink-0 rounded-layout-radius-full-base bg-status-indicator-info-base"></span><span>{item.note}</span></dd>}
     </div>)}
   </dl>
