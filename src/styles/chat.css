@@ -9,7 +9,7 @@
   align-items: center;
   gap: var(--vi-space-gap-compact-default);
   padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-4-base);
-  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  border-radius: var(--vi-spacing-layout-radius-full-base, 999px);
   border: 1px solid var(--vi-colors-surface-accent-brand-base);
   background: var(--vi-colors-surface-background-secondary-base);
   color: var(--vi-colors-text-content-primary-base);
@@ -23,7 +23,7 @@
   place-items: center;
   inline-size: var(--vi-size-indicator-fivebar-base);
   block-size: var(--vi-size-indicator-fivebar-base);
-  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  border-radius: var(--vi-spacing-layout-radius-full-base, 999px);
   background: var(--vi-colors-surface-accent-brand-base);
   color: var(--vi-colors-text-content-primary-base);
 }
@@ -35,7 +35,7 @@
   padding: var(--vi-space-rhythm-3-base);
   background: var(--vi-colors-surface-background-secondary-base);
   border: 1px solid var(--vi-colors-text-content-secondary-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
 }
 
 .lattice-chat-surface[hidden] {
@@ -104,7 +104,7 @@
 
 .lattice-chat-starters button {
   padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
-  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  border-radius: var(--vi-spacing-layout-radius-full-base, 999px);
   border: 1px solid var(--vi-colors-text-content-secondary-base);
   background: var(--vi-colors-surface-background-primary-base);
   color: var(--vi-colors-text-content-primary-base);
@@ -116,7 +116,7 @@
 .lattice-chat-visitor {
   margin: 0;
   padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
   background: var(--vi-colors-surface-background-primary-base);
   justify-self: end;
   max-inline-size: 80%;
@@ -141,7 +141,7 @@
   margin: 0;
   padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
   border: 1px dashed var(--vi-colors-text-content-secondary-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
   font-family: var(--vi-typography-typography-family-mono-base);
   font-size: var(--vi-typography-typography-size-xs-base);
   color: var(--vi-colors-text-content-secondary-base);
@@ -171,7 +171,7 @@
 
 .lattice-chat-question input {
   padding: var(--vi-space-rhythm-2-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
   border: 1px solid var(--vi-colors-text-content-secondary-base);
   background: var(--vi-colors-surface-background-primary-base);
   color: var(--vi-colors-text-content-primary-base);
@@ -180,7 +180,7 @@
 
 .lattice-chat-question button {
   padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-3-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
   border: 1px solid var(--vi-colors-surface-accent-brand-base);
   background: var(--vi-colors-surface-background-primary-base);
   color: var(--vi-colors-text-content-primary-base);

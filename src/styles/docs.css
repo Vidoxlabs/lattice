@@ -50,7 +50,7 @@
   color: var(--vi-colors-text-content-secondary-base);
   text-decoration: none;
   padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
 }
 
 .lattice-docs-nav a:hover,
@@ -97,7 +97,7 @@
 
 .lattice-docs-placeholder {
   border: 1px solid var(--vi-colors-status-indicator-warning-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
   padding: var(--vi-space-rhythm-2-base);
 }
 
@@ -110,7 +110,7 @@
   overflow-x: auto;
   padding: var(--vi-space-rhythm-3-base);
   background: var(--vi-colors-surface-background-secondary-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  border-radius: var(--vi-spacing-layout-radius-control-base, 4px);
 }
 
 .lattice-docs-prose code,
@@ -154,7 +154,7 @@
 .lattice-claim-badge {
   display: inline-block;
   padding: 0 var(--vi-space-rhythm-2-base);
-  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  border-radius: var(--vi-spacing-layout-radius-full-base, 999px);
   font-family: var(--vi-typography-typography-family-mono-base);
   font-size: var(--vi-typography-typography-size-xs-base);
   border: 1px solid currentColor;
