@@ -29,7 +29,9 @@ const pins = [
   { label: 'Documentation sync', value: repository.syncedAt ?? 'Unknown', href: null },
   { label: 'Last push', value: repository.status.lastPushAt ?? 'Unknown', href: null }
 ];
-const groups = [...new Set(repository.docsFiles.map((file) => file.path.split('/').slice(0, 2).join('/')))];
+const groupKey = (path) => path.split('/').slice(0, -1).slice(0, 2).join('/');
+const groupTitle = (key) => (key === '' ? 'Overview' : key);
+const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path)))].sort();
 ---
 <BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`} family={repository.name}>
   <HeroBillboard
@@ -101,12 +103,12 @@ const groups = [...new Set(repository.docsFiles.map((file) => file.path.split('/
     <div class="grid grid-cols-1 gap-rhythm-4-base sm:grid-cols-2">
       {groups.map((group) => (
         <div class="flex flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-medium-base">
-          <p class={monoLabelClasses}>{group}</p>
+          <p class={monoLabelClasses}>{groupTitle(group)}</p>
           <ul class="flex list-none flex-col">
-            {repository.docsFiles.filter((file) => file.path.startsWith(group)).map((file) => (
+            {repository.docsFiles.filter((file) => groupKey(file.path) === group).map((file) => (
               <li>
                 <a href={`/docs/${repository.name}/${file.path.replace(/\.md$/, '')}`} class="flex min-h-action-min-default items-center justify-between gap-gap-compact-default border-b border-border-separator-primary-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base hover:text-text-content-primary-base">
-                  <span class="truncate">{file.path.slice(group.length + 1)}</span>
+                  <span class="truncate">{group === '' ? file.path : file.path.slice(group.length + 1)}</span>
                   {file.path.includes('/adr/') && <span class="shrink-0 rounded-layout-radius-full-base bg-surface-background-tertiary-base px-rhythm-1-base">ADR</span>}
                 </a>
               </li>
