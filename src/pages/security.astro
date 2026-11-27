@@ -1,15 +1,48 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroBillboard from '../components/videsign/hero-billboard.astro';
+import ActionList from '../components/videsign/action-list.astro';
+import { ledeClasses, monoLabelClasses, sectionHeadingClasses } from '../lib/ui-classes.mjs';
 import { getCatalog } from '../lib/repository-data.mjs';
 const { repositories } = await getCatalog();
+const systems = repositories.filter((repository) => repository.kind === 'system');
+const rest = repositories.filter((repository) => repository.kind !== 'system');
+const policyFor = (repository) => ({
+  title: repository.name,
+  body: repository.summary || `The supported versions and the reporting route for ${repository.name}.`,
+  href: `https://github.com/Vidoxlabs/${repository.name}/blob/main/SECURITY.md`,
+  label: 'Read SECURITY.md'
+});
 ---
 <BaseLayout title="Security | Vidoxlabs" description="How to report a Vidoxlabs vulnerability.">
-  <HeroBillboard title="Security" lede="Report a suspected vulnerability by email to admin@vidoxlabs.dev. Do not include secrets or personal data, and do not disclose it publicly before assessment." />
-  <p><a href="mailto:admin@vidoxlabs.dev">Email admin@vidoxlabs.dev</a> · <a href="/.well-known/security.txt">security.txt</a></p>
-  <section>
-    <h2>Scope and policies</h2>
-    <p>The scope is the public Vidoxlabs repositories.</p>
-    <ul>{repositories.map((repository) => <li><a href={`https://github.com/Vidoxlabs/${repository.name}/blob/main/SECURITY.md`}>{repository.name} SECURITY policy</a></li>)}</ul>
+  <HeroBillboard
+    title="Security"
+    eyebrow="Reporting"
+    lede="Report a suspected vulnerability by email. Do not include secrets or personal data, and do not disclose it publicly before assessment."
+    primaryHref="mailto:admin@vidoxlabs.dev"
+    primaryLabel="Email the maintainer"
+    secondaryHref="/.well-known/security.txt"
+    secondaryLabel="Read security.txt"
+    factsTitle="Before you send"
+    factsHref="/.well-known/security.txt"
+    factsLabel="Machine-readable contact policy"
+    facts={[
+      { label: 'Disclosure', value: 'After triage' },
+      { label: 'Secrets', value: 'Never send' },
+      { label: 'Scope', value: `${repositories.length} public repos` },
+      { label: 'Policy files', value: 'One each' }
+    ]}
+  />
+
+  <section aria-labelledby="scope-title" class="flex flex-col gap-rhythm-5-base">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>Scope</p>
+      <h2 id="scope-title" class={sectionHeadingClasses}>Every public repository carries its own policy</h2>
+      <p class={ledeClasses}>The scope is the public Vidoxlabs repositories. Each one states its supported versions and its reporting route in its own security policy.</p>
+    </div>
+    <h3 class="font-typography-family-sans-base text-typography-size-lg-base font-typography-weight-semibold-base leading-typography-leading-tight-base text-text-content-primary-base">The seven systems</h3>
+    <ActionList label="Security policies for the seven systems" items={systems.map(policyFor)} />
+    <h3 class="mt-rhythm-4-base font-typography-family-sans-base text-typography-size-lg-base font-typography-weight-semibold-base leading-typography-leading-tight-base text-text-content-primary-base">Product, hub and site</h3>
+    <ActionList label="Security policies for the product, hub and site" items={rest.map(policyFor)} />
   </section>
 </BaseLayout>

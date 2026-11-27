@@ -1,10 +1,26 @@
 @import './videsign/tokens.css';
 @import './videsign/themes.css';
 @import './videsign/glass.css';
-@import './videsign/specimen-layouts.css';
-@import './videsign/core-components.css';
-@import './videsign/family-surfaces.css';
-@import './videsign/vi-orbital-hero.css';
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-mono-latin-wght-normal.woff2') format('woff2');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   color-scheme: dark;
@@ -21,11 +37,26 @@
   box-sizing: border-box;
 }
 
+html {
+  background: var(--vi-colors-surface-background-primary-base);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-block-size: 100dvh;
   background: var(--vi-colors-surface-background-primary-base);
   color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-md-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+html[data-navigation='open'] body {
+  overflow: hidden;
 }
 
 a {
@@ -33,187 +64,63 @@ a {
   text-underline-offset: var(--vi-space-rhythm-1-base);
 }
 
-a:focus-visible,
-button:focus-visible {
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
   outline: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-surface-accent-brand-base);
   outline-offset: var(--vi-space-rhythm-1-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
 }
 
 button,
-a {
+a,
+input,
+textarea,
+select,
+summary {
   transition-duration: var(--vi-transition-transition-duration-fast-base);
   transition-timing-function: var(--vi-transition-transition-easing-standard-base);
 }
 
-.lattice-shell {
-  min-block-size: 100dvh;
-  display: flex;
-  flex-direction: column;
-  overflow-x: hidden;
-}
-
-.lattice-main {
-  inline-size: min(100%, var(--vi-size-layout-width-content-base));
-  margin-inline: auto;
-  padding: var(--vi-space-rhythm-8-base) var(--vi-space-rhythm-6-base);
-  flex: 1;
-}
-
-.lattice-prose {
-  max-inline-size: 65ch;
-  color: var(--vi-colors-text-content-secondary-base);
-  font-size: var(--vi-typography-typography-size-lg-base);
-  line-height: var(--vi-typography-typography-leading-normal-base);
-}
-
-.lattice-skip {
-  position: fixed;
-  inset-block-start: var(--vi-space-rhythm-3-base);
-  inset-inline-start: var(--vi-space-rhythm-3-base);
-  z-index: 30;
-  padding: var(--vi-space-rhythm-3-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-  border-radius: var(--vi-spacing-layout-radius-control-base);
-  transform: translateY(-200%);
-}
-
-.lattice-skip:focus {
-  transform: translateY(0);
-}
-
-.vi-site-header {
-  position: sticky;
-  inset-block-start: 0;
-  z-index: 20;
-  padding: var(--vi-space-rhythm-3-base) var(--vi-space-rhythm-6-base);
-}
-
-.vi-site-header__inner {
-  max-inline-size: var(--vi-size-layout-width-content-base);
-  margin-inline: auto;
-}
-
-.vi-site-nav,
-.vi-site-nav__actions,
-.vi-site-nav__links,
-.vi-site-footer__row,
-.vi-site-footer__links {
-  display: flex;
-  align-items: center;
-  gap: var(--vi-space-gap-compact-default);
-}
-
-.vi-site-nav {
-  justify-content: space-between;
-  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
-}
-
-.vi-site-nav__links,
-.vi-site-footer__links {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex-wrap: wrap;
-}
-
-.vi-site-nav a,
-.vi-site-footer a,
-.vi-theme-toggle,
-.vi-motion-toggle {
-  min-block-size: var(--vi-size-action-min-default);
-  display: inline-flex;
-  align-items: center;
-  padding-inline: var(--vi-space-inset-operator-default);
-  border-radius: var(--vi-spacing-layout-radius-full-base);
-  text-decoration: none;
-}
-
-.vi-site-nav a[aria-current='page'] {
-  background: var(--vi-colors-surface-background-tertiary-base);
-}
-
-.vi-brand {
-  font-weight: var(--vi-typography-typography-weight-semibold-base);
-}
-
-.vi-brand img {
-  inline-size: var(--vi-size-icon-sm-base);
-  block-size: var(--vi-size-icon-sm-base);
-  margin-inline-end: var(--vi-space-gap-dense-default);
-}
-
-.vi-theme-toggle,
-.vi-motion-toggle {
-  border: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-border-separator-primary-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-  color: var(--vi-colors-text-content-primary-base);
+button,
+input,
+textarea,
+select {
   font: inherit;
+}
+
+button {
   cursor: pointer;
 }
 
-.vi-mobile-navigation {
-  margin: var(--vi-space-rhythm-3-base) var(--vi-space-rhythm-6-base);
-  padding: var(--vi-spacing-layout-padding-medium-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-  border-radius: var(--vi-spacing-layout-radius-standard-base);
+img,
+svg {
+  max-inline-size: 100%;
 }
 
-.vi-mobile-navigation[hidden] {
-  display: none;
+/* One visible focus ring on a filled call to action: the brand outline would
+   vanish against the brand fill, so the ring turns to the page ink. */
+a.bg-surface-accent-brand-base:focus-visible,
+button.bg-surface-accent-brand-base:focus-visible {
+  outline-color: var(--vi-colors-text-content-primary-base);
 }
 
-.vi-mobile-navigation ul {
-  list-style: none;
-  padding: 0;
-  display: grid;
-  gap: var(--vi-space-gap-dense-default);
+/* The attribute has to beat a display utility on the same element: several
+   surfaces are hidden by an attribute and shown by a class. */
+[hidden] {
+  display: none !important;
 }
 
-.vi-mobile-navigation a {
-  display: flex;
-  min-block-size: var(--vi-size-action-min-default);
-  align-items: center;
+.lattice-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.vi-site-footer {
-  padding: var(--vi-space-rhythm-6-base);
-  border-block-start: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-border-separator-primary-base);
-}
-
-.vi-site-footer__inner {
-  max-inline-size: var(--vi-size-layout-width-content-base);
-  margin-inline: auto;
-  display: grid;
-  gap: var(--vi-space-rhythm-5-base);
-}
-
-.vi-site-footer__row {
-  justify-content: space-between;
-  flex-wrap: wrap;
-  color: var(--vi-colors-text-content-secondary-base);
-  font-size: var(--vi-typography-typography-size-sm-base);
-}
-
-.vi-island-nav {
-  display: inline-flex;
-}
-
-.vi-navigation-primitives {
-  padding: var(--vi-spacing-layout-padding-large-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-  border-radius: var(--vi-spacing-layout-radius-standard-base);
-}
-
-@media (max-width: 48rem) {
-  .vi-site-nav__links {
-    display: none;
-  }
-}
-
-@media (min-width: 48.001rem) {
-  .vi-menu-toggle,
-  .vi-mobile-navigation {
-    display: none;
+@media (max-width: 40rem) {
+  #main-content {
+    padding-block-end: var(--vi-space-rhythm-20-base);
   }
 }
 
@@ -232,4 +139,12 @@ a {
 :root[data-motion='paused'] *::before,
 :root[data-motion='paused'] *::after {
   animation-play-state: paused !important;
+}
+
+:root[data-motion='paused'] {
+  scroll-behavior: auto;
+}
+
+:root[data-navigation='open'] [data-chat-launcher] {
+  display: none;
 }

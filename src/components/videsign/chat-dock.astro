@@ -1,30 +1,45 @@
 ---
-// Ported structurally from the videsign chat-dock specimen: a non-modal
-// dialog above a launcher. The assistant is the site's own named assistant;
-// no other name is hard-coded here.
+// Ported structurally from the videsign chat-dock specimen: a non-modal dialog
+// above a launcher, one assistant, no seat switcher. The mark is the tracked
+// brand file, never a drawn glyph.
 const { surface = 'dock' } = Astro.props;
 const starters = ['What is Vivarium?', 'How do bloom and seed fit together?', 'What is the current CI state of the systems?'];
 ---
 {surface === 'dock' && (
-  <button type="button" class="lattice-chat-launcher" data-chat-launcher aria-expanded="false" aria-controls="chat-dock">
-    <span class="lattice-chat-launcher-mark" aria-hidden="true">?</span>
-    <span>Ask the site</span>
+  <button type="button" class="lattice-chat-launcher" data-chat-launcher aria-expanded="false" aria-controls="chat-dock" aria-label="Ask the site">
+    <img src="/brand/brand_mark_header_v008.svg" alt="" class="lattice-chat-launcher-mark" width="28" height="28" />
+    <span class="lattice-chat-launcher-label">Ask the site</span>
+    <span class="lattice-chat-fivebar" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span>
+    </span>
   </button>
 )}
-<div id="chat-dock" class="lattice-chat-surface" data-videsign="chat-dock" role="dialog" aria-modal="false" aria-label="Ask the site assistant" hidden={surface === 'dock'} data-chat-surface={surface}>
-  <header class="lattice-chat-head">
-    <p class="lattice-chat-assistant" data-chat-assistant>Vidoxlabs assistant</p>
-    {surface === 'dock' && <button type="button" class="lattice-chat-close" data-chat-close aria-label="Close chat">×</button>}
-  </header>
-  <div class="lattice-chat-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation" data-videsign="conversation-surface">
-    <p class="lattice-chat-empty" data-videsign="feedback-and-empty-states">Ask about Vivarium, its systems, or their current status. Answers come only from the verified documentation corpus and the gathered public status, with citations.</p>
-    <ul class="lattice-chat-starters" data-videsign="starter-chips">
-      {starters.map((starter) => <li><button type="button" data-chat-starter={starter}>{starter}</button></li>)}
-    </ul>
+<div id="chat-dock" class="lattice-chat-surface vi-glass-shell" data-videsign="chat-dock" role="dialog" aria-modal="false" aria-label="Ask the site assistant" hidden={surface === 'dock'} data-chat-surface={surface}>
+  <div class="lattice-chat-body vi-glass-core">
+    <header class="lattice-chat-head">
+      <div class="lattice-chat-identity">
+        <img src="/brand/brand_mark_header_v008.svg" alt="" class="lattice-chat-mark" width="24" height="24" />
+        <div>
+          <p class="lattice-chat-assistant" data-chat-assistant>Vidoxlabs assistant</p>
+          <p class="lattice-chat-sub">Grounded in the verified documentation</p>
+        </div>
+      </div>
+      {surface === 'dock' && <button type="button" class="lattice-chat-close" data-chat-close aria-label="Close chat"><span aria-hidden="true">✕</span></button>}
+    </header>
+    <div class="lattice-chat-log" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation" data-videsign="conversation-surface">
+      <p class="lattice-chat-empty" data-videsign="feedback-and-empty-states">Ask about Vivarium, its systems, or their current status. Answers come only from the verified documentation corpus and the gathered public status, with citations.</p>
+      <ul class="lattice-chat-starters" data-videsign="starter-chips">
+        {starters.map((starter) => <li><button type="button" data-chat-starter={starter}>{starter}</button></li>)}
+      </ul>
+    </div>
+    <form class="lattice-chat-question" data-videsign="question-bar" data-chat-form>
+      <label class="lattice-visually-hidden" for="lattice-chat-input">Your question</label>
+      <input id="lattice-chat-input" name="question" type="text" autocomplete="off" maxlength="2000" placeholder="Ask a question" data-chat-input />
+      <button type="submit" aria-label="Send question">
+        <span class="lattice-chat-send-label">Send</span>
+        <span aria-hidden="true" class="lattice-chat-send-mark">→</span>
+      </button>
+    </form>
+    <p class="lattice-chat-disclosure">Replies come from a language model. Typed questions go to the configured answer provider, and answers cite the documentation they came from.</p>
   </div>
-  <form class="lattice-chat-question" data-videsign="question-bar" data-chat-form>
-    <label class="lattice-visually-hidden" for="lattice-chat-input">Your question</label>
-    <input id="lattice-chat-input" name="question" type="text" autocomplete="off" maxlength="2000" placeholder="Ask a question" data-chat-input />
-    <button type="submit">Send</button>
-  </form>
 </div>

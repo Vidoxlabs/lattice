@@ -2,9 +2,10 @@
 // Archetype: repository-showcase.
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import HeroBillboard from '../../components/videsign/hero-billboard.astro';
-import PublicRepoCard from '../../components/videsign/public-repo-card.astro';
+import KpiMetricStrip from '../../components/videsign/kpi-metric-strip.astro';
 import ClaimMaturityBadge from '../../components/videsign/claim-maturity-badge.astro';
 import RepositoryActivity from '../../components/diagrams/repository-activity.astro';
+import { monoLabelClasses, sectionHeadingClasses } from '../../lib/ui-classes.mjs';
 import { getCatalog, getRepository, sourceUrl } from '../../lib/repository-data.mjs';
 export async function getStaticPaths() {
   const { repositories } = await getCatalog();
@@ -13,34 +14,108 @@ export async function getStaticPaths() {
 const repository = await getRepository(Astro.params.repo);
 if (!repository) return Astro.redirect('/404');
 const { sources } = await getCatalog();
+const short = (value) => (value ? value.slice(0, 7) : 'Unknown');
+const freshness = repository.status.docsFreshness.fresh === null ? 'Unknown' : repository.status.docsFreshness.fresh ? 'Current' : 'Sync pending';
+const metrics = [
+  { label: 'Checks', value: repository.status.ciConclusion ?? 'Unknown', note: 'latest recorded run', field: 'ci' },
+  { label: 'Docs', value: freshness, note: 'synced at the head' },
+  { label: 'Open pull requests', value: String(repository.status.openPrCount ?? 'Unknown'), note: 'public count' },
+  { label: 'Package', value: repository.version ?? 'Not published', note: 'latest release or tag' }
+];
+const pins = [
+  { label: 'Pinned commit', value: repository.pin ? short(repository.pin) : 'Not pinned', href: repository.pin ? `https://github.com/Vidoxlabs/${repository.name}/commit/${repository.pin}` : null },
+  { label: 'Repository head', value: short(repository.repositoryHead), href: repository.repositoryHead ? `https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}` : null },
+  { label: 'Pin drift', value: repository.drift === null ? 'Unknown' : repository.drift ? 'Head differs from the pin' : 'Pin matches head', href: null },
+  { label: 'Documentation sync', value: repository.syncedAt ?? 'Unknown', href: null },
+  { label: 'Last push', value: repository.status.lastPushAt ?? 'Unknown', href: null, field: 'lastPushAt' }
+];
+const groupKey = (path) => path.split('/').slice(0, -1).slice(0, 2).join('/');
+const groupTitle = (key) => (key === '' ? 'Overview' : key);
+const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path)))].sort();
 ---
 <BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`} family={repository.name}>
-  <HeroBillboard title={repository.name} lede={repository.summary || 'Documentation has not synced yet.'}>
-    <p><a href={`https://github.com/Vidoxlabs/${repository.name}`}>Repository</a> · <a href={sourceUrl(repository.name, repository.head)}>Source README at {repository.head?.slice(0, 7) ?? 'main'}</a></p>
+  <HeroBillboard
+    title={repository.name}
+    eyebrow={repository.kind}
+    lede={repository.summary || 'Documentation has not synced yet.'}
+    primaryHref={`https://github.com/Vidoxlabs/${repository.name}`}
+    primaryLabel="Open the repository"
+    secondaryHref={sourceUrl(repository.name, repository.head)}
+    secondaryLabel="Read the source README"
+    factsHref={`https://github.com/Vidoxlabs/${repository.name}/commits`}
+    factsLabel="Every commit on the public repository"
+    factsTitle="Pin and head"
+    facts={[
+      { label: 'Pinned at', value: short(repository.pin) },
+      { label: 'Head', value: short(repository.repositoryHead) },
+      { label: 'Drift', value: repository.drift === null ? 'Unknown' : repository.drift ? 'Differs' : 'None' },
+      { label: 'Docs', value: freshness }
+    ]}
+  >
+    <p class="max-w-prose border-t border-border-separator-primary-base pt-rhythm-4-base font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-text-content-secondary-base">
+      Status is {sources.status === 'site' ? 'gathered by this site at build time' : sources.status === 'docs' ? 'published by the documentation hub' : 'read from a labelled committed snapshot'}.
+    </p>
   </HeroBillboard>
-  <p>Status source: {sources.status === 'site' ? 'gathered by the site' : sources.status === 'docs' ? 'published by docs' : 'committed snapshot'}.</p>
-  <PublicRepoCard repository={repository} />
-  <section aria-labelledby="pins-title">
-    <div class="lattice-card__meta"><h2 id="pins-title">Pins and drift</h2><ClaimMaturityBadge label={repository.pin ? 'observed' : 'planned'} /></div>
-    <p>{repository.pin ? <a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.pin}`}>Pinned at {repository.pin.slice(0, 7)}</a> : 'Not pinned by the Vivarium manifest.'}</p>
-    <p>Repository head: {repository.repositoryHead ? <a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}`}>{repository.repositoryHead.slice(0, 7)}</a> : 'Unknown'}.</p>
-    <p>Pin drift: {repository.drift === null ? 'Unknown' : repository.drift ? 'Head differs from the pin' : 'Pin matches head'}.</p>
-    <p>Package version: {repository.version ?? 'Not published'}; latest release or tag: {repository.status.latestRelease ?? 'Unknown'}.</p>
+
+  <KpiMetricStrip items={metrics} title="Repository status" statusRepository={repository.name} />
+
+  <section aria-labelledby="pins-title" class="flex flex-col gap-rhythm-4-base">
+    <div class="flex flex-wrap items-center justify-between gap-gap-compact-default">
+      <div class="flex flex-col gap-gap-dense-default">
+        <p class={monoLabelClasses}>Provenance</p>
+        <h2 id="pins-title" class={sectionHeadingClasses}>Pins and drift</h2>
+      </div>
+      <ClaimMaturityBadge label={repository.pin ? 'observed' : 'planned'} />
+    </div>
+    <dl data-status-repository={repository.name} class="grid grid-cols-1 gap-rhythm-4-base rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-large-base sm:grid-cols-2 lg:grid-cols-3">
+      {pins.map((pin) => (
+        <div class="flex min-w-0 flex-col gap-gap-dense-default">
+          <dt class={monoLabelClasses}>{pin.label}</dt>
+          <dd data-status-field={pin.field || undefined} class="font-typography-family-mono-base text-typography-size-sm-base break-words tabular-nums text-text-content-primary-base">
+            {pin.href ? <a href={pin.href} class="underline underline-offset-4">{pin.value}</a> : pin.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+    {repository.repositoryHead && <p><a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}/checks`} class="inline-flex min-h-action-min-default items-center gap-gap-compact-default font-typography-family-sans-base text-typography-size-sm-base text-text-content-primary-base underline">Checks for {short(repository.repositoryHead)}<span aria-hidden="true">→</span></a></p>}
   </section>
-  <section aria-labelledby="activity-title" data-status-repository={repository.name}>
-    <h2 id="activity-title">Recent activity</h2>
-    <p>Documentation synced at {repository.syncedAt ?? 'an unknown time'}.</p>
-    <p>Last push: <span data-status-field="lastPushAt">{repository.status.lastPushAt ?? 'Unknown'}</span>.</p>
-    {repository.repositoryHead && <p><a href={`https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}/checks`}>Checks for {repository.repositoryHead.slice(0, 7)}</a></p>}
-  </section>
+
   <RepositoryActivity repository={repository} />
-  <section aria-labelledby="quickstart-title">
-    <h2 id="quickstart-title">Quickstart</h2>
-    {repository.quickstart ? <pre class="lattice-command"><code>{repository.quickstart}</code></pre> : <p>No quickstart block is present in the synced README.</p>}
+
+  <section aria-labelledby="quickstart-title" class="flex flex-col gap-rhythm-4-base">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>First step</p>
+      <h2 id="quickstart-title" class={sectionHeadingClasses}>Quickstart</h2>
+    </div>
+    {repository.quickstart
+      ? <div class="lattice-prose"><pre><code>{repository.quickstart}</code></pre></div>
+      : <p class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base">No quickstart block is present in the synced README.</p>}
   </section>
-  <section aria-labelledby="docs-title">
-    <h2 id="docs-title">Documentation and decisions</h2>
-    <ul>{repository.docsFiles.map((file) => <li><a href={`/docs/${repository.name}/${file.path.replace(/\.md$/, '')}`}>{file.path}</a>{file.path.includes('/adr/') && ' (ADR)'}</li>)}</ul>
-    <p><a href="/docs">All documentation</a></p>
+
+  <section aria-labelledby="docs-title" class="flex flex-col gap-rhythm-4-base">
+    <div class="flex flex-wrap items-end justify-between gap-gap-compact-default">
+      <div class="flex flex-col gap-gap-dense-default">
+        <p class={monoLabelClasses}>Documentation</p>
+        <h2 id="docs-title" class={sectionHeadingClasses}>Pages for this repository</h2>
+      </div>
+      <a href="/docs" class="inline-flex min-h-action-min-default items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base hover:text-text-content-primary-base">All documentation<span aria-hidden="true">→</span></a>
+    </div>
+    <div class="grid grid-cols-1 gap-rhythm-4-base sm:grid-cols-2">
+      {groups.map((group) => (
+        <div class="flex flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-medium-base">
+          <p class={monoLabelClasses}>{groupTitle(group)}</p>
+          <ul class="flex list-none flex-col">
+            {repository.docsFiles.filter((file) => groupKey(file.path) === group).map((file) => (
+              <li>
+                <a href={`/docs/${repository.name}/${file.path.replace(/\.md$/, '')}`} class="flex min-h-action-min-default items-center justify-between gap-gap-compact-default border-b border-border-separator-primary-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base hover:text-text-content-primary-base">
+                  <span class="truncate">{group === '' ? file.path : file.path.slice(group.length + 1)}</span>
+                  {file.path.includes('/adr/') && <span class="shrink-0 rounded-layout-radius-full-base bg-surface-background-tertiary-base px-rhythm-1-base">ADR</span>}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
   </section>
 </BaseLayout>

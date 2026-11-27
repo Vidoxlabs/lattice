@@ -1,22 +1,57 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroBillboard from '../components/videsign/hero-billboard.astro';
+import ActionList from '../components/videsign/action-list.astro';
+import { ledeClasses, monoLabelClasses, sectionHeadingClasses } from '../lib/ui-classes.mjs';
+const evidence = [
+  { title: 'Vivarium product umbrella', body: 'The product definition, the seven system pins and the launch decisions.', href: 'https://github.com/Vidoxlabs/vivarium', label: 'Product source' },
+  { title: 'Documentation hub', body: 'The self-updating hub every page on this site is rendered from.', href: 'https://github.com/Vidoxlabs/docs', label: 'Docs source' },
+  { title: 'Multi-point testing', body: 'The probes that check every system from outside its own call path.', href: 'https://github.com/Vidoxlabs/trellis', label: 'Test source' },
+  { title: 'Every public repository', body: 'The whole catalog, with its recorded status and freshness.', href: 'https://github.com/Vidoxlabs', label: 'Public catalog' }
+];
 ---
 <BaseLayout title="About Vidoxlabs" description="Vidoxlabs LLC, its public product and engineering method.">
-  <HeroBillboard title="About Vidoxlabs" lede="Vidoxlabs LLC is a Florida limited liability company building Vivarium, an open, local-first personal agent platform." />
-  <section>
-    <h2>Open evidence</h2>
-    <p class="lattice-prose">The product umbrella, seven systems, documentation hub and design system are public. Tests, source commits, specifications and documentation provide the evidence behind the site.</p>
-    <ul>
-      <li><a href="https://github.com/Vidoxlabs/vivarium">Vivarium product umbrella</a></li>
-      <li><a href="https://github.com/Vidoxlabs/docs">Self-updating documentation hub</a></li>
-      <li><a href="https://github.com/Vidoxlabs/trellis">Multi-point testing</a></li>
-      <li><a href="https://github.com/Vidoxlabs">All public Vidoxlabs repositories</a></li>
-    </ul>
+  <HeroBillboard
+    title="About Vidoxlabs"
+    eyebrow="The company"
+    lede="Vidoxlabs LLC is a Florida limited liability company building Vivarium, an open, local-first personal agent platform."
+    primaryHref="/vivarium"
+    primaryLabel="Understand Vivarium"
+    secondaryHref="/repositories"
+    secondaryLabel="Inspect the evidence"
+    factsTitle="Working in public"
+    factsHref="https://github.com/Vidoxlabs"
+    factsLabel="All public repositories"
+    facts={[
+      { label: 'Product', value: 'Vivarium' },
+      { label: 'Systems', value: 'Seven' },
+      { label: 'Source', value: 'Public' },
+      { label: 'Evidence', value: 'Commits and tests' }
+    ]}
+  />
+
+  <section aria-labelledby="evidence-title" class="flex flex-col gap-rhythm-5-base">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>Open evidence</p>
+      <h2 id="evidence-title" class={sectionHeadingClasses}>Nothing here asks to be taken on trust</h2>
+      <p class={ledeClasses}>The product umbrella, seven systems, documentation hub and design system are public. Tests, source commits, specifications and documentation provide the evidence behind every page.</p>
+    </div>
+    <ActionList items={evidence} label="Public records for this site" />
   </section>
-  <section>
-    <h2>Contribute</h2>
-    <p>Start with the repository that owns the change. Each public repository carries its own agent guidance, contribution rules, tests and security policy.</p>
-    <p><a href="/repositories">Choose a repository</a> or <a href="https://github.com/Vidoxlabs/lattice/blob/main/CONTRIBUTING.md">contribute to lattice</a>.</p>
+
+  <section aria-labelledby="contribute-title" class="flex flex-col gap-rhythm-5-base border-t border-border-separator-primary-base pt-rhythm-8-base">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>Contribute</p>
+      <h2 id="contribute-title" class={sectionHeadingClasses}>Start with the repository that owns the change</h2>
+      <p class={ledeClasses}>Each public repository carries its own agent guidance, contribution rules, tests and security policy. Read the one you are changing before you change it.</p>
+    </div>
+    <ActionList
+      columns={1}
+      label="Ways to contribute"
+      items={[
+        { title: 'Choose a repository', body: 'Compare the catalog, its CI state and how current its documentation is.', href: '/repositories', label: 'Open the catalog' },
+        { title: 'Contribute to this site', body: 'The contribution rules for the site you are reading, including how to run its checks.', href: 'https://github.com/Vidoxlabs/lattice/blob/main/CONTRIBUTING.md', label: 'Read CONTRIBUTING' }
+      ]}
+    />
   </section>
 </BaseLayout>

@@ -15,7 +15,7 @@ test('the docs portal lists its sections and opens a synced page', async ({ page
 
 test('rewritten corpus links navigate within the site', async ({ page }) => {
   await page.goto('/docs/seed/architecture');
-  const runModel = page.locator('.lattice-docs-prose a', { hasText: 'run model' }).first();
+  const runModel = page.locator('.lattice-prose a', { hasText: 'run model' }).first();
   await runModel.click();
   await expect(page.locator('.lattice-docs-article h1').first()).toHaveText(/run model/i);
   await expect(page).toHaveURL(/\/docs\/seed\/contracts\/run-model/);

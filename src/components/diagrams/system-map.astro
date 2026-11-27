@@ -1,22 +1,11 @@
 ---
 import { renderSystemMap } from '../../lib/diagrams/system-map.mjs';
 const { catalog } = Astro.props;
-const { graphic, rows } = renderSystemMap(catalog);
+const { graphic } = renderSystemMap(catalog);
 ---
-<section aria-labelledby="system-map-heading">
-  <div class="lattice-card__meta"><h2 id="system-map-heading">How the seven systems fit</h2></div>
-  <div class="lattice-diagram" set:html={graphic} />
-  <details class="lattice-diagram-table">
-    <summary>Read the system map as a table</summary>
-    <table>
-      <thead><tr><th>System</th><th>Layer</th><th>Pinned</th><th>Head</th><th>CI</th><th>Pin state</th></tr></thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr data-ci={row.ci} data-drift={row.drift === 'drifted' ? 'true' : row.drift === 'pinned' ? 'false' : 'unknown'}>
-            <td>{row.name}</td><td>{row.layer}</td><td>{row.pin}</td><td>{row.head}</td><td data-status-repository={row.name}><span data-status-field="ci">{row.ci}</span></td><td>{row.drift}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </details>
-</section>
+<figure class="lattice-diagram">
+  <div set:html={graphic} />
+  <figcaption class="lattice-diagram__caption">
+    bloom is the interface layer above four independent peers, with seed as the foundation and trellis alongside. A drifted pin is outlined in the warning colour.
+  </figcaption>
+</figure>

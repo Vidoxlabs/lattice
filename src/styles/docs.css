@@ -1,163 +1,178 @@
-/* Documentation portal: a navigation rail beside a reading column, on tokens. */
+/* Docs portal: the synced videsign portal stylesheet does the layout. This file
+   only adds the site's own furniture inside it: the sticky offset under the
+   public header, the compact navigation on phones, and the rail labels. */
 
-.lattice-docs-shell {
-  display: grid;
-  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
-  gap: var(--vi-space-rhythm-6-base);
-  align-items: start;
+.vi-docs-portal {
+  --vi-docs-header-h: 5.5rem;
+  min-block-size: 0;
+  flex: 1;
 }
 
-@media (max-width: 60rem) {
-  .lattice-docs-shell {
-    grid-template-columns: minmax(0, 1fr);
+/* The rail is an opaque reading surface, not glass, and is rounded on the
+   trailing edge only so it reads as attached to the column it serves. */
+.vi-docs-sidebar-rail {
+  padding: var(--vi-space-rhythm-2-base);
+  border-block: 1px solid var(--vi-docs-border-hairline);
+  border-inline-end: 1px solid var(--vi-docs-border-hairline);
+  border-start-start-radius: 0;
+  border-start-end-radius: var(--vi-spacing-layout-radius-standard-base);
+  border-end-start-radius: 0;
+  border-end-end-radius: var(--vi-spacing-layout-radius-standard-base);
+  background-color: var(--vi-docs-surface);
+}
+
+.vi-docs-nav-summary {
+  text-transform: none;
+}
+
+.vi-docs-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vi-space-rhythm-1-base);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vi-docs-nav-link[aria-current='page'] {
+  background-color: var(--vi-docs-surface-elevated);
+  color: var(--vi-docs-ink);
+}
+
+/* Compact navigation, only while the rail is collapsed by the portal query. */
+.docs-mobile-nav {
+  display: none;
+  border: 1px solid var(--vi-docs-border-hairline);
+  border-radius: var(--vi-spacing-layout-radius-standard-base);
+  background-color: var(--vi-docs-surface);
+  padding: var(--vi-space-rhythm-2-base);
+}
+
+.docs-mobile-nav[open] {
+  padding-block-end: var(--vi-space-rhythm-4-base);
+}
+
+.docs-mobile-nav > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--vi-space-gap-compact-default);
+  min-block-size: var(--vi-size-action-min-default);
+}
+
+.docs-mobile-nav-group + .docs-mobile-nav-group {
+  margin-block-start: var(--vi-space-rhythm-3-base);
+  border-block-start: 1px solid var(--vi-docs-border-hairline);
+  padding-block-start: var(--vi-space-rhythm-3-base);
+}
+
+.docs-mobile-nav-group > p {
+  margin: 0 0 var(--vi-space-rhythm-1-base);
+}
+
+@container docs-portal (max-width: 60rem) {
+  .docs-mobile-nav {
+    display: block;
+    margin-block-end: var(--vi-space-rhythm-4-base);
   }
 }
 
-.lattice-docs-nav {
-  position: sticky;
-  top: var(--vi-space-rhythm-4-base);
-  max-block-size: 80dvh;
-  overflow-y: auto;
+/* Breadcrumbs, page state and rail labels. Sentence case throughout. */
+.lattice-docs-heading-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vi-space-gap-compact-default);
 }
 
-.lattice-docs-nav-group {
-  margin-block-end: var(--vi-space-rhythm-2-base);
+.lattice-docs-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vi-space-gap-compact-default);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  color: var(--vi-docs-ink-muted);
 }
 
-.lattice-docs-nav-group summary {
-  cursor: pointer;
-  color: var(--vi-colors-text-content-primary-base);
+.lattice-docs-crumbs a {
+  color: var(--vi-docs-ink);
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+}
+
+.lattice-docs-crumbs a:hover {
+  text-decoration: underline;
+}
+
+.lattice-docs-crumbs [aria-current='page'] {
+  color: var(--vi-docs-ink-muted);
+}
+
+.lattice-docs-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vi-space-gap-compact-default);
+  margin: 0;
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  font-variant-numeric: tabular-nums;
+  color: var(--vi-docs-ink-muted);
+}
+
+.lattice-docs-meta-line > span + span::before {
+  content: '/';
+  margin-inline-end: var(--vi-space-gap-compact-default);
+  color: var(--vi-docs-border-hairline);
+}
+
+.lattice-docs-rail-label {
+  margin: 0;
   font-family: var(--vi-typography-typography-family-mono-base);
   font-size: var(--vi-typography-typography-size-xs-base);
   letter-spacing: var(--vi-typography-typography-tracking-wide-base);
-  text-transform: uppercase;
+  color: var(--vi-docs-ink-muted);
 }
 
-.lattice-docs-count {
-  color: var(--vi-colors-text-content-secondary-base);
-}
-
-.lattice-docs-nav ul {
-  list-style: none;
-  margin: var(--vi-space-rhythm-1-base) 0 0;
-  padding: 0;
-  display: grid;
-  gap: var(--vi-space-rhythm-1-base);
-}
-
-.lattice-docs-nav a {
-  display: block;
-  color: var(--vi-colors-text-content-secondary-base);
-  text-decoration: none;
-  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
-}
-
-.lattice-docs-nav a:hover,
-.lattice-docs-nav a:focus-visible {
-  color: var(--vi-colors-text-content-primary-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-}
-
-.lattice-docs-nav a[aria-current='page'] {
-  color: var(--vi-colors-text-content-primary-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-  box-shadow: inset 2px 0 0 var(--vi-colors-surface-accent-brand-base);
-}
-
-.lattice-docs-main {
-  min-inline-size: 0;
-}
-
-.lattice-docs-article h1 {
-  margin-block-end: var(--vi-space-rhythm-2-base);
-}
-
-.lattice-docs-meta {
-  border-block-start: 1px solid var(--vi-colors-text-content-secondary-base);
-  border-block-end: 1px solid var(--vi-colors-text-content-secondary-base);
-  padding-block: var(--vi-space-rhythm-2-base);
-  margin-block-end: var(--vi-space-rhythm-4-base);
-  display: grid;
-  gap: var(--vi-space-rhythm-2-base);
-}
-
-.lattice-docs-meta p {
+.lattice-docs-rail-meta {
   margin: 0;
+  min-block-size: var(--vi-space-rhythm-4-base);
   font-family: var(--vi-typography-typography-family-mono-base);
   font-size: var(--vi-typography-typography-size-xs-base);
-  color: var(--vi-colors-text-content-secondary-base);
+  color: var(--vi-docs-status-success);
 }
 
-.lattice-docs-meta ol {
-  margin: 0;
-  padding-inline-start: var(--vi-space-rhythm-4-base);
-  color: var(--vi-colors-text-content-secondary-base);
+.vi-docs-toc-link--nested {
+  padding-inline-start: var(--vi-space-rhythm-6-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
 }
 
 .lattice-docs-placeholder {
   border: 1px solid var(--vi-colors-status-indicator-warning-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
-  padding: var(--vi-space-rhythm-2-base);
-}
-
-.lattice-docs-prose {
-  max-inline-size: 72ch;
-}
-
-.lattice-docs-prose pre,
-.lattice-diagram-source {
-  overflow-x: auto;
+  border-radius: var(--vi-spacing-layout-radius-control-base);
   padding: var(--vi-space-rhythm-3-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-  border-radius: var(--vi-layout-radius-control-base, 4px);
+  background: var(--vi-colors-surface-background-tertiary-base);
+  color: var(--vi-colors-text-content-secondary-base);
 }
 
-.lattice-docs-prose code,
-.lattice-diagram-source code {
-  font-family: var(--vi-typography-typography-family-mono-base);
-  font-size: var(--vi-typography-typography-size-xs-base);
+/* Claim labels from the family vocabulary. */
+.lattice-claim-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vi-space-gap-compact-default);
 }
 
-.lattice-docs-prose blockquote {
-  border-inline-start: 2px solid var(--vi-colors-surface-accent-brand-base);
-  margin-block: var(--vi-space-rhythm-3-base);
-  padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-4-base);
-  background: var(--vi-colors-surface-background-secondary-base);
-}
-
-.lattice-docs-prose table {
-  inline-size: 100%;
-  border-collapse: collapse;
-  margin-block: var(--vi-space-rhythm-3-base);
-}
-
-.lattice-docs-prose th,
-.lattice-docs-prose td {
-  border: 1px solid var(--vi-colors-text-content-secondary-base);
-  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
-  text-align: start;
-}
-
-/* Table alignment from the upstream renderer arrives as an attribute, because
-   the content security policy allows no inline style attributes. */
-.lattice-docs-prose [data-align='center'] {
-  text-align: center;
-}
-
-.lattice-docs-prose [data-align='right'],
-.lattice-docs-prose [data-align='end'] {
-  text-align: end;
-}
-
-/* Claim-status badges from the family's vocabulary. */
 .lattice-claim-badge {
-  display: inline-block;
-  padding: 0 var(--vi-space-rhythm-2-base);
-  border-radius: var(--vi-layout-radius-pill-base, 999px);
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem var(--vi-space-rhythm-2-base);
+  border: 1px solid currentColor;
+  border-radius: var(--vi-spacing-layout-radius-full-base);
   font-family: var(--vi-typography-typography-family-mono-base);
   font-size: var(--vi-typography-typography-size-xs-base);
-  border: 1px solid currentColor;
+  font-weight: var(--vi-typography-typography-weight-regular-base);
 }
 
 .lattice-claim-badge[data-claim='implemented'] {
@@ -173,5 +188,5 @@
 }
 
 .lattice-claim-badge[data-claim='observed'] {
-  color: var(--vi-colors-text-content-secondary-base);
+  color: var(--vi-docs-ink-muted);
 }

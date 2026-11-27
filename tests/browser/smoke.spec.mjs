@@ -13,10 +13,11 @@ test('theme persists and navigation and motion controls expose state', async ({ 
   await page.goto('/');
   const root = page.locator('html');
   await expect(root).toHaveAttribute('data-theme', 'dark');
-  await page.getByRole('button', { name: 'Theme' }).click();
+  await page.getByRole('button', { name: 'Switch to light theme' }).click();
   await expect(root).toHaveAttribute('data-theme', 'light');
   await page.reload();
   await expect(root).toHaveAttribute('data-theme', 'light');
+  await expect(page.getByRole('button', { name: 'Switch to dark theme' })).toBeVisible();
   await page.getByRole('button', { name: 'Pause background motion' }).click();
   await expect(root).toHaveAttribute('data-motion', 'paused');
   await page.setViewportSize({ width: 390, height: 844 });

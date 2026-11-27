@@ -3,34 +3,125 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import HeroBillboard from '../components/videsign/hero-billboard.astro';
 import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astro';
+import ActionList from '../components/videsign/action-list.astro';
 import SystemMap from '../components/diagrams/system-map.astro';
+import { monoLabelClasses, sectionHeadingClasses } from '../lib/ui-classes.mjs';
 import { getCatalog } from '../lib/repository-data.mjs';
 const { repositories, vivarium, pinsPending, status } = await getCatalog();
 const product = repositories.find((repository) => repository.name === 'vivarium');
+const systems = vivarium.systems ?? [];
+const drifted = systems.filter((system) => status.vivarium.systems?.[system.name]?.drift === true).length;
+const layerOf = (layer) => systems.filter((system) => system.layer === layer).length;
+const short = (value) => (value ? value.slice(0, 7) : 'unknown');
+const direction = [
+  {
+    href: 'https://github.com/Vidoxlabs/vivarium/blob/main/docs/vision/design-brief.md',
+    title: 'Vision brief',
+    body: 'What Vivarium is for and the direction it is being built toward.',
+    label: 'Read the brief'
+  },
+  {
+    href: 'https://github.com/Vidoxlabs/vivarium/tree/main/docs/product',
+    title: 'Product specifications',
+    body: 'The behaviour each system specifies. Specified, not yet shipped.',
+    label: 'Open the specifications'
+  },
+  {
+    href: 'https://github.com/Vidoxlabs/vivarium/tree/main/docs/adr',
+    title: 'Architecture decisions',
+    body: 'The decisions that constrain the product, with their alternatives.',
+    label: 'Open the decisions'
+  }
+];
 ---
+
 <BaseLayout title="Vivarium | Vidoxlabs" description="Vivarium's product definition, system map and direction.">
-  <HeroBillboard title="Vivarium" lede={product?.summary || 'Vivarium documentation has not synced yet.'}>
-    <p><a href="https://github.com/Vidoxlabs/vivarium">Product umbrella and specifications</a></p>
+  <HeroBillboard
+    title="Vivarium"
+    eyebrow="Product"
+    lede={product?.summary || 'Vivarium documentation has not synced yet.'}
+    primaryHref="https://github.com/Vidoxlabs/vivarium"
+    primaryLabel="Read the product definition"
+    secondaryHref="/repositories"
+    secondaryLabel="Inspect the evidence"
+    factsHref="https://github.com/Vidoxlabs/vivarium/commits"
+    factsLabel="Pins update on every build"
+    factsTitle="What it contains"
+    facts={[
+      { label: 'Systems', value: String(systems.length || 7) },
+      { label: 'Pins', value: pinsPending ? 'Pending' : 'Current' },
+      { label: 'Interface', value: 'bloom' },
+      { label: 'Foundation', value: 'seed' }
+    ]}
+  >
+    <p class="max-w-prose border-t border-border-separator-primary-base pt-rhythm-4-base font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-text-content-secondary-base">
+      Seven public repositories, each with one job, pinned here by commit. Nothing on this page claims a capability is shipped unless its own repository says so.
+    </p>
   </HeroBillboard>
-  <section aria-labelledby="map-title">
-    <div class="lattice-card__meta"><h2 id="map-title">System map</h2><ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} /></div>
-    {pinsPending && <p>Pins pending: the public manifest could not be read in this build.</p>}
-    <SystemMap catalog={{ repositories, vivarium, status }} />
-    <table class="lattice-table">
-      <thead><tr><th>System</th><th>Layer</th><th>Version</th><th>Pinned commit</th><th>Drift</th><th>Role</th></tr></thead>
-      <tbody>{vivarium.systems?.map((system) => {
-        const drift = status.vivarium.systems?.[system.name]?.drift;
-        return <tr><td><a href={`/repositories/${system.name}`}>{system.name}</a></td><td>{system.layer}</td><td>{system.version}</td><td><a href={`https://github.com/Vidoxlabs/${system.name}/commit/${system.commit}`}>{system.commit.slice(0, 7)}</a></td><td>{drift === null ? 'Unknown' : drift ? 'Head differs' : 'Current'}</td><td>{system.role}</td></tr>;
-      })}</tbody>
-    </table>
+
+  <section aria-labelledby="systems-title" class="flex flex-col gap-rhythm-5-base">
+    <div class="flex flex-wrap items-end justify-between gap-gap-compact-default">
+      <div class="flex flex-col gap-gap-dense-default">
+        <p class={monoLabelClasses}>System map</p>
+        <h2 id="systems-title" class={sectionHeadingClasses}>The seven systems and where they sit</h2>
+      </div>
+      <ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} />
+    </div>
+    <p class={`${monoLabelClasses} tabular-nums`}>
+      {layerOf('composer')} interface, {layerOf('peer')} independent peers, {layerOf('floor')} foundation, {layerOf('outside')} alongside
+      {drifted > 0 ? `, ${drifted} pin${drifted === 1 ? '' : 's'} drifted from head` : ', every pin matches the head it was read from'}
+    </p>
+    {pinsPending && <p class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base">Pins pending: the public manifest could not be read in this build.</p>}
+    <div class="overflow-x-auto rounded-layout-radius-standard-base border border-border-separator-primary-base">
+      <table class="lattice-table lattice-table--stack">
+        <thead>
+          <tr><th scope="col">System</th><th scope="col">Layer</th><th scope="col">Version</th><th scope="col">Pinned</th><th scope="col">State</th><th scope="col">Role</th></tr>
+        </thead>
+        <tbody>
+          {systems.map((system) => {
+            const drift = status.vivarium.systems?.[system.name]?.drift;
+            return (
+              <tr data-status-repository={system.name}>
+                <th scope="row" class="font-typography-weight-medium-base text-text-content-primary-base"><a href={`/repositories/${system.name}`} class="underline underline-offset-4">{system.name}</a></th>
+                <td data-label="Layer">{system.layer === 'composer' ? 'interface' : system.layer === 'floor' ? 'foundation' : system.layer === 'outside' ? 'alongside' : 'peer'}</td>
+                <td data-label="Version" class="font-typography-family-mono-base tabular-nums">{system.version ?? 'unreleased'}</td>
+                <td data-label="Pinned" class="font-typography-family-mono-base tabular-nums">{system.commit ? <a href={`https://github.com/Vidoxlabs/${system.name}/commit/${system.commit}`} class="underline underline-offset-4">{short(system.commit)}</a> : 'not pinned'}</td>
+                <td data-label="State">
+                  <span class="inline-flex flex-wrap items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base">
+                    <span class="inline-flex items-center gap-gap-compact-default">
+                      <span aria-hidden="true" class={`h-indicator-dot-base w-indicator-dot-base rounded-layout-radius-full-base ${drift === null || drift === undefined ? 'bg-status-indicator-warning-base' : drift ? 'bg-status-indicator-warning-base' : 'bg-status-indicator-success-base'}`}></span>
+                      <span>{drift === null || drift === undefined ? 'unknown' : drift ? 'head differs' : 'current'}</span>
+                    </span>
+                    <span class="inline-flex items-center gap-gap-compact-default text-text-content-secondary-base">
+                      <span>CI</span>
+                      <span data-status-field="ci" data-ci={status.repositories?.[system.name]?.ciConclusion ?? 'unknown'}>{status.repositories?.[system.name]?.ciConclusion ?? 'unknown'}</span>
+                    </span>
+                  </span>
+                </td>
+                <td data-label="Role" class="text-text-content-secondary-base">{system.role}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+    <details class="lattice-diagram-table">
+      <summary>Show the system map as a diagram</summary>
+      <SystemMap catalog={{ repositories, vivarium, status }} />
+    </details>
   </section>
-  <section aria-labelledby="direction-title">
-    <div class="lattice-card__meta"><h2 id="direction-title">Product direction</h2><ClaimMaturityBadge label="specified" /></div>
-    <p class="lattice-prose">These are direction and specification documents, not claims of shipped behavior.</p>
-    <ul>
-      <li><a href="https://github.com/Vidoxlabs/vivarium/blob/main/docs/vision/design-brief.md">Vision brief: direction</a></li>
-      <li><a href="https://github.com/Vidoxlabs/vivarium/tree/main/docs/product">Product specifications: specified</a></li>
-      <li><a href="https://github.com/Vidoxlabs/vivarium/tree/main/docs/adr">Product architecture decisions</a></li>
-    </ul>
+
+  <section aria-labelledby="direction-title" class="flex flex-col gap-rhythm-5-base border-t border-border-separator-primary-base pt-rhythm-8-base">
+    <div class="flex flex-wrap items-end justify-between gap-gap-compact-default">
+      <div class="flex flex-col gap-gap-dense-default">
+        <p class={monoLabelClasses}>Direction</p>
+        <h2 id="direction-title" class={sectionHeadingClasses}>Where the product is going</h2>
+      </div>
+      <ClaimMaturityBadge label="specified" />
+    </div>
+    <p class="max-w-prose font-typography-family-sans-base text-typography-size-md-base leading-typography-leading-normal-base text-pretty text-text-content-secondary-base">
+      These are direction and specification documents. They describe intended behaviour, not shipped behaviour.
+    </p>
+    <ActionList items={direction} label="Product direction documents" />
   </section>
 </BaseLayout>

@@ -1,0 +1,257 @@
+/* Reading typography for rendered markdown and long-form site pages.
+   The utility layer resets prose to zero, so the cadence lives here, on the
+   same tokens the rest of the site uses. One class, one reading column. */
+
+.lattice-prose {
+  max-inline-size: 72ch;
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-lg-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
+  text-wrap: pretty;
+}
+
+.lattice-prose > :first-child {
+  margin-block-start: 0;
+}
+
+.lattice-prose > * + * {
+  margin-block-start: var(--vi-space-rhythm-4-base);
+}
+
+.lattice-prose h1,
+.lattice-prose h2,
+.lattice-prose h3,
+.lattice-prose h4 {
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-weight: var(--vi-typography-typography-weight-semibold-base);
+  letter-spacing: var(--vi-typography-typography-tracking-tight-base);
+  line-height: var(--vi-typography-typography-leading-tight-base);
+  text-wrap: balance;
+  scroll-margin-block-start: var(--vi-space-rhythm-16-base);
+}
+
+.lattice-prose h1 {
+  font-size: var(--vi-typography-typography-fluid-h1-base);
+  margin-block-end: var(--vi-space-rhythm-4-base);
+}
+
+.lattice-prose h2 {
+  font-size: var(--vi-typography-typography-size-2xl-base);
+  margin-block-start: var(--vi-space-rhythm-10-base);
+}
+
+.lattice-prose h3 {
+  font-size: var(--vi-typography-typography-size-xl-base);
+  margin-block-start: var(--vi-space-rhythm-8-base);
+}
+
+.lattice-prose h4 {
+  font-size: var(--vi-typography-typography-size-md-base);
+  margin-block-start: var(--vi-space-rhythm-6-base);
+}
+
+.lattice-prose h1 + *,
+.lattice-prose h2 + *,
+.lattice-prose h3 + *,
+.lattice-prose h4 + * {
+  margin-block-start: var(--vi-space-rhythm-3-base);
+}
+
+.lattice-prose strong {
+  color: var(--vi-colors-text-content-primary-base);
+  font-weight: var(--vi-typography-typography-weight-semibold-base);
+}
+
+.lattice-prose a {
+  color: var(--vi-colors-text-content-primary-base);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+.lattice-prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.lattice-prose ul,
+.lattice-prose ol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vi-space-rhythm-2-base);
+  padding-inline-start: var(--vi-space-rhythm-6-base);
+}
+
+.lattice-prose ul {
+  list-style: disc;
+}
+
+.lattice-prose ol {
+  list-style: decimal;
+}
+
+.lattice-prose li::marker {
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-prose li > ul,
+.lattice-prose li > ol {
+  margin-block-start: var(--vi-space-rhythm-2-base);
+}
+
+.lattice-prose blockquote {
+  border-inline-start: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-surface-accent-brand-base);
+  padding-inline-start: var(--vi-space-rhythm-4-base);
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-prose blockquote p {
+  font-size: var(--vi-typography-typography-size-md-base);
+}
+
+.lattice-prose code {
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-tertiary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: 0.875em;
+  overflow-wrap: anywhere;
+}
+
+.lattice-prose pre {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  padding: var(--vi-space-rhythm-4-base);
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-primary-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
+  tab-size: 2;
+}
+
+.lattice-prose pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--vi-colors-text-content-primary-base);
+  font-size: inherit;
+  overflow-wrap: normal;
+}
+
+.lattice-prose kbd {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.4375rem;
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-tertiary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-prose hr {
+  border: 0;
+  border-block-start: 1px solid var(--vi-colors-border-separator-primary-base);
+  margin-block: var(--vi-space-rhythm-8-base);
+}
+
+.lattice-prose img {
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-standard-base);
+}
+
+/* Tables scroll inside their own frame rather than break the reading column.
+   The frame carries the border so the table can move under it. */
+.lattice-prose-table {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+}
+
+.lattice-prose table {
+  inline-size: 100%;
+  min-inline-size: 32rem;
+  border-collapse: collapse;
+  font-size: var(--vi-typography-typography-size-sm-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.lattice-prose-table th:first-child,
+.lattice-prose-table td:first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  background: var(--vi-colors-surface-background-primary-base);
+}
+
+.lattice-prose thead th {
+  border-block-end: 1px solid var(--vi-colors-border-separator-primary-base);
+  color: var(--vi-colors-text-content-secondary-base);
+  font-weight: var(--vi-typography-typography-weight-medium-base);
+  text-align: start;
+}
+
+.lattice-prose th,
+.lattice-prose td {
+  padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-3-base);
+  border-block-end: 1px solid var(--vi-colors-border-separator-primary-base);
+  text-align: start;
+  vertical-align: top;
+}
+
+.lattice-prose-table tbody tr:last-child th,
+.lattice-prose-table tbody tr:last-child td {
+  border-block-end: 0;
+}
+
+.lattice-prose [data-align='center'] {
+  text-align: center;
+}
+
+.lattice-prose [data-align='right'],
+.lattice-prose [data-align='end'] {
+  text-align: end;
+}
+
+/* Copy affordance for every code block, added by the external script. */
+.code-block {
+  position: relative;
+  margin-block-start: var(--vi-space-rhythm-4-base);
+}
+
+.code-block pre {
+  margin-block-start: 0;
+  padding-block-start: var(--vi-space-rhythm-8-base);
+}
+
+.code-copy {
+  position: absolute;
+  inset-block-start: var(--vi-space-rhythm-2-base);
+  inset-inline-end: var(--vi-space-rhythm-2-base);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--vi-size-action-min-default);
+  min-inline-size: var(--vi-size-action-min-default);
+  padding-inline: var(--vi-space-inset-operator-default);
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.code-copy:hover {
+  border-color: var(--vi-colors-text-content-secondary-base);
+  color: var(--vi-colors-text-content-primary-base);
+}

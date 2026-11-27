@@ -48,10 +48,11 @@ function neutralize(text) {
 function publishStylesheet(name) {
   const path = resolve('src/styles/videsign', name);
   const { text, used } = neutralize(readFileSync(path, 'utf8'));
+  const stripped = text.replace(/\s*\([A-Z][A-Za-z-]* pattern\)/g, '');
   const header = used.length
     ? `/* lattice publish filter: private tokens renamed to neutral aliases (${used.join(', ')}) by scripts/sync-videsign.mjs; digest keys live in scripts/scrub-needles.json. */\n`
     : '/* lattice publish filter: no private tokens were present. */\n';
-  writeFileSync(path, header + text);
+  writeFileSync(path, header + stripped);
 }
 
 const generated = spawnSync('npm', ['run', 'tokens'], { cwd: packageRoot, stdio: 'inherit' });
@@ -71,10 +72,11 @@ if (sync.status !== 0) process.exit(sync.status ?? 1);
 
 // Only the artifacts this site imports are published. The upstream package
 // also generates data files that carry private vocabulary; they stay behind.
-for (const name of ['themes.css', 'specimen-layouts.css', 'core-components.css', 'family-surfaces.css', 'vi-orbital-hero.css']) {
+for (const name of ['themes.css', 'specimen-layouts.css', 'core-components.css', 'family-surfaces.css', 'vi-orbital-hero.css', 'docs-portal.css']) {
   copyFileSync(resolve(packageRoot, 'dist', name), resolve(output, name));
 }
-for (const name of ['tokens.css', 'glass.css', 'themes.css', 'specimen-layouts.css', 'core-components.css', 'family-surfaces.css', 'vi-orbital-hero.css']) {
+copyFileSync(resolve(packageRoot, 'dist/tailwind.config.js'), resolve(output, 'tailwind.config.cjs'));
+for (const name of ['tokens.css', 'glass.css', 'themes.css', 'specimen-layouts.css', 'core-components.css', 'family-surfaces.css', 'vi-orbital-hero.css', 'docs-portal.css', 'tailwind.config.cjs']) {
   publishStylesheet(name);
 }
 
@@ -109,4 +111,4 @@ const sums = readdirSync(brandOutput, { withFileTypes: true })
   .map((name) => `${createHash('sha256').update(readFileSync(resolve(brandOutput, name))).digest('hex')}  ${name}`);
 writeFileSync(resolve(brandOutput, 'SHA256SUMS'), `${sums.join('\n')}\n`);
 writeFileSync(resolve(brandOutput, 'PIN'), `Vidoxlabs/videsign ${pin}\nVidoxlabs/.github ${organizationPin}\n`);
-console.log(`Synced videsign at ${pin}, published 7 filtered stylesheets, 2 same-origin hero scripts and ${brandFiles.length + 2} brand assets.`);
+console.log(`Synced videsign at ${pin}, published 9 filtered artifacts, 2 same-origin hero scripts and ${brandFiles.length + 2} brand assets.`);

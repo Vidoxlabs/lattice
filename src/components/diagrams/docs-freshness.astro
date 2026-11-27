@@ -1,20 +1,40 @@
 ---
 import { renderDocsFreshness } from '../../lib/diagrams/docs-freshness.mjs';
+import { monoLabelClasses, sectionHeadingClasses } from '../../lib/ui-classes.mjs';
 const { catalog } = Astro.props;
 const { graphic, rows } = renderDocsFreshness(catalog);
+const pulled = rows.filter((row) => row.state === 'fresh').length;
 ---
-<section aria-labelledby="docs-freshness-heading">
-  <div class="lattice-card__meta"><h2 id="docs-freshness-heading">Documentation freshness</h2></div>
-  <div class="lattice-diagram" set:html={graphic} />
-  <details class="lattice-diagram-table">
-    <summary>Read freshness as a table</summary>
-    <table>
-      <thead><tr><th>Repository</th><th>Synced head</th><th>Repository head</th><th>State</th></tr></thead>
+<section aria-labelledby="docs-freshness-heading" class="flex flex-col gap-rhythm-5-base">
+  <div class="flex flex-wrap items-end justify-between gap-gap-compact-default">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>Documentation provenance</p>
+      <h2 id="docs-freshness-heading" class={sectionHeadingClasses}>Documentation freshness</h2>
+    </div>
+    <p class={`${monoLabelClasses} tabular-nums`}>{pulled} of {rows.length} synced at the repository head</p>
+  </div>
+  <div class="overflow-x-auto rounded-layout-radius-standard-base border border-border-separator-primary-base">
+    <table class="lattice-table lattice-table--stack">
+      <thead><tr><th scope="col">Repository</th><th scope="col">Synced head</th><th scope="col">Repository head</th><th scope="col">State</th></tr></thead>
       <tbody>
         {rows.map((row) => (
-          <tr data-fresh={row.state}><td>{row.name}</td><td>{row.synced}</td><td>{row.head}</td><td>{row.state}</td></tr>
+          <tr data-fresh={row.state}>
+            <th scope="row" class="font-typography-weight-medium-base text-text-content-primary-base">{row.name}</th>
+            <td data-label="Synced" class="font-typography-family-mono-base">{row.synced}</td>
+            <td data-label="Head" class="font-typography-family-mono-base">{row.head}</td>
+            <td data-label="State">
+              <span class="inline-flex items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base">
+                <span aria-hidden="true" class={`h-indicator-dot-base w-indicator-dot-base rounded-layout-radius-full-base ${row.state === 'fresh' ? 'bg-status-indicator-success-base' : row.state === 'stale' ? 'bg-status-indicator-error-base' : 'bg-status-indicator-warning-base'}`}></span>
+                {row.state}
+              </span>
+            </td>
+          </tr>
         ))}
       </tbody>
     </table>
+  </div>
+  <details class="lattice-diagram-table">
+    <summary>Show the freshness diagram</summary>
+    <div class="lattice-diagram" set:html={graphic} />
   </details>
 </section>

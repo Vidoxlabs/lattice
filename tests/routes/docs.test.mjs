@@ -6,7 +6,9 @@ test('the documentation portal builds from the verified corpus', () => {
   assert.ok(existsSync('dist/client/docs/index.html'), 'the docs index is built');
   assert.ok(existsSync('dist/client/docs/seed/architecture/index.html'), 'a synced system page is built');
   const html = readFileSync('dist/client/docs/seed/architecture/index.html', 'utf8');
-  assert.match(html, /Source: <a[^>]*>seed at [0-9a-f]{7}<\/a>/);
+  assert.match(html, /Document path[\s\S]*<a href="\/repositories\/seed">seed<\/a>/, 'the breadcrumb names the source repository');
+  assert.match(html, /rev [0-9a-f]{7}/, 'the header states the revision the page was rendered from');
+  assert.match(html, /href="https:\/\/github\.com\/Vidoxlabs\/seed\/blob\/[0-9a-f]{7,40}\//, 'the source link names the repository and revision');
   assert.match(html, /Edit upstream/);
   assert.match(html, /href="\/docs\/seed\/contracts\/run-model"/, 'relative corpus links are rewritten to site routes');
   assert.doesNotMatch(html, /<script(?![^>]*src=)[^>]*>[^<]+<\/script>/, 'no inline scripts in rendered documentation');

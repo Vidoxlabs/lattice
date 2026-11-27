@@ -42,12 +42,10 @@ test('the system map renders every layer with accessible structure', () => {
 });
 
 test('the pipeline flow labels each stage with its build source', () => {
-  const { graphic, rows } = renderPipelineFlow(pipeline, { freshCount: 3, systemCount: 7 });
-  assert.match(graphic, /<title id="lattice-pipeline-title">/);
-  assert.match(graphic, /<desc id="lattice-pipeline-desc">/);
-  assert.equal(rows.length, 6);
-  assert.match(rows.find((row) => row.stage === 'docs-status').state, /gathered by the site/);
-  assert.ok(!/#[0-9a-f]{6}|rgb\(/i.test(graphic), 'the graphic must carry no literal colours');
+  const { stages, rows } = renderPipelineFlow(pipeline, { freshCount: 3, systemCount: 7 });
+  assert.equal(stages.length, 6);
+  assert.ok(stages.every((stage) => stage.id && stage.label && stage.state));
+  assert.match(rows.find((row) => row.id === 'docs-status').state, /committed snapshot|Gathered by the site/);
 });
 
 test('the repository activity timeline records each sourced event', () => {
