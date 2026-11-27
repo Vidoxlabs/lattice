@@ -1,34 +1,42 @@
 import { test, expect } from '@playwright/test';
 
 // At phone widths the launcher is a fixed button over the page. Scrolled to
-// the bottom, it must not sit on top of any footer link.
+// the bottom, it must not sit on top of any footer link. Both boxes are read
+// in one layout pass, after the scroll has settled, so engines that shift
+// layout late (web fonts, islands) cannot skew one box against the other.
 const pages = ['/', '/about', '/vivarium', '/repositories', '/repositories/seed', '/docs', '/docs/seed/architecture', '/security', '/this-page-does-not-exist'];
-
-function overlap(a, b) {
-  const across = Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
-  const down = Math.max(0, Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y));
-  return across * down;
-}
 
 for (const path of pages) {
   test(`the ask launcher clears every footer link on ${path}`, async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto(path);
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+      window.scrollTo(0, document.body.scrollHeight);
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      window.scrollTo(0, document.body.scrollHeight);
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    const result = await page.evaluate(() => {
+      const launcher = document.querySelector('[data-chat-launcher]');
+      if (!launcher) return { covered: [], links: 0 };
+      const box = launcher.getBoundingClientRect();
+      const covered = [];
+      let links = 0;
+      for (const link of document.querySelectorAll('footer a, [class*="footer"] a')) {
+        const target = link.getBoundingClientRect();
+        if (target.width === 0 || target.height === 0) continue;
+        links += 1;
+        const across = Math.min(box.right, target.right) - Math.max(box.left, target.left);
+        const down = Math.min(box.bottom, target.bottom) - Math.max(box.top, target.top);
+        // Half a pixel of tolerance: a sub-pixel kiss is not a covering.
+        if (across > 0.5 && down > 0.5) covered.push(link.textContent.trim());
+      }
+      return { covered, links };
+    });
+    expect(result.links, 'the page has footer links to check').toBeGreaterThan(0);
     const launcher = page.locator('[data-chat-launcher]');
     await expect(launcher).toBeVisible();
-    const launcherBox = await launcher.boundingBox();
-    expect(launcherBox).not.toBeNull();
-    const links = page.locator('footer a, [class*="footer"] a');
-    const count = await links.count();
-    expect(count, 'the page has footer links to check').toBeGreaterThan(0);
-    for (let index = 0; index < count; index++) {
-      const link = links.nth(index);
-      if (!(await link.isVisible())) continue;
-      const linkBox = await link.boundingBox();
-      if (!linkBox) continue;
-      const covered = overlap(launcherBox, linkBox);
-      expect(covered, `the launcher covers the footer link "${(await link.textContent())?.trim()}"`).toBe(0);
-    }
+    expect(result.covered, `the launcher covers the footer link(s): ${result.covered.join(', ')}`).toEqual([]);
   });
 }
