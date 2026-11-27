@@ -9,6 +9,7 @@ test('every docs link on a repository page shows a label', () => {
   const html = readFileSync(join('dist', 'client', 'repositories', 'seed', 'index.html'), 'utf8');
   const links = [...html.matchAll(/<a\b[^>]*href="(\/docs\/[^"]*)"[^>]*>([\s\S]*?)<\/a>/g)];
   assert.ok(links.length > 0, 'The built repository page has no docs links to check.');
-  const empty = links.filter(([, body]) => body.replace(/<[^>]+>/g, '').trim() === '');
+  const labels = links.map(([, , body]) => /<span class="truncate">([^<]*)<\/span>/.exec(body)?.[1] ?? '');
+  const empty = links.filter((_, index) => labels[index].trim() === '');
   assert.deepEqual(empty.map(([full]) => full), [], 'A docs link on the repository page has empty text.');
 });
