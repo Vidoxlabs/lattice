@@ -1,0 +1,373 @@
+/* Chat: a fixed launcher and one non-modal dialog, glass shell over solid
+   message cards. Every measurement comes from a token. */
+
+.lattice-chat-launcher {
+  position: fixed;
+  inset-block-end: calc(var(--vi-space-rhythm-4-base) + env(safe-area-inset-bottom, 0px));
+  inset-inline-end: calc(var(--vi-space-rhythm-4-base) + env(safe-area-inset-right, 0px));
+  z-index: 30;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vi-space-gap-compact-default);
+  min-block-size: var(--vi-size-action-min-default);
+  padding-block: var(--vi-space-rhythm-2-base);
+  padding-inline: var(--vi-space-rhythm-4-base) var(--vi-space-rhythm-6-base);
+  overflow: hidden;
+  border: 1px solid var(--vi-colors-surface-accent-brand-base);
+  border-radius: var(--vi-spacing-layout-radius-full-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  font-weight: var(--vi-typography-typography-weight-medium-base);
+}
+
+.lattice-chat-launcher:hover {
+  background: var(--vi-colors-surface-background-tertiary-base);
+}
+
+.lattice-chat-launcher-mark {
+  inline-size: var(--vi-size-indicator-brand-base);
+  block-size: var(--vi-size-indicator-brand-base);
+  flex-shrink: 0;
+}
+
+.lattice-chat-launcher-label {
+  white-space: nowrap;
+}
+
+/* The five-bar rule as a decoration along the launcher's foot. */
+.lattice-chat-fivebar {
+  position: absolute;
+  inset-inline: var(--vi-space-rhythm-4-base);
+  inset-block-end: var(--vi-space-rhythm-1-base);
+  display: flex;
+  gap: var(--vi-space-rhythm-1-base);
+  block-size: var(--vi-size-indicator-fivebar-base);
+}
+
+.lattice-chat-fivebar > span {
+  flex: 1;
+  border-radius: var(--vi-spacing-layout-radius-full-base);
+}
+
+.lattice-chat-fivebar > span:nth-child(1) {
+  background: var(--vi-colors-persona-accent-brand-base);
+}
+
+.lattice-chat-fivebar > span:nth-child(2) {
+  background: var(--vi-colors-persona-accent-family-a-base);
+}
+
+.lattice-chat-fivebar > span:nth-child(3) {
+  background: var(--vi-colors-persona-accent-family-b-base);
+}
+
+.lattice-chat-fivebar > span:nth-child(4) {
+  background: var(--vi-colors-persona-accent-family-c-base);
+}
+
+.lattice-chat-fivebar > span:nth-child(5) {
+  background: var(--vi-colors-persona-accent-family-d-base);
+}
+
+.lattice-chat-surface {
+  position: fixed;
+  inset-block-end: calc(var(--vi-space-rhythm-16-base) + var(--vi-space-rhythm-5-base) + env(safe-area-inset-bottom, 0px));
+  inset-inline-end: var(--vi-space-rhythm-4-base);
+  z-index: 31;
+  inline-size: min(100%, var(--vi-size-layout-width-conversation-base));
+  max-block-size: min(var(--vi-space-rhythm-macro-base) * 6, calc(100dvh - var(--vi-space-rhythm-24-base)));
+}
+
+.lattice-chat-surface[hidden] {
+  display: none;
+}
+
+.lattice-chat-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vi-space-rhythm-3-base);
+  padding: var(--vi-space-rhythm-4-base);
+  max-block-size: inherit;
+  overflow: hidden;
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+}
+
+.lattice-chat-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--vi-space-gap-compact-default);
+  padding-block-end: var(--vi-space-rhythm-3-base);
+  border-block-end: 1px solid var(--vi-colors-border-separator-primary-base);
+}
+
+.lattice-chat-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--vi-space-gap-compact-default);
+  min-inline-size: 0;
+}
+
+.lattice-chat-mark {
+  inline-size: var(--vi-size-indicator-brand-base);
+  block-size: var(--vi-size-indicator-brand-base);
+  flex-shrink: 0;
+}
+
+.lattice-chat-assistant {
+  margin: 0;
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  font-weight: var(--vi-typography-typography-weight-semibold-base);
+  color: var(--vi-colors-text-content-primary-base);
+}
+
+.lattice-chat-sub {
+  margin: 0;
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  color: var(--vi-colors-text-content-secondary-base);
+}
+
+.lattice-chat-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--vi-size-action-min-default);
+  min-inline-size: var(--vi-size-action-min-default);
+  margin: calc(var(--vi-space-rhythm-2-base) * -1) calc(var(--vi-space-rhythm-2-base) * -1) 0 0;
+  border: 0;
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: none;
+  color: var(--vi-colors-text-content-secondary-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+}
+
+.lattice-chat-close:hover {
+  background: var(--vi-colors-surface-background-tertiary-base);
+  color: var(--vi-colors-text-content-primary-base);
+}
+
+.lattice-chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: var(--vi-space-rhythm-3-base);
+  flex: 1;
+  min-block-size: 0;
+  max-block-size: 55dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.lattice-chat-empty,
+.lattice-chat-disclosure {
+  margin: 0;
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
+}
+
+.lattice-chat-disclosure {
+  padding-block-start: var(--vi-space-rhythm-2-base);
+  border-block-start: 1px solid var(--vi-colors-border-separator-primary-base);
+}
+
+.lattice-chat-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vi-space-gap-compact-default);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lattice-chat-starters button {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--vi-size-action-min-default);
+  padding-inline: var(--vi-space-inset-operator-default);
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-full-base);
+  background: var(--vi-colors-surface-background-primary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  text-align: start;
+}
+
+.lattice-chat-starters button:hover {
+  border-color: var(--vi-colors-text-content-secondary-base);
+  background: var(--vi-colors-surface-background-tertiary-base);
+}
+
+.lattice-chat-visitor {
+  align-self: flex-end;
+  max-inline-size: 85%;
+  margin: 0;
+  padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-3-base);
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-tertiary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
+}
+
+.lattice-chat-reply {
+  margin: 0;
+  padding: var(--vi-space-rhythm-2-base) var(--vi-space-rhythm-3-base);
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-secondary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
+}
+
+.lattice-chat-reply[data-turn-state='streaming'] {
+  border-inline-start: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-status-indicator-info-base);
+}
+
+.lattice-chat-reply[data-turn-state='failed'] {
+  border-inline-start: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-status-indicator-error-base);
+}
+
+.lattice-chat-tool {
+  margin: 0;
+  padding: var(--vi-space-rhythm-1-base) var(--vi-space-rhythm-2-base);
+  border: 1px dashed var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-chat-citations {
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-xs-base);
+}
+
+.lattice-chat-citations summary {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--vi-size-action-min-default);
+  color: var(--vi-colors-text-content-secondary-base);
+  font-family: var(--vi-typography-typography-family-mono-base);
+  cursor: pointer;
+}
+
+.lattice-chat-citations ul {
+  margin: 0;
+  padding-inline-start: var(--vi-space-rhythm-4-base);
+}
+
+.lattice-chat-question {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--vi-space-gap-compact-default);
+}
+
+.lattice-chat-question input {
+  min-block-size: var(--vi-size-action-min-default);
+  padding-inline: var(--vi-space-inset-operator-default);
+  border: 1px solid var(--vi-colors-border-separator-primary-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-primary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+}
+
+.lattice-chat-question button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vi-space-gap-compact-default);
+  min-block-size: var(--vi-size-action-min-default);
+  min-inline-size: var(--vi-size-action-min-default);
+  padding-inline: var(--vi-space-rhythm-4-base);
+  border: 1px solid var(--vi-colors-surface-accent-brand-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+  background: var(--vi-colors-surface-background-tertiary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  font-weight: var(--vi-typography-typography-weight-medium-base);
+}
+
+.lattice-chat-question button:hover {
+  background: var(--vi-colors-surface-background-secondary-base);
+}
+
+/* The full chat page reuses the same surface without the fixed frame. */
+.lattice-chat-page .lattice-chat-surface {
+  position: static;
+  inset: auto;
+  inline-size: 100%;
+  max-block-size: none;
+}
+
+.lattice-chat-page .lattice-chat-body {
+  max-block-size: none;
+  min-block-size: var(--vi-space-rhythm-24-base);
+}
+
+.lattice-chat-page .lattice-chat-log {
+  max-block-size: none;
+  min-block-size: var(--vi-space-rhythm-24-base);
+}
+
+@media (max-width: 40rem) {
+  .lattice-chat-launcher {
+    inline-size: var(--vi-size-action-min-default);
+    block-size: var(--vi-size-action-min-default);
+    padding: 0;
+    justify-content: center;
+  }
+
+  .lattice-chat-launcher-label,
+  .lattice-chat-fivebar {
+    display: none;
+  }
+
+  .lattice-chat-surface {
+    inset-inline: 0;
+    inset-block-end: 0;
+    inline-size: 100%;
+    max-block-size: 88dvh;
+    border-start-start-radius: var(--vi-spacing-layout-radius-glass-base);
+    border-start-end-radius: var(--vi-spacing-layout-radius-glass-base);
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .lattice-chat-body {
+    border-start-start-radius: var(--vi-spacing-layout-radius-standard-base);
+    border-start-end-radius: var(--vi-spacing-layout-radius-standard-base);
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    padding-block-end: calc(var(--vi-space-rhythm-4-base) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .lattice-chat-log {
+    max-block-size: 55dvh;
+  }
+
+  .lattice-chat-send-label {
+    display: none;
+  }
+
+  [data-videsign='site-footer'] {
+    padding-block-end: calc(var(--vi-space-rhythm-20-base) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+html[data-motion='paused'] .lattice-chat-reply,
+html[data-motion='paused'] .lattice-chat-tool {
+  transition: none;
+}

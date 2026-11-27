@@ -1,0 +1,22 @@
+---
+import { renderRepositoryActivity } from '../../lib/diagrams/repository-activity.mjs';
+import { monoLabelClasses, sectionHeadingClasses } from '../../lib/ui-classes.mjs';
+const { repository } = Astro.props;
+const { graphic, rows } = renderRepositoryActivity(repository);
+---
+<section aria-labelledby="activity-timeline-heading" class="flex flex-col gap-rhythm-4-base">
+  <div class="flex flex-col gap-gap-dense-default">
+    <p class={monoLabelClasses}>Recorded history</p>
+    <h2 id="activity-timeline-heading" class={sectionHeadingClasses}>Activity timeline</h2>
+  </div>
+  <div class="overflow-x-auto rounded-layout-radius-standard-base border border-border-separator-primary-base">
+    <table class="lattice-table lattice-table--stack">
+      <thead><tr><th scope="col">Event</th><th scope="col">Recorded value</th></tr></thead>
+      <tbody>{rows.map((row) => <tr><th scope="row" class="font-typography-weight-medium-base text-text-content-primary-base">{row.event}</th><td data-label="Recorded" class="font-typography-family-mono-base tabular-nums">{row.value}</td></tr>)}</tbody>
+    </table>
+  </div>
+  <details class="lattice-diagram-table">
+    <summary>Show the timeline diagram</summary>
+    <div class="lattice-diagram" set:html={graphic} />
+  </details>
+</section>

@@ -1,0 +1,66 @@
+name: deploy
+
+# Deploys the output that a `check` run on the default branch verified. It
+# follows a push to the default branch, the daily schedule, a manual run and the
+# documentation repository's dispatch, and it publishes the exact artifact that
+# run produced. It stays inert until both account secrets exist in the
+# production environment, which is limited to the default branch.
+
+on:
+  workflow_run:
+    workflows: [check]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: deploy
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      contains(fromJSON('["push","schedule","workflow_dispatch","repository_dispatch"]'), github.event.workflow_run.event)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: lattice-dist
+          # The upload stores the contents of the single dist directory at the
+          # artifact root, so the download path is what recreates the layout the
+          # deploy configuration expects: dist/client and dist/server.
+          path: dist
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Guard the verified output
+        run: |
+          test -f dist/server/wrangler.json || { echo "::error::The verified artifact has no dist/server/wrangler.json, so there is no deploy configuration to publish."; exit 1; }
+          test -d dist/client || { echo "::error::The verified artifact has no dist/client, so the static assets are missing."; exit 1; }
+      - name: Deploy the verified output when both account secrets are present
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "${CLOUDFLARE_API_TOKEN}" ] || [ -z "${CLOUDFLARE_ACCOUNT_ID}" ]; then
+            echo "::notice title=Deploy skipped::The account token and the account identifier are not both set in the production environment, so nothing was published. SETUP.md section 2 carries the owner step."
+            exit 0
+          fi
+          npx wrangler deploy --config dist/server/wrangler.json

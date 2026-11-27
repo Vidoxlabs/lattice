@@ -1,0 +1,38 @@
+---
+import PublicRepoCard from './public-repo-card.astro';
+import { buttonClasses, monoLabelClasses, sectionHeadingClasses } from '../../lib/ui-classes.mjs';
+const { repositories = [] } = Astro.props;
+const kinds = ['system', 'umbrella', 'docs', 'design', 'site'];
+const inputClasses = 'min-h-action-min-default w-full rounded-layout-radius-control-base border border-border-separator-primary-base bg-surface-background-primary-base px-inset-operator-default font-typography-family-sans-base text-typography-size-sm-base text-text-content-primary-base placeholder:text-text-content-secondary-base';
+---
+<section data-videsign="filterable-catalog-grid" aria-labelledby="catalog-grid-heading" class="flex flex-col gap-rhythm-5-base">
+  <div class="flex flex-wrap items-end justify-between gap-gap-compact-default">
+    <div class="flex flex-col gap-gap-dense-default">
+      <p class={monoLabelClasses}>Public catalog</p>
+      <h2 id="catalog-grid-heading" class={sectionHeadingClasses}>Every public repository</h2>
+    </div>
+    <p role="status" aria-live="polite" class={`${monoLabelClasses} tabular-nums`} data-repository-count>Showing {repositories.length} of {repositories.length} repositories</p>
+  </div>
+  <form aria-label="Filter repositories" data-repository-filters class="flex flex-col gap-gap-compact-default border-y border-border-separator-primary-base py-rhythm-4-base md:flex-row md:items-end">
+    <div class="flex flex-1 flex-col gap-gap-dense-default">
+      <label for="repository-search" class={monoLabelClasses}>Search</label>
+      <input id="repository-search" type="search" name="q" placeholder="Search name or summary" autocomplete="off" data-repository-search-input class={inputClasses} />
+    </div>
+    <div class="flex flex-col gap-gap-dense-default md:w-layout-width-sidebar-base">
+      <label for="repository-kind" class={monoLabelClasses}>Kind</label>
+      <select id="repository-kind" name="kind" data-repository-filter class={inputClasses}>
+        <option value="all">All kinds</option>
+        {kinds.map((kind) => <option value={kind}>{kind}</option>)}
+      </select>
+    </div>
+    <button type="reset" class={buttonClasses.secondary} data-repository-reset>Reset filters</button>
+  </form>
+  <div class="grid grid-cols-1 items-stretch gap-rhythm-4-base md:grid-cols-2 xl:grid-cols-3" data-repository-grid>
+    {repositories.map((repository) => <PublicRepoCard repository={repository} />)}
+  </div>
+  <div hidden data-repository-empty class="flex flex-col items-center gap-gap-comfortable-default rounded-layout-radius-standard-base border border-dashed border-border-separator-primary-base p-layout-padding-large-base">
+    <p class="font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base">No repositories match these filters.</p>
+    <button type="button" class={buttonClasses.ghost} data-repository-empty-reset>Reset filters</button>
+  </div>
+  <script src="../../scripts/repository-filters.mjs"></script>
+</section>

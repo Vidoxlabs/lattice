@@ -1,0 +1,4 @@
+---
+const { label = 'observed' } = Astro.props;
+---
+<span data-videsign="claim-maturity-badge" data-claim={label} class="inline-flex min-h-action-min-default shrink-0 items-center gap-gap-compact-default rounded-layout-radius-full-base bg-surface-background-tertiary-base px-inset-operator-default font-typography-family-mono-base text-typography-size-xs-base text-text-content-primary-base"><span aria-hidden="true" class={`h-indicator-dot-base w-indicator-dot-base rounded-layout-radius-full-base ${label === 'observed' || label === 'implemented' ? 'bg-status-indicator-success-base' : label === 'specified' ? 'bg-status-indicator-info-base' : 'bg-status-indicator-warning-base'}`}></span>{label}</span>

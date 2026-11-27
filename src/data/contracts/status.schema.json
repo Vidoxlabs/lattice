@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vidoxlabs.com/schemas/repository-status.schema.json",
+  "title": "Repository status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "gatheredBy", "repositories", "vivarium"],
+  "properties": {
+    "version": { "const": 1 },
+    "gatheredBy": { "enum": ["docs", "site", "snapshot"] },
+    "repositories": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/definitions/repository" }
+    },
+    "vivarium": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pinsPending", "systems"],
+      "properties": {
+        "pinsPending": { "type": "boolean" },
+        "systems": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/definitions/pin" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "nullableString": { "type": ["string", "null"] },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["head", "lastPushAt", "ciConclusion", "openPrCount", "latestRelease", "packageVersion", "docsFreshness", "testTotals", "unknownFields"],
+      "properties": {
+        "head": { "$ref": "#/definitions/nullableString" },
+        "lastPushAt": { "$ref": "#/definitions/nullableString" },
+        "ciConclusion": { "type": "string", "minLength": 1 },
+        "openPrCount": { "type": ["integer", "null"], "minimum": 0 },
+        "latestRelease": { "$ref": "#/definitions/nullableString" },
+        "packageVersion": { "$ref": "#/definitions/nullableString" },
+        "docsFreshness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["syncedHead", "repositoryHead", "fresh"],
+          "properties": {
+            "syncedHead": { "$ref": "#/definitions/nullableString" },
+            "repositoryHead": { "$ref": "#/definitions/nullableString" },
+            "fresh": { "type": ["boolean", "null"] }
+          }
+        },
+        "testTotals": { "type": "string" },
+        "unknownFields": { "type": "array", "items": { "type": "string" }, "uniqueItems": true }
+      }
+    },
+    "pin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pinnedCommit", "repositoryHead", "drift"],
+      "properties": {
+        "pinnedCommit": { "$ref": "#/definitions/nullableString" },
+        "repositoryHead": { "$ref": "#/definitions/nullableString" },
+        "drift": { "type": ["boolean", "null"] }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+name: Documentation rendering issue
+description: Report missing, stale or incorrectly rendered upstream documentation
+labels: [documentation]
+body:
+  - type: input
+    id: source
+    attributes:
+      label: Upstream source
+      description: Repository and file path, not a copied replacement.
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Rendering problem
+    validations:
+      required: true
+  - type: checkboxes
+    id: ownership
+    options:
+      - label: This is a lattice rendering issue, not a request to edit synced prose here.
+        required: true

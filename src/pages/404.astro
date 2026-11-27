@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ActionList from '../components/videsign/action-list.astro';
+import FiveBarRule from '../components/videsign/five-bar-rule.astro';
+import { ledeClasses, monoLabelClasses } from '../lib/ui-classes.mjs';
+const destinations = [
+  { title: 'Vivarium overview', body: 'Start from the product and what it is for.', href: '/', label: 'Home' },
+  { title: 'Documentation', body: 'Every rendered page, from the verified corpus.', href: '/docs', label: 'Docs' },
+  { title: 'Repositories', body: 'The public catalog with its recorded status.', href: '/repositories', label: 'Catalog' },
+  { title: 'Report a broken route', body: 'Open an issue on the site repository.', href: 'https://github.com/Vidoxlabs/lattice/issues/new/choose', label: 'Issue tracker' }
+];
+---
+<BaseLayout title="Page not found | Vidoxlabs">
+  <section aria-labelledby="not-found-title" class="flex flex-col gap-gap-comfortable-default py-rhythm-8-base">
+    <p class={monoLabelClasses}>Error 404</p>
+    <h1 id="not-found-title" class="font-typography-family-sans-base text-typography-size-4xl-base lg:text-typography-size-5xl-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base leading-typography-leading-tight-base text-balance text-text-content-primary-base">Page not found</h1>
+    <FiveBarRule />
+    <p class={ledeClasses}>That route does not exist. The documentation may have moved upstream, or the link may be incorrect.</p>
+  </section>
+  <section aria-labelledby="destinations-title" class="flex flex-col gap-rhythm-5-base">
+    <h2 id="destinations-title" class="font-typography-family-sans-base text-typography-size-2xl-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base text-text-content-primary-base">Where you can go instead</h2>
+    <ActionList items={destinations} label="Suggested destinations" />
+  </section>
+</BaseLayout>

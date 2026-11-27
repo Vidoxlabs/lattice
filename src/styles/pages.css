@@ -1,0 +1,107 @@
+/* Base type for pages that are not a rendered document, plus the one table the
+   site still writes by hand. Everything else is composed from the utility
+   classes in `src/lib/ui-classes.mjs`. */
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-weight: var(--vi-typography-typography-weight-semibold-base);
+  letter-spacing: var(--vi-typography-typography-tracking-tight-base);
+  line-height: var(--vi-typography-typography-leading-tight-base);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--vi-typography-typography-size-4xl-base);
+}
+
+h2 {
+  font-size: var(--vi-typography-typography-size-2xl-base);
+}
+
+h3 {
+  font-size: var(--vi-typography-typography-size-xl-base);
+}
+
+.lattice-table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-sm-base);
+  font-variant-numeric: tabular-nums;
+}
+
+.lattice-table th,
+.lattice-table td {
+  padding: var(--vi-space-rhythm-3-base);
+  border-block-end: 1px solid var(--vi-colors-border-separator-primary-base);
+  text-align: start;
+  vertical-align: top;
+}
+
+.lattice-table thead th {
+  color: var(--vi-colors-text-content-secondary-base);
+  font-weight: var(--vi-typography-typography-weight-medium-base);
+}
+
+.lattice-table tbody tr:hover {
+  background: var(--vi-colors-surface-background-secondary-base);
+}
+
+/* Below the phone breakpoint a wide table becomes one block per row, so no
+   cell is clipped and no row grows to a screenful of wrapped text. The label
+   for each value comes from data-label, which keeps the header row hidden. */
+@media (max-width: 47.99rem) {
+  .lattice-table--stack {
+    display: block;
+  }
+
+  .lattice-table--stack thead {
+    display: none;
+  }
+
+  .lattice-table--stack tbody {
+    display: block;
+  }
+
+  .lattice-table--stack tr {
+    display: block;
+    padding-block: var(--vi-space-rhythm-3-base);
+    border-block-end: 1px solid var(--vi-colors-border-separator-primary-base);
+  }
+
+  .lattice-table--stack tr:last-child {
+    border-block-end: 0;
+  }
+
+  .lattice-table--stack tbody tr:hover {
+    background: none;
+  }
+
+  .lattice-table--stack th[scope='row'] {
+    display: block;
+    padding: 0 0 var(--vi-space-rhythm-1-base);
+    border: 0;
+    font-size: var(--vi-typography-typography-size-md-base);
+  }
+
+  .lattice-table--stack td {
+    display: grid;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
+    gap: var(--vi-space-rhythm-2-base);
+    align-items: baseline;
+    padding: 0 0 var(--vi-space-rhythm-1-base);
+    border: 0;
+  }
+
+  .lattice-table--stack td::before {
+    content: attr(data-label);
+    color: var(--vi-colors-text-content-secondary-base);
+    font-family: var(--vi-typography-typography-family-mono-base);
+    font-size: var(--vi-typography-typography-size-xs-base);
+    letter-spacing: var(--vi-typography-typography-tracking-wide-base);
+  }
+}

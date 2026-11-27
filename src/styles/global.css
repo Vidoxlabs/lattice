@@ -1,0 +1,150 @@
+@import './videsign/tokens.css';
+@import './videsign/themes.css';
+@import './videsign/glass.css';
+
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-latin-wght-normal.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-mono-latin-wght-normal.woff2') format('woff2');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: var(--vi-typography-typography-family-sans-base);
+  background: var(--vi-colors-surface-background-primary-base);
+  color: var(--vi-colors-text-content-primary-base);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--vi-colors-surface-background-primary-base);
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-block-size: 100dvh;
+  background: var(--vi-colors-surface-background-primary-base);
+  color: var(--vi-colors-text-content-primary-base);
+  font-family: var(--vi-typography-typography-family-sans-base);
+  font-size: var(--vi-typography-typography-size-md-base);
+  line-height: var(--vi-typography-typography-leading-normal-base);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+html[data-navigation='open'] body {
+  overflow: hidden;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: var(--vi-space-rhythm-1-base);
+}
+
+:where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: var(--vi-size-indicator-fivebar-base) solid var(--vi-colors-surface-accent-brand-base);
+  outline-offset: var(--vi-space-rhythm-1-base);
+  border-radius: var(--vi-spacing-layout-radius-control-base);
+}
+
+button,
+a,
+input,
+textarea,
+select,
+summary {
+  transition-duration: var(--vi-transition-transition-duration-fast-base);
+  transition-timing-function: var(--vi-transition-transition-easing-standard-base);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+img,
+svg {
+  max-inline-size: 100%;
+}
+
+/* One visible focus ring on a filled call to action: the brand outline would
+   vanish against the brand fill, so the ring turns to the page ink. */
+a.bg-surface-accent-brand-base:focus-visible,
+button.bg-surface-accent-brand-base:focus-visible {
+  outline-color: var(--vi-colors-text-content-primary-base);
+}
+
+/* The attribute has to beat a display utility on the same element: several
+   surfaces are hidden by an attribute and shown by a class. */
+[hidden] {
+  display: none !important;
+}
+
+.lattice-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 40rem) {
+  #main-content {
+    padding-block-end: var(--vi-space-rhythm-20-base);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+:root[data-motion='paused'] *,
+:root[data-motion='paused'] *::before,
+:root[data-motion='paused'] *::after {
+  animation-play-state: paused !important;
+}
+
+:root[data-motion='paused'] {
+  scroll-behavior: auto;
+}
+
+:root[data-navigation='open'] [data-chat-launcher] {
+  display: none;
+}

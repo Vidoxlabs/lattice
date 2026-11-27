@@ -1,0 +1,11 @@
+---
+const { title, children, tone = 'warning' } = Astro.props;
+const dot = tone === 'info' ? 'bg-status-indicator-info-base' : 'bg-status-indicator-warning-base';
+---
+<aside aria-label={title} class="mb-rhythm-6-base flex items-start gap-gap-comfortable-default rounded-layout-radius-control-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-medium-base" data-videsign="alert-banner">
+  <span aria-hidden="true" class={`mt-rhythm-2-base h-indicator-dot-base w-indicator-dot-base shrink-0 rounded-layout-radius-full-base ${dot}`}></span>
+  <div class="flex min-w-0 flex-1 flex-col gap-gap-dense-default">
+    <p class="font-typography-family-sans-base text-typography-size-sm-base font-typography-weight-semibold-base text-text-content-primary-base">{title}</p>
+    <div class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-text-content-secondary-base"><slot /></div>
+  </div>
+</aside>

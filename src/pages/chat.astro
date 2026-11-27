@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ChatDock from '../components/videsign/chat-dock.astro';
+import { ledeClasses } from '../lib/ui-classes.mjs';
+---
+<BaseLayout title="Chat | Vidoxlabs" description="Ask grounded questions about Vivarium and its public documentation." chatPage>
+  <section aria-labelledby="chat-title" class="flex flex-col gap-rhythm-4-base">
+    <h1 id="chat-title">Ask about Vivarium</h1>
+    <p class={ledeClasses}>The chat answers from the verified documentation corpus and the gathered public repository status. When retrieval finds nothing, it says so instead of guessing, and every answer carries its citations.</p>
+  </section>
+  <div class="lattice-chat-page" data-chat-page>
+    <ChatDock surface="page" />
+  </div>
+</BaseLayout>

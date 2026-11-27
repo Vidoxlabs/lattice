@@ -1,0 +1,60 @@
+---
+import '../../styles/videsign/family-surfaces.css';
+// Ported one-for-one from the videsign family-stack-diagram specimen.
+// Tiers and roles come from the pinned umbrella manifest; CI state and drift
+// come from live status. Every node links to its repository page.
+const { repositories = [] } = Astro.props;
+const byName = Object.fromEntries(repositories.map((repository) => [repository.name, repository]));
+const tiers = [
+  { title: 'Interface layer: the Vivarium app', members: ['bloom'] },
+  { title: 'Independent peers (never import each other)', members: ['capillary', 'myosotis', 'aestivation', 'drosera'] },
+  { title: 'Foundation contracts', members: ['seed'] },
+  { title: 'Alongside the product', members: ['trellis'] },
+  { title: 'Around the stack', members: ['vivarium', 'docs', 'videsign', 'lattice'] }
+];
+const roleOf = (name) => byName[name]?.role ?? byName[name]?.kind ?? 'role not synced yet';
+---
+<section class="vi-fs-scope" aria-labelledby="family-stack-title" data-videsign="family-stack-diagram">
+  <div class="vi-fs-card vi-fs-card--wide" data-vi-family-stack>
+    <div class="vi-fs-head">
+      <h2 id="family-stack-title" class="vi-fs-title">The Vidoxlabs stack</h2>
+      <span class="vi-fs-meta">bloom is the interface layer · peers never import each other</span>
+    </div>
+    <div class="vi-fs-stack-tiers">
+      {tiers.map((tier) => (
+        <div class="vi-fs-stack-tier">
+          <span class="vi-fs-meta">{tier.title}</span>
+          <div class="vi-fs-stack-grid" data-tier-count={tier.members.length}>
+            {tier.members.map((name) => {
+              const repository = byName[name];
+              const drift = repository?.drift ?? null;
+              return (
+                <a
+                  href={`/repositories/${name}`}
+                  data-stack-repo={name}
+                  data-ci={repository?.status?.ciConclusion ?? 'unknown'}
+                  data-drift={drift === null ? 'unknown' : drift ? 'true' : 'false'}
+                  class="vi-fs-stack-node h-action-min-default"
+                >
+                  <span class="vi-fs-stack-name">{name}</span>
+                  <span class="vi-fs-stack-role">{roleOf(name)}</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+    <p class="vi-fs-meta" data-family-stack-ledger aria-live="polite">Select a node to read its recorded role here.</p>
+  </div>
+</section>
+<script>
+  const ledger = document.querySelector('[data-family-stack-ledger]');
+  for (const node of document.querySelectorAll('[data-vi-family-stack] [data-stack-repo]')) {
+    const describe = () => {
+      if (ledger) ledger.textContent = `${node.getAttribute('data-stack-repo')}: ${node.querySelector('.vi-fs-stack-role')?.textContent ?? ''} · CI ${node.getAttribute('data-ci') ?? 'unknown'} · drift ${node.getAttribute('data-drift') ?? 'unknown'}.`;
+    };
+    node.addEventListener('focus', describe);
+    node.addEventListener('click', describe);
+  }
+</script>

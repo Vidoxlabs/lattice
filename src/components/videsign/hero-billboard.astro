@@ -1,0 +1,46 @@
+---
+import FiveBarRule from './five-bar-rule.astro';
+import { actionRowClasses, buttonClasses, displayHeadingClasses, ledeClasses, monoLabelClasses } from '../../lib/ui-classes.mjs';
+const {
+  title,
+  lede,
+  eyebrow = 'Vidoxlabs',
+  facts = [],
+  primaryHref = '/vivarium',
+  primaryLabel = 'Understand Vivarium',
+  secondaryHref = '/repositories',
+  secondaryLabel = 'Inspect the evidence',
+  factsHref = '/repositories',
+  factsLabel = 'How these numbers are gathered',
+  factsTitle = 'Build evidence'
+} = Astro.props;
+const headingId = `hero-${String(title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+---
+<section data-videsign="hero-billboard" aria-labelledby={headingId} class="flex flex-col gap-rhythm-8-base">
+  <div class="grid grid-cols-1 items-start gap-rhythm-8-base lg:grid-cols-3 lg:gap-rhythm-6-base">
+    <div class="flex flex-col gap-gap-comfortable-default lg:col-span-2">
+      <p class={monoLabelClasses}>{eyebrow}</p>
+      <h1 id={headingId} class={`${displayHeadingClasses} vi-heading-display`}>{title}</h1>
+      <FiveBarRule class="pt-rhythm-1-base" />
+      <p class={ledeClasses}>{lede}</p>
+      <div class={`${actionRowClasses} pt-rhythm-3-base`}>
+        <a href={primaryHref} class={buttonClasses.cta}><span>{primaryLabel}</span><span aria-hidden="true">→</span></a>
+        <a href={secondaryHref} class={buttonClasses.secondary}><span>{secondaryLabel}</span><span aria-hidden="true">→</span></a>
+      </div>
+      <slot />
+    </div>
+    {facts.length > 0 && <aside aria-label={factsTitle} class="flex flex-col gap-gap-comfortable-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-large-base">
+      <p class={monoLabelClasses}>{factsTitle}</p>
+      <dl class="grid grid-cols-2 gap-rhythm-4-base">
+        {facts.map((fact, index) => {
+          const lastRow = index >= facts.length - 2;
+          return <div class={`flex min-w-0 flex-col gap-gap-dense-default ${lastRow ? '' : 'border-b border-border-separator-primary-base pb-rhythm-3-base'}`}>
+            <dt class={monoLabelClasses}>{fact.label}</dt>
+            <dd class="break-words font-typography-family-mono-base text-typography-size-xl-base tabular-nums leading-typography-leading-tight-base text-text-content-primary-base text-pretty">{fact.value}</dd>
+          </div>;
+        })}
+      </dl>
+      <a href={factsHref} class="inline-flex min-h-action-min-default items-center justify-between gap-gap-compact-default border-t border-border-separator-primary-base pt-rhythm-2-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base transition-colors duration-transition-duration-fast-base ease-transition-easing-standard-base hover:text-text-content-primary-base"><span>{factsLabel}</span><span aria-hidden="true">→</span></a>
+    </aside>}
+  </div>
+</section>

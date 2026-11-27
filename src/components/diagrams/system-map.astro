@@ -1,0 +1,11 @@
+---
+import { renderSystemMap } from '../../lib/diagrams/system-map.mjs';
+const { catalog } = Astro.props;
+const { graphic } = renderSystemMap(catalog);
+---
+<figure class="lattice-diagram">
+  <div set:html={graphic} />
+  <figcaption class="lattice-diagram__caption">
+    bloom is the interface layer above four independent peers, with seed as the foundation and trellis alongside. A drifted pin is outlined in the warning colour.
+  </figcaption>
+</figure>

@@ -1,0 +1,33 @@
+---
+import { bodyClasses, buttonClasses, monoLabelClasses, sectionHeadingClasses } from '../../lib/ui-classes.mjs';
+const { items = [] } = Astro.props;
+---
+<section data-videsign="bento-feature-grid" aria-labelledby="bento-grid-title" class="flex flex-col gap-rhythm-6-base">
+  <div class="flex flex-col gap-gap-compact-default">
+    <p class={monoLabelClasses}>Public systems</p>
+    <h2 id="bento-grid-title" class={sectionHeadingClasses}>Seven systems, one product</h2>
+    <p class={bodyClasses}>Each system owns a distinct contract. Roles and status come from the pinned product manifest and verified build data.</p>
+  </div>
+  <div class="grid grid-flow-dense grid-cols-1 gap-rhythm-4-base sm:grid-cols-2 lg:grid-cols-4">
+    {items.map((item, index) => (
+      <article class={`flex min-w-0 flex-col gap-gap-comfortable-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-large-base ${index === 0 ? 'sm:col-span-2' : ''}`}>
+        <div class="flex flex-col gap-gap-compact-default">
+          <p class={monoLabelClasses}>{item.layer ?? item.kind}</p>
+          <h3 class="font-typography-family-sans-base text-typography-size-xl-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base text-balance text-text-content-primary-base">{item.name}</h3>
+          <p class="font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-pretty text-text-content-secondary-base">{item.role ?? item.summary ?? 'Documentation has not synced yet.'}</p>
+        </div>
+        <dl class="mt-auto flex flex-col gap-gap-compact-default border-t border-border-separator-primary-base pt-rhythm-3-base">
+          <div class="flex items-baseline justify-between gap-gap-compact-default">
+            <dt class={monoLabelClasses}>Version</dt>
+            <dd class="font-typography-family-mono-base text-typography-size-sm-base tabular-nums text-text-content-primary-base">{item.version ?? 'Not published'}</dd>
+          </div>
+          <div class="flex items-baseline justify-between gap-gap-compact-default">
+            <dt class={monoLabelClasses}>Check</dt>
+            <dd class="font-typography-family-mono-base text-typography-size-sm-base text-text-content-primary-base">{item.status.ciConclusion}</dd>
+          </div>
+        </dl>
+        <a href={`/repositories/${item.name}`} class={`${buttonClasses.secondary} w-full`}><span>Inspect {item.name}</span><span aria-hidden="true">→</span></a>
+      </article>
+    ))}
+  </div>
+</section>

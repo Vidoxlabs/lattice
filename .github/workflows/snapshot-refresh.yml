@@ -1,0 +1,57 @@
+name: snapshot-refresh
+
+# Refreshes the committed status snapshot from public GitHub data and opens a
+# draft pull request when it changed. It never pushes to the default branch and
+# never merges: a refresh is reviewed like any other change.
+
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    name: refresh
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Refresh the committed snapshot
+        env:
+          READ_TOKEN: ${{ secrets.GITHUB_READ_TOKEN }}
+          WORKFLOW_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # A dedicated read token when one exists, otherwise the workflow's own
+        # token, which is enough to read public repositories.
+        run: GITHUB_READ_TOKEN="${READ_TOKEN:-$WORKFLOW_TOKEN}" npm run snapshot:refresh
+      - name: Open a draft pull request when the snapshot changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "$(git status --porcelain -- src/data/snapshot)" ]; then
+            echo "::notice title=Snapshot unchanged::No snapshot change to open a pull request for."
+            exit 0
+          fi
+          branch="snapshot-refresh/$(date -u +%Y%m%dT%H%M%SZ)"
+          git switch --create "$branch"
+          # The checkout keeps no credentials, so the push borrows the workflow
+          # token for this step only and never writes it into the repository.
+          gh auth setup-git
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -am "chore: refresh the status snapshot"
+          git push origin "$branch"
+          gh pr create --draft \
+            --title "chore: refresh the status snapshot" \
+            --body "Refreshed the committed status snapshot from public repository data. Review the capture time and the heads before merging; nothing here is deployed until it lands on the default branch." \
+            --base main --head "$branch"

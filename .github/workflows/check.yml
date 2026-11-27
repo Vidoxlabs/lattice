@@ -1,0 +1,52 @@
+name: check
+
+on:
+  push:
+  pull_request:
+  # The site rebuilds on its own every day, and on the event the documentation
+  # repository sends after a sync. Both run this full check before anything can
+  # deploy, and neither carries a credential into the checkout.
+  schedule:
+    - cron: '15 6 * * *'
+  workflow_dispatch:
+  repository_dispatch:
+    types: [docs-sync]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      # The browser stage installs Chromium and WebKit itself, with the system
+      # packages this runner can install as root, and fails if either cannot
+      # start. No separate install step: one code path for every build.
+      - run: npm run check
+        env:
+          CI: '1'
+          # Read-only GitHub API access for the content build: the hub tree and
+          # the repository status come from authenticated requests, so a busy
+          # unauthenticated rate window cannot silently thin the corpus. The
+          # token never reaches the checkout or any artifact.
+          GITHUB_READ_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The exact output this run verified is what the deploy job publishes. A
+      # scheduled run, a manual run and a docs dispatch all check out the
+      # default branch, so its ref is the whole condition.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: github.ref == 'refs/heads/main'
+        with:
+          name: lattice-dist
+          path: dist
+          if-no-files-found: error
+          retention-days: 7

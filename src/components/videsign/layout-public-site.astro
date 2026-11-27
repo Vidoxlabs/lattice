@@ -1,0 +1,18 @@
+---
+import SiteHeaderIsland from './site-header-island.astro';
+import MobileNavigationSheet from './mobile-navigation-sheet.astro';
+import SiteFooter from './site-footer.astro';
+const { currentPath = '/', variant = 'default' } = Astro.props;
+const mainClass = variant === 'flush'
+  ? 'flex w-full flex-1 flex-col'
+  : 'mx-auto flex w-full max-w-layout-width-content-base flex-1 flex-col gap-rhythm-16-base px-rhythm-page-gutter-base py-rhythm-section-y-base';
+---
+<div data-videsign="layout-public-site" class="flex min-h-dvh flex-col overflow-x-clip bg-surface-background-primary-base text-text-content-primary-base">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-30 focus:inline-flex focus:h-action-min-default focus:items-center focus:rounded-layout-radius-control-base focus:border focus:border-surface-accent-brand-base focus:bg-surface-background-secondary-base focus:px-rhythm-4-base focus:font-typography-family-mono-base focus:text-typography-size-xs-base">Skip to main content</a>
+  <SiteHeaderIsland currentPath={currentPath} />
+  <MobileNavigationSheet currentPath={currentPath} />
+  <main id="main-content" class={mainClass}>
+    <slot />
+  </main>
+  <SiteFooter />
+</div>

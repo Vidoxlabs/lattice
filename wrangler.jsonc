@@ -1,0 +1,50 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "lattice",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2026-11-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  // Off until Cloudflare Access protects preview addresses. An uploaded preview
+  // version otherwise gets a public address on the account's shared Workers
+  // subdomain, which a branch build would publish without anyone deciding to.
+  // Turn it back on (this one line) once Access is enabled for previews; SETUP.md
+  // carries the owner steps and a route test pins whichever value is committed.
+  "preview_urls": false,
+  // Production only. `wrangler versions upload` publishes a preview version and
+  // does not attach routes, so a preview build never claims these hostnames.
+  "routes": [
+    { "pattern": "vidoxlabs.com", "custom_domain": true },
+    { "pattern": "www.vidoxlabs.com", "custom_domain": true },
+    { "pattern": "vidoxlabs.dev", "custom_domain": true },
+    { "pattern": "www.vidoxlabs.dev", "custom_domain": true }
+  ],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./dist/client"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "SITE_ORIGIN": "https://vidoxlabs.com",
+    "CHAT_PROVIDER": "mock",
+    "CHAT_ASSISTANT_NAME": "Vidoxlabs assistant",
+    "CHAT_ALLOW_CLOUD": "0",
+    "ENRICH_ENABLED": "0",
+    "ENRICH_MAX_USD": "0"
+  }
+
+  // Chat rate limiting. Uncomment the block and replace the placeholder with the
+  // rate-limit namespace identifier from the account: it is account-scoped, so it
+  // is never committed. Until the binding exists the route keeps a best-effort
+  // per-isolate counter and chat still answers; SETUP.md section 6 carries the
+  // owner step and tests/unit/rate-limit.test.mjs covers both paths.
+  // "ratelimits": [
+  //   {
+  //     "name": "CHAT_RATE_LIMITER",
+  //     "namespace_id": "<namespace-id>",
+  //     "simple": { "limit": 10, "period": 60 }
+  //   }
+  // ],
+}

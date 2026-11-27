@@ -1,0 +1,43 @@
+---
+import { monoLabelClasses } from '../../lib/ui-classes.mjs';
+const repositories = ['vivarium', 'seed', 'bloom', 'capillary', 'myosotis', 'aestivation', 'drosera', 'trellis', 'docs', 'videsign', 'lattice'];
+---
+<footer data-videsign="site-footer" aria-label="Site footer" class="border-t border-border-separator-primary-base bg-surface-background-primary-base px-rhythm-6-base py-rhythm-10-base">
+  <div class="mx-auto flex max-w-7xl flex-col gap-rhythm-8-base">
+    <div class="grid grid-cols-1 items-start gap-rhythm-8-base md:grid-cols-3">
+      <div class="flex flex-col gap-gap-compact-default">
+        <a href="/" class="inline-flex min-h-action-min-default items-center font-typography-family-sans-base text-typography-size-lg-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base text-text-content-primary-base">Vidoxlabs</a>
+        <p class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-text-content-secondary-base">Vivarium, its systems, evidence and documentation.</p>
+      </div>
+      <nav aria-label="Footer navigation" class="grid grid-cols-2 gap-rhythm-6-base md:col-span-2 sm:grid-cols-3">
+        <div>
+          <p class={monoLabelClasses}>Explore</p>
+          <ul class="flex flex-col">
+            <li><a href="/vivarium" class="inline-flex min-h-action-min-default items-center font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base hover:text-text-content-primary-base">Vivarium</a></li>
+            <li><a href="/repositories" class="inline-flex min-h-action-min-default items-center font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base hover:text-text-content-primary-base">Repositories</a></li>
+            <li><a href="/docs" class="inline-flex min-h-action-min-default items-center font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base hover:text-text-content-primary-base">Documentation</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class={monoLabelClasses}>Site</p>
+          <ul class="flex flex-col">
+            <li><a href="/about" class="inline-flex min-h-action-min-default items-center font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base hover:text-text-content-primary-base">About</a></li>
+            <li><a href="/security" class="inline-flex min-h-action-min-default items-center font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base hover:text-text-content-primary-base">Security</a></li>
+            <li><a href="/chat" class="inline-flex min-h-action-min-default items-center font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base hover:text-text-content-primary-base">Chat</a></li>
+          </ul>
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+          <p class={monoLabelClasses}>Public source</p>
+          <ul class="grid grid-cols-2 gap-x-rhythm-4-base">
+            {repositories.map(repository => <li><a href={`https://github.com/Vidoxlabs/${repository}`} class="inline-flex min-h-action-min-default items-center font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base hover:text-text-content-primary-base">{repository}</a></li>)}
+          </ul>
+        </div>
+      </nav>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-gap-spacious-default border-t border-border-separator-primary-base pt-rhythm-5-base">
+      <p class="max-w-prose font-typography-family-sans-base text-typography-size-xs-base leading-typography-leading-normal-base text-text-content-secondary-base">Public pages store only interface preferences in this browser. Chat sends typed questions to the configured answer provider.</p>
+      <button type="button" class="inline-flex min-h-action-min-default items-center gap-gap-compact-default whitespace-nowrap rounded-layout-radius-control-base border border-border-separator-primary-base px-inset-operator-default font-typography-family-mono-base text-typography-size-xs-base text-text-content-primary-base transition-colors duration-transition-duration-fast-base ease-transition-easing-standard-base hover:border-text-content-secondary-base" data-motion-toggle aria-pressed="false"><span aria-hidden="true" class="h-indicator-dot-base w-indicator-dot-base rounded-layout-radius-full-base bg-status-indicator-success-base"></span><span data-motion-label>Pause background motion</span></button>
+      <p class="font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base">© 2026 Vidoxlabs LLC</p>
+    </div>
+  </div>
+</footer>

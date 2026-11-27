@@ -1,0 +1,6 @@
+{
+  "repository": "Vidoxlabs/docs",
+  "proposal": 6,
+  "proposalCommit": "a2c406b38483efece01a0925e77465f48cc35b58",
+  "state": "proposed mirror. This schema mirrors the repository-status contract described in the docs proposal at the recorded commit. The upstream JSON Schema does not exist until the proposal is ratified and implemented; until then this mirror is labelled proposed and must be reconciled with the published schema when it lands."
+}

@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a rendering, pipeline, accessibility or runtime defect
+labels: [bug]
+body:
+  - type: input
+    id: route
+    attributes:
+      label: Affected route
+      placeholder: /repositories/seed
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and evidence
+      description: Do not include secrets, personal data or private infrastructure details.
+    validations:
+      required: true
