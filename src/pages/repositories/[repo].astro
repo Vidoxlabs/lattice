@@ -57,7 +57,7 @@ const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path
     </p>
   </HeroBillboard>
 
-  <KpiMetricStrip items={metrics} title="Repository status" />
+  <KpiMetricStrip items={metrics} title="Repository status" statusRepository={repository.name} />
 
   <section aria-labelledby="pins-title" class="flex flex-col gap-rhythm-4-base">
     <div class="flex flex-wrap items-center justify-between gap-gap-compact-default">

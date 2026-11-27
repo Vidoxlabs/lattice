@@ -87,9 +87,15 @@ const direction = [
                 <td data-label="Version" class="font-typography-family-mono-base tabular-nums">{system.version ?? 'unreleased'}</td>
                 <td data-label="Pinned" class="font-typography-family-mono-base tabular-nums">{system.commit ? <a href={`https://github.com/Vidoxlabs/${system.name}/commit/${system.commit}`} class="underline underline-offset-4">{short(system.commit)}</a> : 'not pinned'}</td>
                 <td data-label="State">
-                  <span class="inline-flex items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base">
-                    <span aria-hidden="true" class={`h-indicator-dot-base w-indicator-dot-base rounded-layout-radius-full-base ${drift === null || drift === undefined ? 'bg-status-indicator-warning-base' : drift ? 'bg-status-indicator-warning-base' : 'bg-status-indicator-success-base'}`}></span>
-                    <span data-status-field="ci" data-ci={drift === true ? 'drifted' : drift === false ? 'success' : 'unknown'}>{drift === null || drift === undefined ? 'unknown' : drift ? 'head differs' : 'current'}</span>
+                  <span class="inline-flex flex-wrap items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base">
+                    <span class="inline-flex items-center gap-gap-compact-default">
+                      <span aria-hidden="true" class={`h-indicator-dot-base w-indicator-dot-base rounded-layout-radius-full-base ${drift === null || drift === undefined ? 'bg-status-indicator-warning-base' : drift ? 'bg-status-indicator-warning-base' : 'bg-status-indicator-success-base'}`}></span>
+                      <span>{drift === null || drift === undefined ? 'unknown' : drift ? 'head differs' : 'current'}</span>
+                    </span>
+                    <span class="inline-flex items-center gap-gap-compact-default text-text-content-secondary-base">
+                      <span>CI</span>
+                      <span data-status-field="ci" data-ci={status.repositories?.[system.name]?.ciConclusion ?? 'unknown'}>{status.repositories?.[system.name]?.ciConclusion ?? 'unknown'}</span>
+                    </span>
                   </span>
                 </td>
                 <td data-label="Role" class="text-text-content-secondary-base">{system.role}</td>

@@ -1,8 +1,8 @@
 ---
 import { monoLabelClasses } from '../../lib/ui-classes.mjs';
-const { items = [], title = 'Repository metrics', updated = '' } = Astro.props;
+const { items = [], title = 'Repository metrics', updated = '', statusRepository = '' } = Astro.props;
 ---
-<section data-videsign="kpi-metric-strip" aria-labelledby="kpi-strip-title" class="flex flex-col gap-rhythm-4-base">
+<section data-videsign="kpi-metric-strip" aria-labelledby="kpi-strip-title" data-status-repository={statusRepository || undefined} class="flex flex-col gap-rhythm-4-base">
   <div class="flex flex-wrap items-baseline justify-between gap-gap-compact-default">
     <h2 id="kpi-strip-title" class={monoLabelClasses}>{title}</h2>
     {updated && <p class={`${monoLabelClasses} tabular-nums`}>{updated}</p>}
