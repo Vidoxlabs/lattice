@@ -6,8 +6,9 @@ import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astr
 import ActionList from '../components/videsign/action-list.astro';
 import SystemMap from '../components/diagrams/system-map.astro';
 import { monoLabelClasses, sectionHeadingClasses } from '../lib/ui-classes.mjs';
+import { dateLabel } from '../lib/dates.mjs';
 import { getCatalog } from '../lib/repository-data.mjs';
-const { repositories, vivarium, pinsPending, status } = await getCatalog();
+const { repositories, vivarium, pinsPending, status, builtAt } = await getCatalog();
 const product = repositories.find((repository) => repository.name === 'vivarium');
 const systems = vivarium.systems ?? [];
 const drifted = systems.filter((system) => status.vivarium.systems?.[system.name]?.drift === true).length;
@@ -67,6 +68,9 @@ const direction = [
       </div>
       <ClaimMaturityBadge label={pinsPending ? 'planned' : 'observed'} />
     </div>
+    <p class={`${monoLabelClasses} tabular-nums`} data-status-source>
+      {builtAt ? `Build data from ${dateLabel(builtAt, { withTime: true })}` : 'Live data unavailable'}
+    </p>
     <p class={`${monoLabelClasses} tabular-nums`}>
       {layerOf('composer')} interface, {layerOf('peer')} independent peers, {layerOf('floor')} foundation, {layerOf('outside')} alongside
       {drifted > 0 ? `, ${drifted} pin${drifted === 1 ? '' : 's'} drifted from head` : ', every pin matches the head it was read from'}
