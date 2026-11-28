@@ -49,6 +49,14 @@ test('hub relative links resolve within the hub and external links stay untouche
   assert.match(prepared, /\[the site\]\(https:\/\/example\.invalid\/x\)/);
 });
 
+test('a hub link to a file the corpus does not publish points at the hub head', () => {
+  const resolve = buildResolver(corpus);
+  const head = 'd'.repeat(40);
+  const prepared = prepare('See [the capabilities](capabilities.json) and [the escapee](../../outside.md).', { repo: 'docs', head, sourcePath: 'timeline/README.md', resolve });
+  assert.match(prepared, new RegExp(`\\[the capabilities\\]\\(https://github\\.com/Vidoxlabs/docs/blob/${head}/docs/timeline/capabilities\\.json\\)`));
+  assert.match(prepared, new RegExp(`\\[the escapee\\]\\(https://github\\.com/Vidoxlabs/docs/tree/${head}\\)`));
+});
+
 test('a badge image inside a link collapses into the link, never nesting anchors', () => {
   const resolve = buildResolver(corpus);
   const prepared = prepare('[![seed tests](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml)', { repo: 'seed', head: 'c'.repeat(40), sourcePath: 'README.md', resolve });

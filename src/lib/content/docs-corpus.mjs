@@ -97,9 +97,22 @@ export function prepare(body, context) {
     const normalized = target.split('#')[0];
     if (!normalized) return null;
     if (context.repo === 'docs') {
-      const joined = joinInRepo(directory, normalized) ?? normalized;
+      const joined = joinInRepo(directory, normalized);
+      if (joined === null) {
+        return {
+          href: `https://github.com/Vidoxlabs/docs/tree/${context.head ?? 'main'}`,
+          fragment: ''
+        };
+      }
       const site = context.resolve('docs', joined) ?? context.resolve('docs', normalized);
-      return site ? { href: site, fragment: target.includes('#') ? `#${target.split('#')[1]}` : '' } : null;
+      if (site) return { href: site, fragment: target.includes('#') ? `#${target.split('#')[1]}` : '' };
+      // The link names a hub file the corpus does not publish as a page, so it
+      // points at the hub repository itself, at the head the hub pages were
+      // synced from, rather than at a route this site cannot serve.
+      return {
+        href: `https://github.com/Vidoxlabs/docs/blob/${context.head ?? 'main'}/docs/${joined}`,
+        fragment: target.includes('#') ? `#${target.split('#')[1]}` : ''
+      };
     }
     const joined = joinInRepo(directory, normalized);
     if (joined === null) {
