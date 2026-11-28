@@ -21,11 +21,16 @@ export function docsLoader() {
         maxUsd: Number(process.env.ENRICH_MAX_USD ?? 0)
       });
       const resolve = buildResolver(pipeline.docsPages);
+      // The umbrella manifest pins each system's commit; its documents link
+      // into those systems by their in-repository path.
+      const systemPins = Object.fromEntries(
+        (pipeline.vivarium?.systems ?? []).map((system) => [system.name, system.commit])
+      );
       for (const page of pages) {
         const inRepoPath = page.kind === 'hub' ? page.sourcePath.replace(/^docs\//, '') : page.sourcePath;
         const body = page.kind === 'placeholder'
           ? page.body
-          : prepare(page.body, { repo: page.repo, head: page.head, sourcePath: inRepoPath, resolve });
+          : prepare(page.body, { repo: page.repo, head: page.head, sourcePath: inRepoPath, resolve, systemPins });
         const rendered = await renderMarkdown(body);
         const collected = collectHeadings(badgeClaimLines(wrapTables(sanitizeRenderedHtml(rendered.html))));
         rendered.html = collected.html;

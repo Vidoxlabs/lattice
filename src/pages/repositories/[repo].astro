@@ -22,7 +22,7 @@ const metrics = [
   { label: 'Checks', value: repository.status.ciConclusion ?? 'Unknown', note: 'latest recorded run', field: 'ci' },
   { label: 'Docs', value: freshness, note: 'synced at the head' },
   { label: 'Open pull requests', value: String(repository.status.openPrCount ?? 'Unknown'), note: 'public count', field: 'openPrCount' },
-  { label: 'Package', value: repository.version ?? 'Not published', note: 'latest release or tag' }
+  { label: 'Package version', value: repository.version ?? 'Not published', note: 'from the pinned package manifest' }
 ];
 const pins = [
   { label: 'Pinned commit', value: repository.pin ? short(repository.pin) : 'Not pinned', href: repository.pin ? `https://github.com/Vidoxlabs/${repository.name}/commit/${repository.pin}` : null },
