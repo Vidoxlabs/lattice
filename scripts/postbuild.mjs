@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { sanitizeWorkerBundle } from './bundle-hygiene.mjs';
 import { headersFileBody } from '../src/lib/security-headers.mjs';
 import { collectStyleHashes } from '../src/lib/csp-hashes.mjs';
+import { movedDocsSlugs } from '../src/lib/host.mjs';
 import { builtRoutes, robotsTxt, sitemapXml } from '../src/lib/discoverability.mjs';
 import { siteOrigin } from '../src/lib/site.mjs';
 import { llmsFull, llmsIndex } from '../src/lib/llms.mjs';
@@ -32,7 +33,7 @@ if (existsSync(serverConfigPath)) {
   writeFileSync('dist/server/csp-hashes.mjs', `export const STYLE_HASHES = ${JSON.stringify(styleHashes)};\n`);
   writeFileSync('dist/server/host-entry.mjs', [
     "import server from './entry.mjs';",
-    "import { canonicalRedirect } from './host.mjs';",
+    "import { canonicalRedirect, movedDocsRedirect } from './host.mjs';",
     "import { headersForHost } from './security-headers.mjs';",
     "import { STYLE_HASHES } from './csp-hashes.mjs';",
     '',
@@ -55,6 +56,8 @@ if (existsSync(serverConfigPath)) {
     '  async fetch(request, env, context) {',
     '    const destination = canonicalRedirect(request.url);',
     '    if (destination) return withSecurityHeaders(request, Response.redirect(destination, 301));',
+    '    const moved = movedDocsRedirect(request.url);',
+    '    if (moved) return withSecurityHeaders(request, Response.redirect(new URL(moved, request.url), 301));',
     '    return withSecurityHeaders(request, await server.fetch(request, env, context));',
     '  }',
     '}',
@@ -136,10 +139,13 @@ function internalLinkFailures(directory, published) {
       const html = readFileSync(child, 'utf8');
       for (const match of html.matchAll(/(?:href|src)="(\/[^"]*)"/g)) {
         const target = match[1].split('#')[0].split('?')[0];
+        // A slug that moved resolves through its permanent redirect, which the
+        // Worker serves ahead of the framework for every request.
         const resolved = routeSet.has(target)
           || existsSync(join(directory, target))
           || existsSync(join(directory, target, 'index.html'))
-          || target.startsWith('/api/');
+          || target.startsWith('/api/')
+          || movedDocsSlugs.has(target);
         if (!resolved) failures.push(`${child.slice(directory.length)}: ${target}`);
       }
     }

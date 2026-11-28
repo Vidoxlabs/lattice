@@ -27,3 +27,21 @@ export function canonicalRedirect(value) {
   const path = url.pathname.replace(/^\/{2,}/, '/');
   return `${CANONICAL_ORIGIN}${path === '' ? '/' : path}`;
 }
+
+// Docs pages whose upstream file was renamed keep their old address: every
+// slug that moved redirects permanently to the same content at its new
+// address, so links written against the old corpus keep working.
+export const movedDocsSlugs = new Map([
+  ['/docs/capillary/family', '/docs/capillary/systems']
+]);
+
+/**
+ * The path a moved docs address redirects to.
+ *
+ * @param {string | URL} value the request URL
+ * @returns {string | null} the path to redirect to, or null
+ */
+export function movedDocsRedirect(value) {
+  const url = value instanceof URL ? value : new URL(value);
+  return movedDocsSlugs.get(url.pathname) ?? null;
+}

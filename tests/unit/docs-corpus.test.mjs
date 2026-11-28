@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { buildResolver, collectDocsCorpus, headingsFor, prepare, slugFor, titleFor } from '../../src/lib/content/docs-corpus.mjs';
 import { badgeClaimLines, sanitizeRenderedHtml } from '../../src/lib/content/render-docs.mjs';
 import { enrichDocsCorpus } from '../../src/lib/content/enrich.mjs';
+import { colourTokenException, needleDigests } from '../../src/lib/content-safety.mjs';
 
 const corpus = [
   { repo: 'docs', sourcePath: 'docs/index.md', slug: '', kind: 'hub' },
@@ -149,6 +150,36 @@ test('the mapping runs after verification: a digest mismatch still renders a pla
   };
   const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
   assert.equal(pages.find((entry) => entry.slug === 'seed').kind, 'placeholder');
+});
+
+test('an exempt colour token publishes the videsign readme and blocks the same text elsewhere', async () => {
+  // The real palette tokens cannot be spelled in this repository, so the
+  // scoped exception is exercised with a synthetic digest registered in the
+  // same sets the content check consults.
+  const synthetic = createHash('sha256').update('syntheticexceptiontoken').digest('hex');
+  needleDigests.add(synthetic);
+  colourTokenException.add(synthetic);
+  try {
+    const raw = '# Palette\n\nThe ramp lists syntheticexceptiontoken as an accent.\n';
+    const sha256 = createHash('sha256').update(raw).digest('hex');
+    const manifest = {
+      sources: {
+        videsign: { name: 'videsign', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256 }] },
+        seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256 }] }
+      }
+    };
+    const fetchImpl = async (url) => {
+      if (url.includes('/README.md')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => raw, json: async () => ({}) };
+      if (url.includes('/git/trees/')) return { ok: true, status: 200, headers: { get: () => null }, text: async () => '', json: async () => ({ sha: 'b'.repeat(40), tree: [] }) };
+      return { ok: false, status: 404, headers: { get: () => null }, text: async () => '', json: async () => ({}) };
+    };
+    const pages = await collectDocsCorpus(fetchImpl, manifest, '', []);
+    assert.equal(pages.find((entry) => entry.slug === 'videsign').kind, 'source');
+    assert.equal(pages.find((entry) => entry.slug === 'seed').kind, 'placeholder');
+  } finally {
+    needleDigests.delete(synthetic);
+    colourTokenException.delete(synthetic);
+  }
 });
 
 test('a documentation hub page is mapped like any other page', async () => {

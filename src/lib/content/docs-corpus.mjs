@@ -229,7 +229,7 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
       const fromSnapshot = text === null;
       if (fromSnapshot) text = fallbackByPath.get(`${repo}:${record.path}`)?.body ?? null;
       const verified = verifiedAgainstRecord(text, record, fromSnapshot ? storedRecords.get(`${repo}\u0000${record.path}`) : undefined);
-      if (!verified || !isPublicContentSafe(text ?? '')) {
+      if (!verified || !isPublicContentSafe(text ?? '', `${repo}/${record.path}`)) {
         const reason = text === null ? 'it could not be fetched in this build' : !verified ? 'its digest did not verify' : 'it failed the public-safety scan';
         pages.push({
           slug,
@@ -291,7 +291,7 @@ export async function collectDocsCorpus(fetchImpl, manifest, token, fallbackPage
     }
     if (text === null) text = fallbackByPath.get(`docs:docs/${path}`)?.body ?? null;
     const slug = slugFor('docs', path);
-    if (text === null || !isPublicContentSafe(text)) {
+    if (text === null || !isPublicContentSafe(text, `docs/${path}`)) {
       const reason = text === null ? 'it could not be fetched in this build' : 'it failed the public-safety scan';
       pages.push({
         slug,

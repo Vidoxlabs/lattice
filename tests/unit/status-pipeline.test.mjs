@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { gatherSiteStatus, collectPipeline } from '../../src/lib/content/pipeline.mjs';
+import { gatherSiteStatus, collectPipeline, chunkText } from '../../src/lib/content/pipeline.mjs';
 import { validateManifest, validateStatus, stable } from '../../src/lib/content/schema.mjs';
 import { ciSummary, refreshLiveFields, statusCacheSeconds } from '../../src/lib/live-status.mjs';
 import { buildSnapshot } from '../../scripts/snapshot-digests.mjs';
@@ -194,6 +194,35 @@ test('stamping keeps the upstream digest and adds the stored digest; the pipelin
   assert.equal(snapshot.capturedAt, '2026-11-25T00:00:00.000Z');
   assert.equal(pipeline.manifest.sources.seed.files[0].storedSha256, undefined, 'the collected pipeline is untouched by the stamping');
   assert.equal(pipeline.manifest.sources.seed.files[0].sha256, upstreamSha, 'the collected pipeline keeps the upstream digests');
+});
+
+test('the snapshot stores only document records that carry text', () => {
+  const pipeline = {
+    manifest: { sources: { videsign: { name: 'videsign', head: 'a'.repeat(40), files: [] } } },
+    documents: {
+      'sources/seed/README.md': { text: '# Peer sync\n', verified: true, safe: true },
+      'sources/videsign/README.md': { text: null, verified: true, safe: false }
+    },
+    docsPages: []
+  };
+  const snapshot = buildSnapshot(pipeline, '2026-11-25T00:00:00.000Z');
+  assert.deepEqual(Object.keys(snapshot.documents), ['sources/seed/README.md'], 'a verified-but-blocked record cannot render offline, so it is not stored');
+  assert.equal(pipeline.documents['sources/videsign/README.md'].verified, true, 'the collected pipeline keeps the blocked record for the repository pages');
+});
+
+test('search chunks never cut a fenced code block in half', () => {
+  const fence = '```bash\nnpm test\n```';
+  const body = `# Page\n\n## Section\n\n${'prose '.repeat(210)}\n\n${fence}\n\n## Next\n\n${'more prose '.repeat(40)}`;
+  const chunks = chunkText(body);
+  assert.ok(chunks.length > 1, 'the long section is split');
+  assert.deepEqual(chunks.map((chunk) => chunk.id), chunks.map((_, index) => index), 'ids stay sequential');
+  for (const chunk of chunks) {
+    const markers = (chunk.text.match(/```/g) ?? []).length;
+    assert.equal(markers % 2, 0, `chunk ${chunk.id} carries balanced fences`);
+  }
+  const fenced = chunks.find((chunk) => chunk.text.includes('npm test'));
+  assert.ok(fenced?.text.startsWith('```'), 'the code block is kept whole inside its own chunk');
+  assert.ok(fenced.text.endsWith('```'), 'the code block carries its closing fence');
 });
 
 test('the committed snapshot text verifies against its own stored digests', async () => {

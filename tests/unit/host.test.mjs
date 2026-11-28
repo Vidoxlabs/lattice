@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { canonicalRedirect } from '../../src/lib/host.mjs';
+import { canonicalRedirect, movedDocsRedirect, movedDocsSlugs } from '../../src/lib/host.mjs';
 
 test('canonical and alternate public hosts follow the domain rule', () => {
   assert.equal(canonicalRedirect('https://vidoxlabs.com/vivarium'), null);
@@ -23,4 +23,13 @@ test('a deep link keeps its path and a query string does not travel', () => {
 test('reserved example and preview hosts are served without a redirect', () => {
   assert.equal(canonicalRedirect('https://preview.example.test/'), null);
   assert.equal(canonicalRedirect('http://site.example/'), null);
+});
+
+test('a moved docs slug redirects permanently to its new address', () => {
+  assert.equal(movedDocsRedirect('https://vidoxlabs.com/docs/capillary/family'), '/docs/capillary/systems');
+  assert.equal(movedDocsRedirect('https://vidoxlabs.com/docs/capillary/systems'), null);
+  assert.equal(movedDocsRedirect('https://vidoxlabs.com/docs/capillary'), null);
+  for (const [from, to] of movedDocsSlugs) {
+    assert.equal(movedDocsRedirect(`https://vidoxlabs.com${from}`), to);
+  }
 });
