@@ -20,8 +20,10 @@ const freshness = repository.status.docsFreshness.fresh === null ? 'Freshness un
         <dt class={monoLabelClasses}>{label}</dt>
         <dd data-status-field={field || undefined} data-ci={field === 'ci' ? value : undefined} class="text-end font-typography-family-mono-base text-typography-size-xs-base tabular-nums text-text-content-primary-base">{value}</dd>
       </div>)}
+      <div class="border-b border-border-separator-primary-base py-rhythm-2-base">
+        <p class={`${monoLabelClasses} tabular-nums`} data-status-source>{repository.buildAt ? `Build data from ${dateLabel(repository.buildAt)}` : 'Live data unavailable'}</p>
+      </div>
     </dl>
-    <p class={`${monoLabelClasses} tabular-nums`} data-status-source>{repository.buildAt ? `Build data from ${dateLabel(repository.buildAt)}` : 'Live data unavailable'}</p>
     <a href={`https://github.com/Vidoxlabs/${repository.name}`} class={buttonClasses.secondary}>Repository and evidence<span aria-hidden="true">→</span></a>
   </div>
 </article>
