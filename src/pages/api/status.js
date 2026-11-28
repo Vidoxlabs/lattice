@@ -1,16 +1,18 @@
 // @ts-ignore The Workers runtime provides this module at deploy time.
 import { env } from 'cloudflare:workers';
 import pipeline from '../../data/generated/build-pipeline.json' with { type: 'json' };
-import { refreshLiveFields } from '../../lib/live-status.mjs';
+import { refreshLiveFields, statusCacheSeconds } from '../../lib/live-status.mjs';
 
 export const prerender = false;
 
-function json(payload, status = 200) {
+function json(payload, cacheSeconds) {
   return new Response(JSON.stringify(payload), {
-    status,
+    status: 200,
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'Cache-Control': 'public, max-age=300'
+      // A degraded refresh carries build-labelled fields, so it asks for one
+      // minute at the edge and in the browser; a complete one keeps five.
+      'Cache-Control': `public, max-age=${cacheSeconds}`
     }
   });
 }
@@ -23,7 +25,7 @@ export async function GET({ request, locals }) {
   const live = await refreshLiveFields(pipeline.status, {
     token: env.GITHUB_READ_TOKEN || ''
   });
-  const response = json({ ...pipeline.status, live, snapshot: pipeline.snapshot });
+  const response = json({ ...pipeline.status, live, buildAt: pipeline.builtAt ?? null, snapshot: pipeline.snapshot }, statusCacheSeconds(live.complete));
   locals.cfContext.waitUntil(cache.put(cacheKey, response.clone()));
   return response;
 }

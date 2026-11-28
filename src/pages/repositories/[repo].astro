@@ -6,32 +6,41 @@ import KpiMetricStrip from '../../components/videsign/kpi-metric-strip.astro';
 import ClaimMaturityBadge from '../../components/videsign/claim-maturity-badge.astro';
 import RepositoryActivity from '../../components/diagrams/repository-activity.astro';
 import { monoLabelClasses, sectionHeadingClasses } from '../../lib/ui-classes.mjs';
+import { dateLabel } from '../../lib/dates.mjs';
 import { getCatalog, getRepository, sourceUrl } from '../../lib/repository-data.mjs';
+import { slugFor } from '../../lib/content/docs-corpus.mjs';
 export async function getStaticPaths() {
   const { repositories } = await getCatalog();
   return repositories.map((repository) => ({ params: { repo: repository.name } }));
 }
 const repository = await getRepository(Astro.params.repo);
 if (!repository) return Astro.redirect('/404');
-const { sources } = await getCatalog();
+const { sources, builtAt } = await getCatalog();
 const short = (value) => (value ? value.slice(0, 7) : 'Unknown');
 const freshness = repository.status.docsFreshness.fresh === null ? 'Unknown' : repository.status.docsFreshness.fresh ? 'Current' : 'Sync pending';
 const metrics = [
   { label: 'Checks', value: repository.status.ciConclusion ?? 'Unknown', note: 'latest recorded run', field: 'ci' },
   { label: 'Docs', value: freshness, note: 'synced at the head' },
-  { label: 'Open pull requests', value: String(repository.status.openPrCount ?? 'Unknown'), note: 'public count' },
+  { label: 'Open pull requests', value: String(repository.status.openPrCount ?? 'Unknown'), note: 'public count', field: 'openPrCount' },
   { label: 'Package', value: repository.version ?? 'Not published', note: 'latest release or tag' }
 ];
 const pins = [
   { label: 'Pinned commit', value: repository.pin ? short(repository.pin) : 'Not pinned', href: repository.pin ? `https://github.com/Vidoxlabs/${repository.name}/commit/${repository.pin}` : null },
   { label: 'Repository head', value: short(repository.repositoryHead), href: repository.repositoryHead ? `https://github.com/Vidoxlabs/${repository.name}/commit/${repository.repositoryHead}` : null },
   { label: 'Pin drift', value: repository.drift === null ? 'Unknown' : repository.drift ? 'Head differs from the pin' : 'Pin matches head', href: null },
-  { label: 'Documentation sync', value: repository.syncedAt ?? 'Unknown', href: null },
-  { label: 'Last push', value: repository.status.lastPushAt ?? 'Unknown', href: null, field: 'lastPushAt' }
+  { label: 'Documentation sync', value: repository.syncedAt ? dateLabel(repository.syncedAt) : 'Unknown', href: null, time: repository.syncedAt },
+  { label: 'Last push', value: repository.status.lastPushAt ? dateLabel(repository.status.lastPushAt, { withTime: true }) : 'Unknown', href: null, field: 'lastPushAt', time: repository.status.lastPushAt }
 ];
 const groupKey = (path) => path.split('/').slice(0, -1).slice(0, 2).join('/');
 const groupTitle = (key) => (key === '' ? 'Overview' : key);
 const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path)))].sort();
+// One source of truth for where a synced file lives: the same slug map the
+// docs routes build from. A file the docs corpus does not publish links to its
+// source at the synced head instead of a dead site route.
+const docsHref = (file) => {
+  const slug = slugFor(repository.name, file.path);
+  return slug === null ? sourceUrl(repository.name, repository.head, file.path) : `/docs/${slug}`;
+};
 ---
 <BaseLayout title={`${repository.name} | Vidoxlabs`} description={repository.summary || `${repository.name} repository evidence.`} family={repository.name}>
   <HeroBillboard
@@ -57,7 +66,7 @@ const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path
     </p>
   </HeroBillboard>
 
-  <KpiMetricStrip items={metrics} title="Repository status" statusRepository={repository.name} />
+  <KpiMetricStrip items={metrics} title="Repository status" statusRepository={repository.name} statusUpdated={builtAt} />
 
   <section aria-labelledby="pins-title" class="flex flex-col gap-rhythm-4-base">
     <div class="flex flex-wrap items-center justify-between gap-gap-compact-default">
@@ -72,7 +81,7 @@ const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path
         <div class="flex min-w-0 flex-col gap-gap-dense-default">
           <dt class={monoLabelClasses}>{pin.label}</dt>
           <dd data-status-field={pin.field || undefined} class="font-typography-family-mono-base text-typography-size-sm-base break-words tabular-nums text-text-content-primary-base">
-            {pin.href ? <a href={pin.href} class="underline underline-offset-4">{pin.value}</a> : pin.value}
+            {pin.href ? <a href={pin.href} class="underline underline-offset-4">{pin.value}</a> : pin.time ? <time datetime={pin.time}>{pin.value}</time> : pin.value}
           </dd>
         </div>
       ))}
@@ -116,7 +125,7 @@ const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path
           <ul class="flex list-none flex-col">
             {repository.docsFiles.filter((file) => groupKey(file.path) === group).map((file) => (
               <li>
-                <a href={`/docs/${repository.name}/${file.path.replace(/\.md$/, '')}`} class="flex min-h-action-min-default items-center justify-between gap-gap-compact-default border-b border-border-separator-primary-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base hover:text-text-content-primary-base">
+                <a href={docsHref(file)} class="flex min-h-action-min-default items-center justify-between gap-gap-compact-default border-b border-border-separator-primary-base font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base hover:text-text-content-primary-base">
                   <span class="truncate">{group === '' ? file.path : file.path.slice(group.length + 1)}</span>
                   {file.path.includes('/adr/') && <span class="shrink-0 rounded-layout-radius-full-base bg-surface-background-tertiary-base px-rhythm-1-base">ADR</span>}
                 </a>

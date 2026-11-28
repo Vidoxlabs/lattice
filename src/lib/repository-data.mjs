@@ -30,6 +30,14 @@ export function firstCommandBlock(markdown) {
   return match?.[1]?.trim() ?? '';
 }
 
+/**
+ * The synced README for one repository, as the content pipeline recorded it.
+ *
+ * @param {any} manifest the documentation manifest
+ * @param {string} name the repository name
+ * @param {Record<string, { text: string | null, verified: boolean, safe: boolean }>} [documents] the recorded documents, defaulting to the generated bundle
+ * @returns {Promise<{ text: string, head: string | null, synced: boolean, state: 'published' | 'blocked' | 'unverified' | 'absent' }>}
+ */
 export async function readSyncedReadme(manifest, name, documents = pipeline.documents) {
   const entry = manifest.sources?.[name];
   const record = entry?.files?.find((file) => file.path === 'README.md');
@@ -106,6 +114,7 @@ export function getCatalog() {
           synced: presence,
           claim: claimFor(presence, current.docsFreshness.fresh),
           readmeState: readme.state,
+          buildAt: pipeline.builtAt ?? null,
           head: docsEntry?.head ?? null,
           repositoryHead: current.head ?? null,
           syncedAt: docsEntry?.syncedAt ?? null,

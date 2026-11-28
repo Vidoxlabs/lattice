@@ -1,11 +1,15 @@
 ---
 import { monoLabelClasses } from '../../lib/ui-classes.mjs';
-const { items = [], title = 'Repository metrics', updated = '', statusRepository = '' } = Astro.props;
+import { dateLabel } from '../../lib/dates.mjs';
+const { items = [], title = 'Repository metrics', updated = '', statusRepository = '', statusUpdated = '' } = Astro.props;
 ---
 <section data-videsign="kpi-metric-strip" aria-labelledby="kpi-strip-title" data-status-repository={statusRepository || undefined} class="flex flex-col gap-rhythm-4-base">
   <div class="flex flex-wrap items-baseline justify-between gap-gap-compact-default">
     <h2 id="kpi-strip-title" class={monoLabelClasses}>{title}</h2>
-    {updated && <p class={`${monoLabelClasses} tabular-nums`}>{updated}</p>}
+    <p class="flex flex-wrap items-baseline gap-gap-comfortable-default">
+      {statusRepository && <span class={`${monoLabelClasses} tabular-nums`} data-status-source>{statusUpdated ? `Build data from ${dateLabel(statusUpdated)}` : 'Live data unavailable'}</span>}
+      {updated && <span class={`${monoLabelClasses} tabular-nums`}>{updated}</span>}
+    </p>
   </div>
   <dl class="grid grid-cols-1 gap-rhythm-4-base sm:grid-cols-2 lg:grid-cols-4">
     {items.map((item) => <div class="flex flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-large-base">

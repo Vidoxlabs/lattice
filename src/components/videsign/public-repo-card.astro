@@ -1,6 +1,7 @@
 ---
 import ClaimMaturityBadge from './claim-maturity-badge.astro';
 import { buttonClasses, monoLabelClasses } from '../../lib/ui-classes.mjs';
+import { dateLabel } from '../../lib/dates.mjs';
 const { repository } = Astro.props;
 const freshness = repository.status.docsFreshness.fresh === null ? 'Freshness unknown' : repository.status.docsFreshness.fresh ? 'Current' : 'Sync pending';
 ---
@@ -15,11 +16,12 @@ const freshness = repository.status.docsFreshness.fresh === null ? 'Freshness un
   </div>
   <div class="flex flex-col gap-gap-comfortable-default">
     <dl class="border-t border-border-separator-primary-base" data-status-repository={repository.name}>
-      {[['CI', repository.status.ciConclusion, 'ci'], ['Docs', freshness, ''], ['Open PRs', repository.status.openPrCount ?? 'Unknown', ''], ['Test totals', repository.status.testTotals, '']].map(([label, value, field]) => <div class="flex items-baseline justify-between gap-gap-comfortable-default border-b border-border-separator-primary-base py-rhythm-2-base">
+      {[['CI', repository.status.ciConclusion, 'ci'], ['Docs', freshness, ''], ['Open PRs', repository.status.openPrCount ?? 'Unknown', 'openPrCount'], ['Test totals', repository.status.testTotals, '']].map(([label, value, field]) => <div class="flex items-baseline justify-between gap-gap-comfortable-default border-b border-border-separator-primary-base py-rhythm-2-base">
         <dt class={monoLabelClasses}>{label}</dt>
         <dd data-status-field={field || undefined} data-ci={field === 'ci' ? value : undefined} class="text-end font-typography-family-mono-base text-typography-size-xs-base tabular-nums text-text-content-primary-base">{value}</dd>
       </div>)}
     </dl>
+    <p class={`${monoLabelClasses} tabular-nums`} data-status-source>{repository.buildAt ? `Build data from ${dateLabel(repository.buildAt)}` : 'Live data unavailable'}</p>
     <a href={`https://github.com/Vidoxlabs/${repository.name}`} class={buttonClasses.secondary}>Repository and evidence<span aria-hidden="true">→</span></a>
   </div>
 </article>

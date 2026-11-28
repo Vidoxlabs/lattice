@@ -13,6 +13,9 @@ const pipeline = await collectPipeline({
   token: process.env.GITHUB_READ_TOKEN || '',
   snapshot
 });
+// The bundle records when it was built, so the pages and the status API can
+// label every build-time value with the date it comes from.
+pipeline.builtAt = new Date().toISOString();
 const generated = new URL('../src/data/generated/', import.meta.url);
 await mkdir(generated, { recursive: true });
 // The layout runs inside the prerender bundle, where the project directory is
