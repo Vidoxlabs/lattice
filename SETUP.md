@@ -71,24 +71,25 @@ Two squash merges, in two rounds. Nothing else merges.
 - [ ] Answer docs#6's three questions, or leave it a proposal and rely on the daily scheduled
       rebuild in section 3.
 
-## 2. Workers Builds, and the deploy path this repository takes
+## 2. The deploy path: GitHub Actions after check
 
-One question decides the path: can the build run Chromium and WebKit? They are part of
-`npm run check`, and a build that cannot run them must not deploy.
+Production deploys through GitHub Actions: `.github/workflows/deploy.yml` runs after every
+successful `check` on `main` — from a push, the daily schedule, a manual run or the
+documentation repository's dispatch — and publishes in the `production` environment. This is
+the committed and used path; nothing else deploys the site.
 
-What the Cloudflare Workers Builds documentation says, checked on 2026-11-25:
+The deploy job runs in a GitHub environment named `production`, and both account values are
+secrets inside it. An environment secret is only visible to a job that names the environment, so
+a workflow added later cannot read them by accident.
 
-- Builds run on Ubuntu 24.04 on x86_64 with a fixed package list. That list carries `libgbm1`
-  and the build toolchain, but not the libraries Chromium and WebKit link against: no
-  `libnss3`, no `libatk*`, no `libxkbcommon`, no `libwoff2`.
-- Playwright installs those libraries through the system package manager, which needs root.
-  The documentation publishes no root access and no way to install a package in the build.
+### Not used: Workers Builds
 
-Both engines therefore cannot be guaranteed there, so the committed default builds and
-deploys from GitHub Actions, where the runner has root and the browser stage installs both
-engines with their dependencies. That workflow is `.github/workflows/deploy.yml`, and it is
-inert until both secrets exist. The Workers Builds path stays below as Path B, and it is the
-right answer the moment a first build there proves the browser stage.
+The build needs Chromium and WebKit, which `npm run check` runs as its browser stage, and a
+build that cannot run them must not deploy. The Workers Builds image publishes no root access
+and its fixed package list carries none of the libraries the two engines link against, so the
+engines cannot be guaranteed there. That is why the deploy runs from Actions, where the runner
+has root and installs both engines with their dependencies. A first Workers Builds run that
+proves the browser stage would reopen it; until then nothing connects that integration.
 
 ### What the launch audit found, 2026-11-25
 
@@ -100,14 +101,8 @@ Checked read-only through the account's own API surface. Nothing was changed.
 - [x] Size does not constrain anything. The dry run reports 2388.80 KiB uncompressed and
       696.20 KiB gzipped. Since September 2026 only the uncompressed size is limited, at 64 MiB
       on every plan, so this bundle sits at about 3.6 percent of the limit.
-- [x] Both paths publish the same built output. What differs is only where the browser stage
-      runs, which is why Path A is committed and Path B is worth a try.
 
-### Path A: deploy from GitHub Actions (the committed default)
-
-The deploy job runs in a GitHub environment named `production`, and both account values are
-secrets inside it. An environment secret is only visible to a job that names the environment, so
-a workflow added later cannot read them by accident.
+### The deploy, from GitHub Actions
 
 - [ ] Create an environment named `production` with a deployment branch rule that allows
       `main` and nothing else. The exact commands are under Prepared, not run, below.
@@ -126,40 +121,6 @@ a workflow added later cannot read them by accident.
       nothing. It never deploys without both and never fails `check` for a missing one.
 - [ ] If the environment also requires a reviewer, the deploy waits for that approval. That is a
       valid setting, and it makes the first publish a manual step.
-
-### Path B: Workers Builds
-
-- [ ] Create or connect the `lattice` Worker in Cloudflare Workers Builds to
-      `Vidoxlabs/lattice`.
-- [ ] Production trigger: branch `main`, build command `npm ci && npm run check`, deploy
-      command `npx wrangler deploy`.
-- [ ] Preview trigger: any other branch, same build command, deploy command
-      `npx wrangler versions upload --preview-alias <branch-alias>`.
-- [ ] Node version: Workers Builds reads `.nvmrc` at the repository root, and the
-      `NODE_VERSION` build variable overrides it. `.nvmrc` is committed with `24.13.1`, so no
-      variable is needed; a version the image does not preinstall is downloaded during the
-      build.
-- [ ] Variables: none are required to build. `CI` and `WORKERS_CI` are injected by the build
-      image, and `WORKERS_CI` is what makes `npm run check` run the browser stage. Add
-      `GITHUB_READ_TOKEN` only if the public API window runs out (section 4).
-- [ ] A successful first build log reads, in this order:
-
-      Detected the following tools from environment: nodejs@24.13.1, npm@...
-      Installing project dependencies: npm clean-install
-      Executing user build command: npm ci && npm run check
-      Lint passed.
-      ... one line per stage: content build, type check, unit tests, build
-      Public-safety scan passed for ... files.
-      ... the route test summary
-      Chromium and WebKit are installed ... and both start.
-      ... the browser summary: every test passing on both engines
-      Executing user deploy command: npx wrangler deploy
-      ... the upload summary and the deployed version
-
-- [ ] If the browser stage fails, do not delete it, skip it or weaken it. Switch to Path A,
-      which is already committed; the failed build is the evidence for the switch. The failure
-      names the missing library, and `scripts/install-browsers.mjs` refuses to continue without
-      both engines.
 - [ ] Note: `assets.run_worker_first` is `true`, so every request invokes the Worker and
       non-canonical hosts redirect on static pages too. The runtime rejects host-scoped
       pattern entries, so this is the only form that keeps the redirect working. If
@@ -240,9 +201,19 @@ answer is one event, and no deploy hook exists anywhere in this repository.
 
 ## 4. Optional read token
 
-- [ ] `GITHUB_READ_TOKEN` is optional. Set it as a build secret if the unauthenticated
-      GitHub API window runs out during builds: the content build uses it when present and
-      falls back to the committed snapshot when the window closes.
+- [ ] `GITHUB_READ_TOKEN` is optional, and the site works honestly without it. Set it in two
+      places if you want both uses:
+      - **The live status API.** Without it the API refreshes from the unauthenticated window,
+        labels every field it could not fetch as build data with the date it came from, and asks
+        for one minute of cache. With it the API answers from one GraphQL query per refresh and
+        keeps the five-minute cache. Set it as a Worker secret, which survives every deploy:
+      - `npx wrangler secret put GITHUB_READ_TOKEN`
+      - A fine-grained token limited to read access on the public repositories (Metadata,
+        Contents, Pull requests and Checks) with a bounded expiry is enough; the command prompts
+        for the value and no agent runs it.
+      - **The build.** Set it as an Actions secret if the unauthenticated GitHub API window runs
+        out during builds: the content build uses it when present and falls back to the committed
+        snapshot when the window closes.
 
 ## 5. Secrets and variables
 
@@ -264,7 +235,7 @@ Actions secret or variable is set in this repository under **Settings → Secret
 | `CHAT_API_KEY` | Worker secret | unset | `npx wrangler secret put CHAT_API_KEY` |
 | `CHAT_RATE_LIMITER` | Worker binding | unbound | Section 6; uncomment the block in `wrangler.jsonc` and replace the placeholder. |
 | `SITE_ORIGIN` | Worker variable | `https://vidoxlabs.com` | Committed. Drives canonical links, the sitemap, `robots.txt`, both language-model files and the social card URLs. |
-| `GITHUB_READ_TOKEN` | Build secret | unset | Section 4; a build secret in Workers Builds, or an Actions secret on the deploy path, or an environment variable for a local build. |
+| `GITHUB_READ_TOKEN` | Worker secret and build secret | unset | Section 4. The Worker secret powers the live status API and is set with `npx wrangler secret put GITHUB_READ_TOKEN`; an Actions secret on the deploy path, or an environment variable for a local build, covers the build. |
 | `ENRICH_ENABLED` | Worker variable | `0` | Committed. Leave at `0`; ADR-0004 records why. |
 | `ENRICH_MAX_USD` | Worker variable | `0` | Committed. A positive cap is required before an enabled run does anything. |
 | `CLOUDFLARE_API_TOKEN` | Actions secret in the `production` environment, required | unset | Section 2, Path A. Deploy only. |
