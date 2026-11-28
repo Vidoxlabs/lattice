@@ -12,9 +12,10 @@ for (const path of pages) {
     await page.goto(path);
     await page.evaluate(async () => {
       await document.fonts.ready;
-      window.scrollTo(0, document.body.scrollHeight);
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      window.scrollTo(0, document.body.scrollHeight);
+      // The page scrolls smoothly, so an animated programmatic scroll can still
+      // be mid-flight frames later and the boxes would be read against a moving
+      // page. Jump instantly, then let two frames settle the layout.
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' });
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     });
     const result = await page.evaluate(() => {
@@ -35,6 +36,10 @@ for (const path of pages) {
       return { covered, links };
     });
     expect(result.links, 'the page has footer links to check').toBeGreaterThan(0);
+    const settledAtBottom = await page.evaluate(
+      () => window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1
+    );
+    expect(settledAtBottom, 'the page rests at its bottom before the boxes are read').toBe(true);
     const launcher = page.locator('[data-chat-launcher]');
     await expect(launcher).toBeVisible();
     expect(result.covered, `the launcher covers the footer link(s): ${result.covered.join(', ')}`).toEqual([]);
