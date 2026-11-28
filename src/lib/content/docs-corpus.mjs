@@ -84,11 +84,13 @@ function joinInRepo(directory, target) {
 /**
  * Rewrite relative markdown links and images so they resolve from the site:
  * links to corpus files become site routes; anything else points at the exact
- * upstream file at the recorded head. Mermaid fences become source code with a
- * note, because the renderer ships no diagram runtime.
+ * upstream file at the recorded head, and the umbrella's `systems/<name>/...`
+ * links point at the pinned commit of the system they name. Mermaid fences
+ * become source code with a note, because the renderer ships no diagram
+ * runtime.
  *
  * @param {string} body
- * @param {{ repo: string, head: string | null, sourcePath: string, resolve: (repo: string, path: string) => string | null }} context
+ * @param {{ repo: string, head: string | null, sourcePath: string, resolve: (repo: string, path: string) => string | null, systemPins?: Record<string, string> }} context
  * @returns {string}
  */
 export function prepare(body, context) {
@@ -123,6 +125,23 @@ export function prepare(body, context) {
     }
     const site = context.resolve(context.repo, joined) ?? context.resolve(context.repo, normalized);
     if (site) return { href: site, fragment: target.includes('#') ? `#${target.split('#')[1]}` : '' };
+    // The umbrella's own documents link into its pinned systems by their
+    // in-repository path (`systems/<name>/...`); those files live in each
+    // system's own repository, so the link points at the pinned commit of
+    // the system it names rather than at the umbrella's copy of a path the
+    // umbrella does not carry.
+    if (context.repo === 'vivarium' && context.systemPins) {
+      const match = /^systems\/([^/]+)(?:\/(.+))?$/.exec(joined);
+      const pin = match ? context.systemPins[match[1]] : null;
+      if (pin) {
+        return {
+          href: match[2]
+            ? `https://github.com/Vidoxlabs/${match[1]}/blob/${pin}/${match[2]}`
+            : `https://github.com/Vidoxlabs/${match[1]}/tree/${pin}`,
+          fragment: target.includes('#') ? `#${target.split('#')[1]}` : ''
+        };
+      }
+    }
     return {
       href: `https://github.com/Vidoxlabs/${context.repo}/blob/${context.head ?? 'main'}/${joined}`,
       fragment: target.includes('#') ? `#${target.split('#')[1]}` : ''

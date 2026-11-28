@@ -50,6 +50,23 @@ test('hub relative links resolve within the hub and external links stay untouche
   assert.match(prepared, /\[the site\]\(https:\/\/example\.invalid\/x\)/);
 });
 
+test('umbrella system links point at the pinned commit of the system they name', () => {
+  const resolve = buildResolver(corpus);
+  const pin = 'e'.repeat(40);
+  const head = 'f'.repeat(40);
+  const body = 'See [the pack source](../../systems/drosera/src/pack.mjs), [the system](../../systems/drosera) and [the plain repo file](../../NOTES.md).';
+  const prepared = prepare(body, {
+    repo: 'vivarium',
+    head,
+    sourcePath: 'docs/roadmap/advanced-system-plan.md',
+    resolve,
+    systemPins: { drosera: pin }
+  });
+  assert.match(prepared, new RegExp(`\\[the pack source\\]\\(https://github\\.com/Vidoxlabs/drosera/blob/${pin}/src/pack\\.mjs\\)`));
+  assert.match(prepared, new RegExp(`\\[the system\\]\\(https://github\\.com/Vidoxlabs/drosera/tree/${pin}\\)`));
+  assert.match(prepared, new RegExp(`\\[the plain repo file\\]\\(https://github\\.com/Vidoxlabs/vivarium/blob/${head}/NOTES\\.md\\)`));
+});
+
 test('a hub link to a file the corpus does not publish points at the hub head', () => {
   const resolve = buildResolver(corpus);
   const head = 'd'.repeat(40);
