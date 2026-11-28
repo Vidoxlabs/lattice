@@ -49,6 +49,14 @@ test('hub relative links resolve within the hub and external links stay untouche
   assert.match(prepared, /\[the site\]\(https:\/\/example\.invalid\/x\)/);
 });
 
+test('a hub link to a file the corpus does not publish points at the hub head', () => {
+  const resolve = buildResolver(corpus);
+  const head = 'd'.repeat(40);
+  const prepared = prepare('See [the capabilities](capabilities.json) and [the escapee](../../outside.md).', { repo: 'docs', head, sourcePath: 'timeline/README.md', resolve });
+  assert.match(prepared, new RegExp(`\\[the capabilities\\]\\(https://github\\.com/Vidoxlabs/docs/blob/${head}/docs/timeline/capabilities\\.json\\)`));
+  assert.match(prepared, new RegExp(`\\[the escapee\\]\\(https://github\\.com/Vidoxlabs/docs/tree/${head}\\)`));
+});
+
 test('a badge image inside a link collapses into the link, never nesting anchors', () => {
   const resolve = buildResolver(corpus);
   const prepared = prepare('[![seed tests](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml/badge.svg)](https://github.com/Vidoxlabs/seed/actions/workflows/ci.yml)', { repo: 'seed', head: 'c'.repeat(40), sourcePath: 'README.md', resolve });
@@ -94,6 +102,15 @@ test('claim-status lines become badges only for the family vocabulary', () => {
   assert.match(badged, /data-claim="implemented"/);
   assert.doesNotMatch(badged, /data-claim="banana"/);
   assert.match(badged, /<code>banana<\/code>/);
+});
+
+test('a claim badge keeps the rest of its sentence inside the same paragraph', () => {
+  const badged = badgeClaimLines('<p>Status: <code>specified</code>. The modules behind it stay specified.</p>');
+  assert.equal(
+    badged,
+    '<p class="lattice-claim-line">Status: <span class="lattice-claim-badge" data-claim="specified">specified</span>. The modules behind it stay specified.</p>'
+  );
+  assert.equal(badged.match(/<\/p>/g)?.length, 1, 'the paragraph closes exactly once');
 });
 
 test('enrichment is a no-op while disabled and while unbudgeted', () => {

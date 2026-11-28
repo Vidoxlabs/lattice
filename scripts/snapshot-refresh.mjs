@@ -7,6 +7,7 @@ const pipeline = await collectPipeline({
   token: process.env.GITHUB_READ_TOKEN || '',
   allowSnapshot: false
 });
+pipeline.builtAt = new Date().toISOString();
 // The snapshot stores the published text, which is the mapped one, so each
 // record keeps its upstream digest and gains the digest of the stored text;
 // the no-network fallback still verifies, and the collected pipeline itself is

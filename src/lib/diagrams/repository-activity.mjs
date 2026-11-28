@@ -1,4 +1,5 @@
 import { node, shortCommit, svg, text } from './svg.mjs';
+import { dateLabel } from '../dates.mjs';
 
 /**
  * Render one repository's activity timeline: documentation sync, last push
@@ -9,8 +10,8 @@ import { node, shortCommit, svg, text } from './svg.mjs';
  */
 export function renderRepositoryActivity(repository) {
   const events = [
-    { id: 'docs-sync', label: 'Docs synced', value: repository.syncedAt ?? 'unknown', position: 0 },
-    { id: 'last-push', label: 'Last push', value: repository.status.lastPushAt ?? 'unknown', position: 1 },
+    { id: 'docs-sync', label: 'Docs synced', value: repository.syncedAt ? dateLabel(repository.syncedAt) : 'unknown', position: 0 },
+    { id: 'last-push', label: 'Last push', value: repository.status.lastPushAt ? dateLabel(repository.status.lastPushAt, { withTime: true }) : 'unknown', position: 1 },
     { id: 'ci', label: 'CI at head', value: `${repository.status.ciConclusion} (${shortCommit(repository.repositoryHead)})`, position: 2 },
     { id: 'release', label: 'Latest release', value: repository.status.latestRelease ?? 'none published', position: 3 },
     { id: 'pulls', label: 'Open pull requests', value: repository.status.openPrCount === null ? 'unknown' : String(repository.status.openPrCount), position: 4 }

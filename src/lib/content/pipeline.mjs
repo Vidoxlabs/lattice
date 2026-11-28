@@ -143,12 +143,16 @@ async function collectDocuments(/** @type {FetchLike} */ fetchImpl, manifest, sn
     const record = source.files?.find((file) => file.path === 'README.md');
     if (!record?.sha256) continue;
     const path = `sources/${name}/README.md`;
+    // A snapshot written before the recorded results carried plain strings;
+    // a later one carries the result next to the text.
+    const fallback = snapshotDocuments[path];
+    const fallbackText = typeof fallback === 'string' ? fallback : fallback?.text ?? null;
     let text = null;
     let fromSnapshot = false;
     try {
       text = await (await request(fetchImpl, `${DOCS_RAW}/${path}`)).text();
     } catch {
-      text = snapshotDocuments[path] ?? null;
+      text = fallbackText;
       fromSnapshot = true;
     }
     if (typeof text !== 'string') continue;
@@ -157,7 +161,12 @@ async function collectDocuments(/** @type {FetchLike} */ fetchImpl, manifest, sn
     // snapshot recorded, only while its upstream digest still matches.
     const storedRecord = fromSnapshot ? storedRecords.get(`${name}\u0000${record.path}`) : undefined;
     const verified = verifiedAgainstRecord(text, record, storedRecord);
-    if (verified && isPublicContentSafe(text)) entries.push([path, neutralize(text)]);
+    const safe = verified && isPublicContentSafe(text);
+    // The raw upstream bytes are hashed here and only here. The stored text
+    // carries the neutral mapping, so it can never re-verify against the
+    // upstream digest; every later reader trusts the result recorded beside
+    // it instead of hashing the mapped text again.
+    entries.push([path, { text: safe ? neutralize(text) : null, verified, safe }]);
   }
   return Object.fromEntries(entries);
 }

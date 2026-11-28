@@ -1,4 +1,5 @@
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { sanitizeWorkerBundle } from './bundle-hygiene.mjs';
 import { headersFileBody } from '../src/lib/security-headers.mjs';
 import { collectStyleHashes } from '../src/lib/csp-hashes.mjs';
@@ -114,6 +115,44 @@ const routes = builtRoutes('dist/client');
 writeFileSync('dist/client/sitemap.xml', sitemapXml(routes, origin));
 writeFileSync('dist/client/robots.txt', robotsTxt(origin));
 console.log(`Wrote the sitemap and robots file for ${routes.length} routes on ${origin}.`);
+
+// Every root-relative href and src a built page carries must resolve to a
+// published route, a shipped file, or a Worker-served API route. Anything
+// else is a dead link, and a dead link fails the build here instead of
+// shipping.
+function internalLinkFailures(directory, published) {
+  const routeSet = new Set(published);
+  const failures = [];
+  let pages = 0;
+  const visit = (path) => {
+    for (const entry of readdirSync(path, { withFileTypes: true })) {
+      const child = join(path, entry.name);
+      if (entry.isDirectory()) {
+        visit(child);
+        continue;
+      }
+      if (!entry.name.endsWith('.html')) continue;
+      pages += 1;
+      const html = readFileSync(child, 'utf8');
+      for (const match of html.matchAll(/(?:href|src)="(\/[^"]*)"/g)) {
+        const target = match[1].split('#')[0].split('?')[0];
+        const resolved = routeSet.has(target)
+          || existsSync(join(directory, target))
+          || existsSync(join(directory, target, 'index.html'))
+          || target.startsWith('/api/');
+        if (!resolved) failures.push(`${child.slice(directory.length)}: ${target}`);
+      }
+    }
+  };
+  visit(directory);
+  return { failures, pages };
+}
+
+const linkCheck = internalLinkFailures('dist/client', routes);
+if (linkCheck.failures.length) {
+  throw new Error(`Unresolved internal links (${linkCheck.failures.length}):\n${[...new Set(linkCheck.failures)].join('\n')}`);
+}
+console.log(`Checked internal links on ${linkCheck.pages} pages: every root-relative href and src resolves.`);
 
 // The language-model files come from the same verified corpus and repository
 // data the pages render, so a docs sync updates them without an edit.

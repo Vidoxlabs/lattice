@@ -21,9 +21,12 @@ import { createHash } from 'node:crypto';
  */
 export function stampStoredDigests(snapshot) {
   const stored = new Map();
-  for (const [path, text] of Object.entries(snapshot.documents ?? {})) {
+  for (const [path, entry] of Object.entries(snapshot.documents ?? {})) {
     const match = /^sources\/([^/]+)\/(.+)$/.exec(path);
-    if (match) stored.set(`${match[1]}\u0000${match[2]}`, text);
+    // A document written before the recorded results carried plain strings;
+    // a later one carries the result next to the text.
+    const text = typeof entry === 'string' ? entry : entry?.text ?? null;
+    if (match && typeof text === 'string') stored.set(`${match[1]}\u0000${match[2]}`, text);
   }
   for (const page of snapshot.docsPages ?? []) {
     if (page.kind !== 'placeholder' && typeof page.body === 'string') {

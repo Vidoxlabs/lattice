@@ -8,6 +8,7 @@ import ClaimMaturityBadge from '../components/videsign/claim-maturity-badge.astr
 import FamilyStackDiagram from '../components/videsign/family-stack-diagram.astro';
 import PipelineFlow from '../components/diagrams/pipeline-flow.astro';
 import { monoLabelClasses, sectionHeadingClasses } from '../lib/ui-classes.mjs';
+import { dateLabel } from '../lib/dates.mjs';
 import { getCatalog, sourceUrl } from '../lib/repository-data.mjs';
 const { repositories, manifest, vivarium, pinsPending, status, sources, snapshot } = await getCatalog();
 const product = repositories.find((repository) => repository.name === 'vivarium');
@@ -15,17 +16,20 @@ const systems = repositories.filter((repository) => repository.kind === 'system'
 const successful = systems.filter((repository) => repository.status.ciConclusion === 'success').length;
 const fresh = systems.filter((repository) => repository.status.docsFreshness.fresh === true).length;
 const title = 'Vidoxlabs builds Vivarium';
+// The product's own commit, never a pinned system's: the link follows the
+// umbrella repository head the status recorded, with the synced head behind it.
+const productSha = product?.repositoryHead ?? product?.head ?? null;
 const facts = [
   { label: 'System docs current', value: `${fresh} of ${systems.length}` },
   { label: 'Pinned systems', value: pinsPending ? 'Pending' : String(vivarium.systems?.length ?? systems.length) },
   { label: 'Checks passing', value: `${successful} of ${systems.length}` },
-  { label: 'Manifest built', value: manifest.generatedAt ? String(manifest.generatedAt).slice(0, 10) : 'Snapshot' }
+  { label: 'Manifest built', value: manifest.generatedAt ? dateLabel(manifest.generatedAt) : 'Snapshot' }
 ];
 const evidence = [
   { label: 'Documentation sync', value: `${fresh}/${systems.length} system docs current`, href: 'https://github.com/Vidoxlabs/docs/blob/main/manifest.json' },
   { label: 'System pins', value: pinsPending ? 'pins pending' : `${vivarium.systems?.length ?? 0} pinned systems`, href: 'https://github.com/Vidoxlabs/vivarium/blob/main/vivarium.json' },
   { label: 'CI evidence', value: `${successful}/${systems.length} successful`, href: '/repositories' },
-  { label: 'Last umbrella push', value: status.repositories.vivarium?.lastPushAt ?? 'Unknown', href: 'https://github.com/Vidoxlabs/vivarium/commits/main' }
+  { label: 'Last umbrella push', value: dateLabel(status.repositories.vivarium?.lastPushAt, { withTime: true }) || 'Unknown', href: 'https://github.com/Vidoxlabs/vivarium/commits/main' }
 ];
 const pipelineInput = { manifest, status, sources, snapshot };
 const provenance = [
@@ -98,7 +102,7 @@ const provenance = [
       ))}
     </ol>
     <p class="flex flex-wrap items-center gap-gap-comfortable-default border-t border-border-separator-primary-base pt-rhythm-4-base">
-      <a href={sourceUrl('vivarium', vivarium.systems?.[0]?.commit)} class="inline-flex min-h-action-min-default items-center gap-gap-compact-default font-typography-family-sans-base text-typography-size-sm-base text-text-content-primary-base underline">Read the pinned product source<span aria-hidden="true">→</span></a>
+      <a href={sourceUrl('vivarium', productSha)} class="inline-flex min-h-action-min-default items-center gap-gap-compact-default font-typography-family-sans-base text-typography-size-sm-base text-text-content-primary-base underline">Read the pinned product source<span aria-hidden="true">→</span></a>
       <span class={monoLabelClasses}>{product?.summary ?? 'Product summary pending the next sync.'}</span>
     </p>
   </section>

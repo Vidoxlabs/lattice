@@ -9,9 +9,9 @@ const systems = repositories.filter((repository) => repository.kind === 'system'
 const rest = repositories.filter((repository) => repository.kind !== 'system');
 const policyFor = (repository) => ({
   title: repository.name,
-  body: repository.summary || `The supported versions and the reporting route for ${repository.name}.`,
-  href: `https://github.com/Vidoxlabs/${repository.name}/blob/main/SECURITY.md`,
-  label: 'Read SECURITY.md'
+  body: repository.summary || `The reporting route and supported versions for ${repository.name}.`,
+  href: `https://github.com/Vidoxlabs/${repository.name}/security/policy`,
+  label: 'Security policy'
 });
 ---
 <BaseLayout title="Security | Vidoxlabs" description="How to report a Vidoxlabs vulnerability.">
@@ -30,15 +30,15 @@ const policyFor = (repository) => ({
       { label: 'Disclosure', value: 'After triage' },
       { label: 'Secrets', value: 'Never send' },
       { label: 'Scope', value: `${repositories.length} public repos` },
-      { label: 'Policy files', value: 'One each' }
+      { label: 'Policy files', value: 'Repo policy or org default' }
     ]}
   />
 
   <section aria-labelledby="scope-title" class="flex flex-col gap-rhythm-5-base">
     <div class="flex flex-col gap-gap-dense-default">
       <p class={monoLabelClasses}>Scope</p>
-      <h2 id="scope-title" class={sectionHeadingClasses}>Every public repository carries its own policy</h2>
-      <p class={ledeClasses}>The scope is the public Vidoxlabs repositories. Each one states its supported versions and its reporting route in its own security policy.</p>
+      <h2 id="scope-title" class={sectionHeadingClasses}>Every public repository has a reporting route</h2>
+      <p class={ledeClasses}>The scope is the public Vidoxlabs repositories. Each link resolves to the repository's own security policy when it carries one, and to the organization's default policy otherwise.</p>
     </div>
     <h3 class="font-typography-family-sans-base text-typography-size-lg-base font-typography-weight-semibold-base leading-typography-leading-tight-base text-text-content-primary-base">The seven systems</h3>
     <ActionList label="Security policies for the seven systems" items={systems.map(policyFor)} />
