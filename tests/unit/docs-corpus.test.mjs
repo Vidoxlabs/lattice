@@ -96,6 +96,15 @@ test('claim-status lines become badges only for the family vocabulary', () => {
   assert.match(badged, /<code>banana<\/code>/);
 });
 
+test('a claim badge keeps the rest of its sentence inside the same paragraph', () => {
+  const badged = badgeClaimLines('<p>Status: <code>specified</code>. The modules behind it stay specified.</p>');
+  assert.equal(
+    badged,
+    '<p class="lattice-claim-line">Status: <span class="lattice-claim-badge" data-claim="specified">specified</span>. The modules behind it stay specified.</p>'
+  );
+  assert.equal(badged.match(/<\/p>/g)?.length, 1, 'the paragraph closes exactly once');
+});
+
 test('enrichment is a no-op while disabled and while unbudgeted', () => {
   const pages = [{ slug: 'x', body: 'text' }];
   assert.equal(enrichDocsCorpus(pages), pages);
