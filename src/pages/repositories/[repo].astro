@@ -89,7 +89,9 @@ const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path
     </div>
     {repository.quickstart
       ? <div class="lattice-prose"><pre><code>{repository.quickstart}</code></pre></div>
-      : <p class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base">No quickstart block is present in the synced README.</p>}
+      : repository.readmeState === 'blocked'
+        ? <p class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base">The synced README did not pass the public-safety scan, so the site shows none of its text.</p>
+        : <p class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base">No quickstart block is present in the synced README.</p>}
   </section>
 
   <section aria-labelledby="docs-title" class="flex flex-col gap-rhythm-4-base">
@@ -100,6 +102,13 @@ const groups = [...new Set(repository.docsFiles.map((file) => groupKey(file.path
       </div>
       <a href="/docs" class="inline-flex min-h-action-min-default items-center gap-gap-compact-default font-typography-family-mono-base text-typography-size-xs-base text-text-content-secondary-base hover:text-text-content-primary-base">All documentation<span aria-hidden="true">→</span></a>
     </div>
+    {repository.docsFiles.length === 0 && (
+      <p class="max-w-prose font-typography-family-sans-base text-typography-size-sm-base text-text-content-secondary-base">
+        {repository.name === 'docs'
+          ? 'Its pages publish through the documentation hub; browse them from the docs index.'
+          : 'Its documentation is not carried by the sync manifest; read it at the source repository.'}
+      </p>
+    )}
     <div class="grid grid-cols-1 gap-rhythm-4-base sm:grid-cols-2">
       {groups.map((group) => (
         <div class="flex flex-col gap-gap-compact-default rounded-layout-radius-standard-base border border-border-separator-primary-base bg-surface-background-secondary-base p-layout-padding-medium-base">

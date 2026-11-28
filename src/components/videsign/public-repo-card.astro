@@ -8,7 +8,7 @@ const freshness = repository.status.docsFreshness.fresh === null ? 'Freshness un
   <div class="flex flex-col gap-gap-compact-default">
     <div class="flex flex-wrap items-center justify-between gap-gap-compact-default">
       <span class={monoLabelClasses}>{repository.kind}</span>
-      <ClaimMaturityBadge label={repository.synced ? 'observed' : 'planned'} />
+      <ClaimMaturityBadge label={repository.claim} />
     </div>
     <h3 class="font-typography-family-sans-base text-typography-size-xl-base font-typography-weight-semibold-base tracking-typography-tracking-tight-base text-text-content-primary-base text-balance"><a href={`/repositories/${repository.name}`} class="inline-flex min-h-action-min-default items-center hover:underline">{repository.name}</a></h3>
     <p class="font-typography-family-sans-base text-typography-size-sm-base leading-typography-leading-normal-base text-text-content-secondary-base text-pretty">{repository.summary || 'Documentation has not synced yet.'}</p>

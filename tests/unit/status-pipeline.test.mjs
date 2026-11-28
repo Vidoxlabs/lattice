@@ -93,7 +93,7 @@ test('stamping keeps the upstream digest and adds the stored digest; the pipelin
   const storedSha = createHash('sha256').update(mapped).digest('hex');
   const pipeline = {
     manifest: { sources: { seed: { name: 'seed', head: 'a'.repeat(40), files: [{ path: 'README.md', sha256: upstreamSha, bytes: raw.length }] } } },
-    documents: { 'sources/seed/README.md': mapped },
+    documents: { 'sources/seed/README.md': { text: mapped, verified: true, safe: true } },
     docsPages: []
   };
   const snapshot = buildSnapshot(pipeline, '2026-11-25T00:00:00.000Z');
@@ -108,7 +108,8 @@ test('the committed snapshot text verifies against its own stored digests', asyn
   const snapshot = JSON.parse(await readFile(new URL('../../src/data/snapshot/pipeline.json', import.meta.url), 'utf8'));
   for (const [name, source] of Object.entries(snapshot.manifest.sources)) {
     for (const record of source.files ?? []) {
-      const text = snapshot.documents[`sources/${name}/${record.path}`];
+      const entry = snapshot.documents[`sources/${name}/${record.path}`];
+      const text = typeof entry === 'string' ? entry : entry?.text;
       if (typeof text !== 'string') continue;
       assert.ok(record.storedSha256, `${name}/${record.path}: a stored text carries its own digest`);
       assert.equal(
@@ -166,7 +167,8 @@ test('a no-network build renders the offline snapshot through the neutral mappin
   const page = pipeline.docsPages.find((entry) => entry.slug === 'seed');
   assert.equal(page.kind, 'source', 'a stored page renders, it does not fall back to a placeholder');
   assert.doesNotMatch(page.body, /sibling|personas/);
-  assert.equal(pipeline.documents['sources/seed/README.md'], mapped);
+  assert.equal(pipeline.documents['sources/seed/README.md'].text, mapped);
+  assert.equal(pipeline.documents['sources/seed/README.md'].verified, true, 'the verification result is recorded beside the text');
 });
 
 test('a fresh snapshot text still renders when the manifest came in live but the file fetch failed', async () => {
@@ -189,7 +191,8 @@ test('a fresh snapshot text still renders when the manifest came in live but the
   const page = pipeline.docsPages.find((entry) => entry.slug === 'seed');
   assert.equal(page.kind, 'source', 'a snapshot current with the live manifest still renders');
   assert.doesNotMatch(page.body, /sibling/);
-  assert.equal(pipeline.documents['sources/seed/README.md'], mapped);
+  assert.equal(pipeline.documents['sources/seed/README.md'].text, mapped);
+  assert.equal(pipeline.documents['sources/seed/README.md'].verified, true, 'the verification result is recorded beside the text');
 });
 
 test('a stale snapshot text does not pass for moved upstream text', async () => {  const raw = '# Sibling sync\n\nThe queue drains sibling jobs.\n';
