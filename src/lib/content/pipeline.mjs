@@ -161,7 +161,7 @@ async function collectDocuments(/** @type {FetchLike} */ fetchImpl, manifest, sn
     // snapshot recorded, only while its upstream digest still matches.
     const storedRecord = fromSnapshot ? storedRecords.get(`${name}\u0000${record.path}`) : undefined;
     const verified = verifiedAgainstRecord(text, record, storedRecord);
-    const safe = verified && isPublicContentSafe(text);
+    const safe = verified && isPublicContentSafe(text, `${name}/${record.path}`);
     // The raw upstream bytes are hashed here and only here. The stored text
     // carries the neutral mapping, so it can never re-verify against the
     // upstream digest; every later reader trusts the result recorded beside
@@ -249,18 +249,62 @@ export async function collectPipeline({ fetchImpl = fetch, token = '', snapshot 
   });
 }
 
+const SEARCH_CHUNK_LIMIT = 1500;
+
 /**
- * Split a document body into deterministic chunks for the search index.
+ * Split a section into parts that never cut a fenced code block in half: a
+ * fenced block is one part, kept whole however long it is, so every chunk the
+ * search index stores still carries balanced fences and later prose checks
+ * can strip code reliably.
+ * @param {string} text
+ * @returns {string[]}
+ */
+function fenceParts(text) {
+  const parts = [];
+  let start = 0;
+  let open = null;
+  for (const match of text.matchAll(/```/g)) {
+    if (open === null) {
+      if (match.index > start) parts.push(text.slice(start, match.index));
+      open = match.index;
+    } else {
+      parts.push(text.slice(open, match.index + 3));
+      start = match.index + 3;
+      open = null;
+    }
+  }
+  parts.push(text.slice(start));
+  return parts.filter((part) => part.length > 0);
+}
+
+/**
+ * Split a document body into deterministic chunks for the search index. A
+ * fenced code block is never sliced: its chunk may exceed the limit rather
+ * than leave an unbalanced fence behind in the stored text.
  * @param {string} body
  * @returns {{ id: number, text: string }[]}
  */
-function chunkText(body) {
+export function chunkText(body) {
   const sections = body.split(/^##\s+/m).filter((section) => section.trim());
   const chunks = [];
   for (const section of sections) {
     const [heading, ...rest] = section.split('\n');
-    const text = `${heading.trim()}\n${rest.join('\n').trim()}`.slice(0, 1500);
-    if (text.trim()) chunks.push({ id: chunks.length, text });
+    const text = `${heading.trim()}\n${rest.join('\n').trim()}`;
+    for (const part of fenceParts(text)) {
+      const fenced = part.startsWith('```');
+      if (fenced) {
+        chunks.push({ id: chunks.length, text: part });
+        continue;
+      }
+      const last = chunks[chunks.length - 1];
+      if (last && !last.text.startsWith('```') && last.text.length + part.length <= SEARCH_CHUNK_LIMIT) {
+        last.text += part;
+        continue;
+      }
+      for (let offset = 0; offset < part.length; offset += SEARCH_CHUNK_LIMIT) {
+        chunks.push({ id: chunks.length, text: part.slice(offset, offset + SEARCH_CHUNK_LIMIT) });
+      }
+    }
   }
-  return chunks.length ? chunks : [{ id: 0, text: body.slice(0, 1500) }];
+  return chunks.length ? chunks : [{ id: 0, text: body.slice(0, SEARCH_CHUNK_LIMIT) }];
 }

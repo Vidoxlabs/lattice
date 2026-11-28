@@ -74,8 +74,10 @@ test('the generated deploy configuration is sanitized and host-checked', () => {
     for (const key of ['configPath', 'userConfigPath', 'dev']) assert.ok(!(key in config), `${key} must not be published`);
     const entry = readFileSync('dist/server/host-entry.mjs', 'utf8');
     assert.match(entry, /import server from '\.\/entry\.mjs'/);
-    assert.match(entry, /import \{ canonicalRedirect \} from '\.\/host\.mjs'/);
+    assert.match(entry, /import \{ canonicalRedirect, movedDocsRedirect \} from '\.\/host\.mjs'/);
     assert.match(entry, /Response\.redirect\(destination, 301\)/);
+    assert.match(entry, /const moved = movedDocsRedirect\(request\.url\)/);
+    assert.match(entry, /Response\.redirect\(new URL\(moved, request\.url\), 301\)/);
   } else {
     assert.ok(existsSync('dist/client/wrangler.json'), 'No deploy configuration was generated.');
     const config = readJson('dist/client/wrangler.json');

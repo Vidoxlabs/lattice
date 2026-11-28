@@ -27,3 +27,9 @@ test('claim-status lines render as labelled badges', async ({ page }) => {
   await expect(badge).toBeVisible();
   expect(['implemented', 'specified', 'planned', 'observed']).toContain(await badge.getAttribute('data-claim'));
 });
+
+test('a moved docs address redirects permanently to its new slug', async ({ request }) => {
+  const moved = await request.get('/docs/capillary/family', { maxRedirects: 0 });
+  expect(moved.status()).toBe(301);
+  expect(new URL(moved.headers().location).pathname).toBe('/docs/capillary/systems');
+});

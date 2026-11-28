@@ -49,10 +49,21 @@ export function stampStoredDigests(snapshot) {
  * manifest carries the upstream digests and which other outputs are written
  * from — untouched by the stamping.
  *
+ * A snapshot record without text cannot render in a no-network build, so it
+ * is not stored: the fallback data holds only what a fallback build can
+ * actually publish. The live pipeline keeps its verified-but-blocked records
+ * for the repository pages; the snapshot does not carry them.
+ *
  * @param {any} pipeline the collected pipeline output
  * @param {string} capturedAt the refresh time, as the snapshot records it
  * @returns {any} the snapshot object to write
  */
 export function buildSnapshot(pipeline, capturedAt) {
-  return stampStoredDigests(structuredClone({ ...pipeline, capturedAt }));
+  const snapshot = structuredClone({ ...pipeline, capturedAt });
+  snapshot.documents = Object.fromEntries(
+    Object.entries(snapshot.documents ?? {}).filter(([, entry]) =>
+      typeof entry === 'string' ? entry.length > 0 : typeof entry?.text === 'string' && entry.text.length > 0
+    )
+  );
+  return stampStoredDigests(snapshot);
 }

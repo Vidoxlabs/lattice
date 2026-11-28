@@ -6,6 +6,21 @@ import { join } from 'node:path';
 const needles = JSON.parse(readFileSync(new URL('./scrub-needles.json', import.meta.url), 'utf8'));
 const privateDigests = new Set(needles.tokenSha256);
 
+// The five videsign palette accent tokens are load-bearing API names in
+// videsign's generated artefacts; the content check allows them in exactly
+// the two videsign documents the site serves. Everything the site derives
+// from published content — the fetched-content bundle, the committed
+// snapshot and the built output — can therefore carry them too. No source
+// file can, and no other token can anywhere.
+const colourTokenDigests = new Set([
+  '22d2084f01936c564e690d170959976647b46c843bcb313ff7312fc169dc889c',
+  '89831f5ffc4b30c293c9c3dbc0aac91e38a9c697b374dd105284659c6a992e8a',
+  '101b68072dd659663f14fc77be63743948ada7742d2b8df01698041e1597c420',
+  'efd764d832176b9356c8d0da7a87299e7266020116b12d8423772e3dca349d9e',
+  '71ae1fa73547024d8587234db0746f92a653d0c9a6ac8150d49a146665369eb3'
+]);
+const colourTokenPathPrefixes = ['dist/', 'src/data/generated/', 'src/data/snapshot/'];
+
 /**
  * Public-safety patterns. No file, path or extension is exempt from any of
  * them; the hashed-needle check below applies everywhere with the same rule.
@@ -65,13 +80,16 @@ export function collectFiles(roots) {
  */
 export function scanText(path, source) {
   const failures = [];
+  const allowsColourTokens = colourTokenPathPrefixes.some((prefix) => path.startsWith(prefix));
   const lines = source.split('\n');
   lines.forEach((line, index) => {
     for (const [label, pattern] of patterns) {
       if (pattern.test(line)) failures.push(`${path}:${index + 1}: ${label}`);
     }
     for (const token of line.toLowerCase().split(/[^a-z0-9]+/)) {
-      if (token && privateDigests.has(createHash('sha256').update(token).digest('hex'))) {
+      if (!token) continue;
+      const digest = createHash('sha256').update(token).digest('hex');
+      if (privateDigests.has(digest) && !(allowsColourTokens && colourTokenDigests.has(digest))) {
         failures.push(`${path}:${index + 1}: hashed needle`);
       }
     }
